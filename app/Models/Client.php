@@ -11,14 +11,24 @@ class Client extends Model
     
     protected $fillable = [
         'user_id',
+        'name',
         'cin',
         'birthday',
         'phone',
         'address'
     ];
 
+    protected $casts = [
+        'birthday' => 'date',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function rentals()
+    {
+        return $this->hasMany(Rental::class, 'user_id', 'user_id');
     }
 }

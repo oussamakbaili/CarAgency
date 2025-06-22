@@ -1,19 +1,9 @@
-
-<x-slot name="content">
-<x-dropdown-link :href="route('profile.edit')">
-    {{ __('Profile') }}
-</x-dropdown-link>
-
-<!-- Authentication -->
-<form method="POST" action="{{ route('logout') }}">
-    @csrf
-
-    <a href="route('logout')"
-            onclick="event.preventDefault();
-                        this.closest('form').submit();">
-        {{ __('Log Out') }}</a>
- 
-</form>
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Dashboard') }}
+        </h2>
+    </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -24,4 +14,5 @@
             </div>
         </div>
     </div>
+</x-app-layout>
 

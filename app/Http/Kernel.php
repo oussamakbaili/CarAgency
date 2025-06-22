@@ -26,7 +26,7 @@ class Kernel extends HttpKernel
         // ...
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         'agence' => \App\Http\Middleware\AgenceMiddleware::class,
-        'client' => \App\Http\Middleware\AgenceMiddleware::class,
+        'client' => \App\Http\Middleware\ClientMiddleware::class,
     ];
 
     /**
@@ -71,5 +71,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'approved.agency' => \App\Http\Middleware\IsApprovedAgency::class,
         'role' => \App\Http\Middleware\CheckRole::class,
+        'client' => \App\Http\Middleware\ClientMiddleware::class,
     ];
 }

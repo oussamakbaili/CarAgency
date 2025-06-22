@@ -24,6 +24,26 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// General dashboard route that redirects based on user role
+Route::get('/dashboard', function () {
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+    
+    $user = auth()->user();
+    
+    switch ($user->role) {
+        case 'admin':
+            return redirect()->route('admin.dashboard');
+        case 'agence':
+            return redirect()->route('agence.dashboard');
+        case 'client':
+            return redirect()->route('client.dashboard');
+        default:
+            return redirect('/');
+    }
+})->middleware('auth')->name('dashboard');
+
 // Registration Routes
 Route::middleware('guest')->group(function () {
     Route::get('/register', [ChooseRegisterController::class, 'choose'])->name('register.choose');
@@ -54,7 +74,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 Route::middleware(['auth', 'role:agence'])->prefix('agence')->name('agence.')->group(function () {
     // Routes accessible to all agencies regardless of status
     Route::get('/pending', [AgencyController::class, 'showPending'])->name('pending');
-
     Route::get('/rejected', [AgencyController::class, 'showRejected'])->name('rejected');
     Route::put('/update', [AgencyController::class, 'update'])->name('update');
 
@@ -71,10 +90,20 @@ Route::middleware(['auth', 'role:agence'])->prefix('agence')->name('agence.')->g
 });
 
 // Client Routes
-Route::prefix('client')->middleware(['auth', 'verified', 'client'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('client.dashboard');
-    })->name('client.dashboard');
+Route::prefix('client')->middleware(['auth', 'verified', 'client'])->name('client.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [App\Http\Controllers\Client\DashboardController::class, 'index'])->name('dashboard');
+    
+    // Car browsing
+    Route::get('/cars', [App\Http\Controllers\Client\CarController::class, 'index'])->name('cars.index');
+    Route::get('/cars/{car}', [App\Http\Controllers\Client\CarController::class, 'show'])->name('cars.show');
+    
+    // Rental management
+    Route::get('/rentals', [App\Http\Controllers\Client\RentalController::class, 'index'])->name('rentals.index');
+    Route::get('/rentals/{rental}', [App\Http\Controllers\Client\RentalController::class, 'show'])->name('rentals.show');
+    Route::get('/cars/{car}/rent', [App\Http\Controllers\Client\RentalController::class, 'create'])->name('rentals.create');
+    Route::post('/cars/{car}/rent', [App\Http\Controllers\Client\RentalController::class, 'store'])->name('rentals.store');
+    Route::patch('/rentals/{rental}/cancel', [App\Http\Controllers\Client\RentalController::class, 'cancel'])->name('rentals.cancel');
 });
 
 // Profile Routes
@@ -82,10 +111,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-Route::middleware(['auth', 'role:agency'])->group(function () {
-    Route::get('/agence/dashboard', [AgencyDashboardController::class, 'index'])->name('agence.dashboard');
 });
 
 require __DIR__ . '/auth.php';
