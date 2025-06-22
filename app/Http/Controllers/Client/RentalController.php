@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Rental;
 use App\Models\Car;
+use App\Services\RentalService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -34,17 +35,17 @@ class RentalController extends Controller
     public function create(Car $car)
     {
         // Make sure car is available and from approved agency
-        if ($car->status !== 'available' || $car->agency->status !== 'approved') {
+        if (!$car->is_available || $car->agency->status !== 'approved') {
             return redirect()->back()->with('error', 'This car is not available for rental.');
         }
 
         return view('client.rentals.create', compact('car'));
     }
 
-    public function store(Request $request, Car $car)
+    public function store(Request $request, Car $car, RentalService $rentalService)
     {
         // Validate the car is still available
-        if ($car->status !== 'available' || $car->agency->status !== 'approved') {
+        if (!$car->is_available || $car->agency->status !== 'approved') {
             return redirect()->back()->with('error', 'This car is no longer available for rental.');
         }
 
@@ -57,21 +58,9 @@ class RentalController extends Controller
         $endDate = Carbon::parse($request->end_date);
         $days = $startDate->diffInDays($endDate);
         
-        // Check for conflicts
-        $conflictingRentals = Rental::where('car_id', $car->id)
-            ->where('status', 'approved')
-            ->where(function($query) use ($startDate, $endDate) {
-                $query->whereBetween('start_date', [$startDate, $endDate])
-                      ->orWhereBetween('end_date', [$startDate, $endDate])
-                      ->orWhere(function($q) use ($startDate, $endDate) {
-                          $q->where('start_date', '<=', $startDate)
-                            ->where('end_date', '>=', $endDate);
-                      });
-            })
-            ->exists();
-
-        if ($conflictingRentals) {
-            return redirect()->back()->with('error', 'The car is already booked for the selected dates.');
+        // Check availability using the smart service
+        if (!$rentalService->checkAvailability($car, $startDate, $endDate)) {
+            return redirect()->back()->with('error', 'The car is not available for the selected dates.');
         }
 
         $totalPrice = $days * $car->price_per_day;
@@ -90,20 +79,27 @@ class RentalController extends Controller
             ->with('success', 'Rental request submitted successfully! The agency will review your request.');
     }
 
-    public function cancel(Rental $rental)
+    public function cancel(Rental $rental, RentalService $rentalService)
     {
         // Make sure the rental belongs to the authenticated client
         if ($rental->user_id !== auth()->id()) {
             abort(403);
         }
 
-        // Only allow cancellation of pending rentals
-        if ($rental->status !== 'pending') {
-            return redirect()->back()->with('error', 'You can only cancel pending rental requests.');
+        // Allow cancellation of pending and approved rentals
+        if (!in_array($rental->status, ['pending', 'active'])) {
+            return redirect()->back()->with('error', 'This rental cannot be cancelled.');
         }
 
-        $rental->update(['status' => 'cancelled']);
-
-        return redirect()->back()->with('success', 'Rental request cancelled successfully.');
+        try {
+            $rentalService->cancelRental($rental);
+            $message = $rental->status === 'active' 
+                ? 'Rental cancelled successfully. Refund will be processed if applicable.'
+                : 'Rental request cancelled successfully.';
+                
+            return redirect()->back()->with('success', $message);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error cancelling rental: ' . $e->getMessage());
+        }
     }
 }

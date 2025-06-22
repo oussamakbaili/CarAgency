@@ -7,11 +7,12 @@ use Illuminate\Http\Request;
 use App\Models\Car;
 use App\Models\Rental;
 use App\Models\Activity;
+use App\Services\RentalService;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(RentalService $rentalService)
     {
         // Get the authenticated agency
         $agency = auth()->user()->agency;
@@ -20,24 +21,28 @@ class DashboardController extends Controller
             return view('agence.dashboard');
         }
 
-        // Get total cars
-        $totalCars = Car::where('agency_id', $agency->id)->count();
+        // Get comprehensive statistics using the service
+        $statistics = $rentalService->getAgencyStatistics($agency);
 
-        // Get active rentals
-        $activeRentals = Rental::where('agency_id', $agency->id)
-            ->where('status', 'active')
+        // Get additional car statistics
+        $availableCars = Car::where('agency_id', $agency->id)
+            ->where('available_stock', '>', 0)
             ->count();
 
-        // Get pending rentals
-        $pendingRentals = Rental::where('agency_id', $agency->id)
-            ->where('status', 'pending')
-            ->count();
+        $totalFleetSize = Car::where('agency_id', $agency->id)
+            ->sum('stock_quantity');
 
         // Calculate monthly revenue
         $monthlyRevenue = Rental::where('agency_id', $agency->id)
-            ->where('status', 'completed')
+            ->whereIn('status', ['active', 'completed'])
             ->whereMonth('created_at', Carbon::now()->month)
             ->sum('total_price');
+
+        // Get recent transactions
+        $recentTransactions = $agency->transactions()
+            ->latest()
+            ->take(5)
+            ->get();
 
         // Get recent activities
         $recentActivities = Activity::where('agency_id', $agency->id)
@@ -46,10 +51,11 @@ class DashboardController extends Controller
             ->get();
 
         return view('agence.dashboard', compact(
-            'totalCars',
-            'activeRentals',
-            'pendingRentals',
+            'statistics',
+            'availableCars',
+            'totalFleetSize',
             'monthlyRevenue',
+            'recentTransactions',
             'recentActivities'
         ));
     }

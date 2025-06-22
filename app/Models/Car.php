@@ -24,13 +24,19 @@ class Car extends Model
         'color',
         'fuel_type',
         'status',
-        'image'
+        'image',
+        'stock_quantity',
+        'available_stock',
+        'track_stock'
     ];
 
     protected $casts = [
         'year' => 'integer',
         'price_per_day' => 'decimal:2',
         'status' => 'string',
+        'stock_quantity' => 'integer',
+        'available_stock' => 'integer',
+        'track_stock' => 'boolean',
     ];
 
     protected $appends = ['is_available'];
@@ -62,7 +68,40 @@ class Car extends Model
 
     public function getIsAvailableAttribute()
     {
-        return $this->status === self::STATUS_AVAILABLE;
+        if (!$this->track_stock) {
+            return $this->status === self::STATUS_AVAILABLE;
+        }
+        
+        return $this->status === self::STATUS_AVAILABLE && $this->available_stock > 0;
+    }
+
+    public function hasStock()
+    {
+        return !$this->track_stock || $this->available_stock > 0;
+    }
+
+    public function reserveStock($quantity = 1)
+    {
+        if (!$this->track_stock) {
+            return true;
+        }
+
+        if ($this->available_stock >= $quantity) {
+            $this->decrement('available_stock', $quantity);
+            return true;
+        }
+
+        return false;
+    }
+
+    public function releaseStock($quantity = 1)
+    {
+        if (!$this->track_stock) {
+            return true;
+        }
+
+        $this->increment('available_stock', $quantity);
+        return true;
     }
 
     // Scope for available cars from approved agencies

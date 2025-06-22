@@ -10,11 +10,11 @@ class Rental extends Model
     use HasFactory;
 
     const STATUS_PENDING = 'pending';
-    const STATUS_APPROVED = 'approved';
+    const STATUS_APPROVED = 'active'; // Using 'active' to match database enum
     const STATUS_ACTIVE = 'active';
     const STATUS_COMPLETED = 'completed';
     const STATUS_REJECTED = 'rejected';
-    const STATUS_CANCELLED = 'cancelled';
+    const STATUS_CANCELLED = 'rejected'; // Using 'rejected' for cancelled to match database enum
 
     protected $fillable = [
         'user_id',
@@ -50,6 +50,11 @@ class Rental extends Model
     public function agency()
     {
         return $this->belongsTo(Agency::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
     }
 
     public function scopePending($query)

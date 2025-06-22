@@ -11,6 +11,12 @@
                     </div>
                 @endif
 
+                @if(session('error'))
+                    <div class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 @if($pendingRentals->isEmpty())
                     <p class="text-gray-500 text-center py-4">Aucune demande de location en attente.</p>
                 @else

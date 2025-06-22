@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Rental;
 use App\Models\Activity;
+use App\Services\RentalService;
 
 class RentalController extends Controller
 {
@@ -14,53 +15,49 @@ class RentalController extends Controller
         $agency = auth()->user()->agency;
         
         $pendingRentals = Rental::where('agency_id', $agency->id)
-            ->where('status', Rental::STATUS_PENDING)
-            ->with(['car', 'user'])
+            ->where('status', 'pending')
+            ->with(['car', 'user', 'agency'])
             ->latest()
             ->paginate(10);
 
         return view('agence.rentals.pending', compact('pendingRentals'));
     }
 
-    public function approve(Rental $rental)
+    public function approve(Rental $rental, RentalService $rentalService)
     {
         $this->authorize('update', $rental);
 
-        $rental->update(['status' => Rental::STATUS_APPROVED]);
-
-        // Record activity
-        Activity::create([
-            'agency_id' => $rental->agency_id,
-            'type' => 'rental',
-            'description' => "Location approuvée pour {$rental->car->brand} {$rental->car->model}",
-            'data' => [
+        try {
+            $rentalService->approveRental($rental);
+            return back()->with('success', 'La demande de location a été approuvée et le paiement a été traité.');
+        } catch (\Exception $e) {
+            \Log::error('Rental approval error: ' . $e->getMessage(), [
                 'rental_id' => $rental->id,
-                'car_id' => $rental->car_id,
-                'user_id' => $rental->user_id
-            ]
-        ]);
-
-        return back()->with('success', 'La demande de location a été approuvée.');
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Erreur lors de l\'approbation: ' . $e->getMessage());
+        }
     }
 
-    public function reject(Rental $rental)
+    public function reject(Rental $rental, RentalService $rentalService)
     {
         $this->authorize('update', $rental);
 
-        $rental->update(['status' => Rental::STATUS_REJECTED]);
-
-        // Record activity
-        Activity::create([
-            'agency_id' => $rental->agency_id,
-            'type' => 'rental',
-            'description' => "Location rejetée pour {$rental->car->brand} {$rental->car->model}",
-            'data' => [
+        try {
+            // Simple rejection without the service for debugging
+            $rental->update(['status' => Rental::STATUS_REJECTED]);
+            
+            // Log the successful rejection
+            \Log::info('Rental rejected successfully', ['rental_id' => $rental->id]);
+            
+            return back()->with('success', 'La demande de location a été rejetée (version simple).');
+            
+        } catch (\Exception $e) {
+            \Log::error('Rental rejection error: ' . $e->getMessage(), [
                 'rental_id' => $rental->id,
-                'car_id' => $rental->car_id,
-                'user_id' => $rental->user_id
-            ]
-        ]);
-
-        return back()->with('success', 'La demande de location a été rejetée.');
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Erreur lors du rejet: ' . $e->getMessage());
+        }
     }
 } 

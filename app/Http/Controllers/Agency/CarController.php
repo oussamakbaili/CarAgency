@@ -29,9 +29,15 @@ class CarController extends Controller
             'year' => 'required|digits:4|integer',
             'price_per_day' => 'required|numeric',
             'description' => 'nullable|string',
+            'stock_quantity' => 'required|integer|min:1',
+            'track_stock' => 'boolean',
         ]);
 
-        Auth::user()->agency->cars()->create($request->all());
+        $carData = $request->all();
+        $carData['available_stock'] = $carData['stock_quantity'];
+        $carData['track_stock'] = $request->has('track_stock');
+        
+        Auth::user()->agency->cars()->create($carData);
 
         return redirect()->route('agence.cars.index')->with('success', 'Voiture ajoutée avec succès.');
     }
@@ -53,9 +59,15 @@ class CarController extends Controller
             'year' => 'required|digits:4|integer',
             'price_per_day' => 'required|numeric',
             'description' => 'nullable|string',
+            'stock_quantity' => 'required|integer|min:1',
+            'available_stock' => 'required|integer|min:0',
+            'track_stock' => 'boolean',
         ]);
 
-        $car->update($request->all());
+        $carData = $request->all();
+        $carData['track_stock'] = $request->has('track_stock');
+        
+        $car->update($carData);
 
         return redirect()->route('agence.cars.index')->with('success', 'Voiture modifiée avec succès.');
     }

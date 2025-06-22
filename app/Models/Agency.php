@@ -37,12 +37,22 @@ class Agency extends Model
         'estimated_fleet_size',
         'status',
         'rejection_reason',
-        'tries_count'
+        'tries_count',
+        'balance',
+        'total_earnings',
+        'pending_earnings',
+        'last_payout_at',
+        'commission_rate'
     ];
 
     protected $casts = [
         'status' => 'string',
-        'additional_docs' => 'array'
+        'additional_docs' => 'array',
+        'balance' => 'decimal:2',
+        'total_earnings' => 'decimal:2',
+        'pending_earnings' => 'decimal:2',
+        'commission_rate' => 'decimal:2',
+        'last_payout_at' => 'datetime',
     ];
 
     public function user()
@@ -53,6 +63,16 @@ class Agency extends Model
     public function cars()
     {
         return $this->hasMany(Car::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function rentals()
+    {
+        return $this->hasMany(Rental::class);
     }
 
     public function isPending()
