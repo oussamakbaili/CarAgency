@@ -1,6 +1,4 @@
-@extends('layouts.app')
-
-@section('content')
+<x-app-layout>
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-sm rounded-lg">
@@ -57,22 +55,22 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {{ number_format($rental->total_price, 2) }} DH
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <form action="{{ route('agency.rentals.approve', $rental) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button type="submit" class="text-green-600 hover:text-green-900 mr-3">
-                                                    Approuver
-                                                </button>
-                                            </form>
-                                            <form action="{{ route('agency.rentals.reject', $rental) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900">
-                                                    Rejeter
-                                                </button>
-                                            </form>
-                                        </td>
+                                                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <form action="{{ route('agence.rentals.approve', $rental) }}" method="POST" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="text-green-600 hover:text-green-900 mr-3">
+                                    Approuver
+                                </button>
+                            </form>
+                            <form action="{{ route('agence.rentals.reject', $rental) }}" method="POST" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:text-red-900">
+                                    Rejeter
+                                </button>
+                            </form>
+                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -86,4 +84,4 @@
         </div>
     </div>
 </div>
-@endsection 
+</x-app-layout> 

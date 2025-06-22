@@ -11,12 +11,12 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg mb-6">
                 <div class="p-6">
                     <form method="GET" action="{{ route('client.cars.index') }}" class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                             <!-- Search -->
                             <div>
                                 <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Rechercher</label>
                                 <input type="text" id="search" name="search" value="{{ request('search') }}" 
-                                       placeholder="Marque, modèle..."
+                                       placeholder="Marque, modèle, couleur..."
                                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
@@ -28,6 +28,19 @@
                                     @foreach($brands as $brand)
                                         <option value="{{ $brand }}" {{ request('brand') == $brand ? 'selected' : '' }}>
                                             {{ $brand }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Fuel Type Filter -->
+                            <div>
+                                <label for="fuel_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Carburant</label>
+                                <select id="fuel_type" name="fuel_type" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Tous types</option>
+                                    @foreach($fuelTypes as $fuelType)
+                                        <option value="{{ $fuelType }}" {{ request('fuel_type') == $fuelType ? 'selected' : '' }}>
+                                            {{ ucfirst($fuelType) }}
                                         </option>
                                     @endforeach
                                 </select>

@@ -1,18 +1,15 @@
-@extends('layouts.app')
-
 @php
 use App\Models\Agency;
 $maxTries = 3; // This matches Agency::MAX_TRIES
 $remainingTries = $maxTries - $agency->tries_count;
 @endphp
 
-@section('header')
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        {{ __('Mise à jour des Informations') }}
-    </h2>
-@endsection
-
-@section('content')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Mise à jour des Informations') }}
+        </h2>
+    </x-slot>
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Rejection Notice -->
@@ -168,4 +165,4 @@ $remainingTries = $maxTries - $agency->tries_count;
             </div>
         </div>
     </div>
-@endsection 
+</x-app-layout>

@@ -62,11 +62,7 @@ class DashboardController extends Controller
             ->get();
 
         // Get available cars count from approved agencies
-        $availableCars = Car::where('status', 'available')
-            ->whereHas('agency', function($query) {
-                $query->where('status', 'approved');
-            })
-            ->count();
+        $availableCars = Car::availableFromApprovedAgencies()->count();
 
         return view('client.dashboard', compact(
             'totalRentals',

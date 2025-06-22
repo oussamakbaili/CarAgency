@@ -21,6 +21,8 @@ class Car extends Model
         'year',
         'price_per_day',
         'description',
+        'color',
+        'fuel_type',
         'status',
         'image'
     ];
@@ -61,5 +63,20 @@ class Car extends Model
     public function getIsAvailableAttribute()
     {
         return $this->status === self::STATUS_AVAILABLE;
+    }
+
+    // Scope for available cars from approved agencies
+    public function scopeAvailableFromApprovedAgencies($query)
+    {
+        return $query->where('status', self::STATUS_AVAILABLE)
+                    ->whereHas('agency', function($q) {
+                        $q->where('status', 'approved');
+                    });
+    }
+
+    // Get the image URL
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
     }
 }

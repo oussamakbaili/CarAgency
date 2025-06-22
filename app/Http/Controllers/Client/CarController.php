@@ -11,10 +11,7 @@ class CarController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Car::where('status', 'available')
-            ->whereHas('agency', function($q) {
-                $q->where('status', 'approved');
-            })
+        $query = Car::availableFromApprovedAgencies()
             ->with(['agency.user']);
 
         // Search filters
@@ -22,7 +19,8 @@ class CarController extends Controller
             $search = $request->get('search');
             $query->where(function($q) use ($search) {
                 $q->where('brand', 'like', "%{$search}%")
-                  ->orWhere('model', 'like', "%{$search}%");
+                  ->orWhere('model', 'like', "%{$search}%")
+                  ->orWhere('color', 'like', "%{$search}%");
             });
         }
 
@@ -38,25 +36,33 @@ class CarController extends Controller
             $query->where('year', '>=', $request->get('year_from'));
         }
 
+        if ($request->filled('fuel_type')) {
+            $query->where('fuel_type', $request->get('fuel_type'));
+        }
+
         $cars = $query->paginate(12);
         
         // Get available brands for filter
-        $brands = Car::where('status', 'available')
-            ->whereHas('agency', function($q) {
-                $q->where('status', 'approved');
-            })
+        $brands = Car::availableFromApprovedAgencies()
             ->distinct()
             ->pluck('brand')
             ->sort();
 
-        return view('client.cars.index', compact('cars', 'brands'));
+        // Get available fuel types for filter
+        $fuelTypes = Car::availableFromApprovedAgencies()
+            ->whereNotNull('fuel_type')
+            ->distinct()
+            ->pluck('fuel_type')
+            ->sort();
+
+        return view('client.cars.index', compact('cars', 'brands', 'fuelTypes'));
     }
 
     public function show(Car $car)
     {
         // Make sure car is available and from approved agency
         if ($car->status !== 'available' || $car->agency->status !== 'approved') {
-            abort(404);
+            abort(404, 'Car not found or not available');
         }
 
         $car->load(['agency.user', 'rentals' => function($query) {

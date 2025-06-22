@@ -113,4 +113,21 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Temporary debug route to check database data
+Route::get('/debug/data', function () {
+    return response()->json([
+        'users_total' => \App\Models\User::count(),
+        'agencies_total' => \App\Models\Agency::count(),
+        'agencies_approved' => \App\Models\Agency::where('status', 'approved')->count(),
+        'cars_total' => \App\Models\Car::count(),
+        'cars_available' => \App\Models\Car::where('status', 'available')->count(),
+        'cars_from_approved_agencies' => \App\Models\Car::where('status', 'available')
+            ->whereHas('agency', function($q) { $q->where('status', 'approved'); })
+            ->count(),
+        'users' => \App\Models\User::select('id', 'name', 'email', 'role')->get(),
+        'agencies' => \App\Models\Agency::with('user:id,name,email')->get(),
+        'cars' => \App\Models\Car::with(['agency.user:id,name'])->get(),
+    ]);
+})->middleware('auth');
+
 require __DIR__ . '/auth.php';

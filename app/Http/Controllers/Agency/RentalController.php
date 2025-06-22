@@ -14,7 +14,7 @@ class RentalController extends Controller
         $agency = auth()->user()->agency;
         
         $pendingRentals = Rental::where('agency_id', $agency->id)
-            ->where('status', 'pending')
+            ->where('status', Rental::STATUS_PENDING)
             ->with(['car', 'user'])
             ->latest()
             ->paginate(10);
@@ -26,7 +26,7 @@ class RentalController extends Controller
     {
         $this->authorize('update', $rental);
 
-        $rental->update(['status' => 'active']);
+        $rental->update(['status' => Rental::STATUS_APPROVED]);
 
         // Record activity
         Activity::create([
@@ -47,7 +47,7 @@ class RentalController extends Controller
     {
         $this->authorize('update', $rental);
 
-        $rental->update(['status' => 'rejected']);
+        $rental->update(['status' => Rental::STATUS_REJECTED]);
 
         // Record activity
         Activity::create([
