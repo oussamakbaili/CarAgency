@@ -11,6 +11,7 @@ class Transaction extends Model
 
     const TYPE_RENTAL_PAYMENT = 'rental_payment';
     const TYPE_WITHDRAWAL = 'withdrawal';
+    const TYPE_WITHDRAWAL_REQUEST = 'withdrawal_request';
     const TYPE_REFUND = 'refund';
     const TYPE_COMMISSION = 'commission';
     const TYPE_PENALTY = 'penalty';
