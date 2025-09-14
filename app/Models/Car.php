@@ -21,13 +21,22 @@ class Car extends Model
         'year',
         'price_per_day',
         'description',
+        'category_id',
         'color',
         'fuel_type',
         'status',
         'image',
+        'pictures',
         'stock_quantity',
         'available_stock',
-        'track_stock'
+        'track_stock',
+        'maintenance_due',
+        'last_maintenance',
+        'mileage',
+        'transmission',
+        'seats',
+        'engine_size',
+        'features'
     ];
 
     protected $casts = [
@@ -37,6 +46,12 @@ class Car extends Model
         'stock_quantity' => 'integer',
         'available_stock' => 'integer',
         'track_stock' => 'boolean',
+        'maintenance_due' => 'date',
+        'last_maintenance' => 'date',
+        'mileage' => 'integer',
+        'seats' => 'integer',
+        'features' => 'array',
+        'pictures' => 'array',
     ];
 
     protected $appends = ['is_available'];
@@ -46,9 +61,19 @@ class Car extends Model
         return $this->belongsTo(Agency::class);
     }
 
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     public function rentals()
     {
         return $this->hasMany(Rental::class);
+    }
+
+    public function maintenances()
+    {
+        return $this->hasMany(Maintenance::class);
     }
 
     public function isAvailable()
@@ -117,5 +142,17 @@ class Car extends Model
     public function getImageUrlAttribute()
     {
         return $this->image ? asset('storage/' . $this->image) : null;
+    }
+
+    // Get picture URLs
+    public function getPictureUrlsAttribute()
+    {
+        if (!$this->pictures) {
+            return [];
+        }
+        
+        return collect($this->pictures)->map(function($picture) {
+            return asset('storage/' . $picture);
+        })->toArray();
     }
 }
