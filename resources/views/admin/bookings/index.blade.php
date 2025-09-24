@@ -120,9 +120,6 @@
             <a href="{{ route('admin.bookings.calendar') }}" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700">
                 Vue Calendrier
             </a>
-            <a href="{{ route('admin.bookings.analytics') }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-                Analytics
-            </a>
         </div>
     </div>
     
@@ -152,13 +149,14 @@
                         Statut
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
+                        →
                     </th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($bookings as $booking)
-                <tr>
+                <tr class="hover:bg-gray-50 cursor-pointer transition-colors duration-150" 
+                    onclick="window.location.href='{{ route('admin.bookings.show', $booking) }}'">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-gray-900">#{{ $booking->id }}</div>
                         <div class="text-sm text-gray-500">{{ $booking->created_at->format('d/m/Y H:i') }}</div>
@@ -193,12 +191,9 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                            <a href="{{ route('admin.bookings.show', $booking) }}" 
-                               class="text-blue-600 hover:text-blue-900">Voir</a>
-                            <button onclick="updateStatus({{ $booking->id }}, '{{ $booking->status }}')" 
-                                    class="text-green-600 hover:text-green-900">Modifier</button>
-                        </div>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
                     </td>
                 </tr>
                 @empty

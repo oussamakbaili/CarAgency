@@ -76,6 +76,11 @@ class Car extends Model
         return $this->hasMany(Maintenance::class);
     }
 
+    public function avis()
+    {
+        return $this->hasManyThrough(\App\Models\Avis::class, Rental::class, 'car_id', 'rental_id');
+    }
+
     public function isAvailable()
     {
         return $this->status === self::STATUS_AVAILABLE;
@@ -89,6 +94,44 @@ class Car extends Model
     public function isInMaintenance()
     {
         return $this->status === self::STATUS_MAINTENANCE;
+    }
+
+    // Review methods
+    public function getAverageRating()
+    {
+        return \App\Models\Avis::whereHas('rental', function($query) {
+            $query->where('car_id', $this->id);
+        })->where('is_public', true)->avg('rating') ?? 0;
+    }
+
+    public function getTotalReviews()
+    {
+        return \App\Models\Avis::whereHas('rental', function($query) {
+            $query->where('car_id', $this->id);
+        })->where('is_public', true)->count();
+    }
+
+    public function getRatingDistribution()
+    {
+        $distribution = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $distribution[$i] = \App\Models\Avis::whereHas('rental', function($query) {
+                $query->where('car_id', $this->id);
+            })->where('is_public', true)->where('rating', $i)->count();
+        }
+        return $distribution;
+    }
+
+    public function getRecentReviews($limit = 5)
+    {
+        return \App\Models\Avis::whereHas('rental', function($query) {
+            $query->where('car_id', $this->id);
+        })
+            ->where('is_public', true)
+            ->with(['client.user', 'rental'])
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     public function getIsAvailableAttribute()

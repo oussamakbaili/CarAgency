@@ -135,6 +135,11 @@ class AgencyController extends Controller
 
     public function approve(Request $request, Agency $agency)
     {
+        \Log::info('Approve method called', [
+            'agency_id' => $agency->id,
+            'request_data' => $request->all()
+        ]);
+        
         $request->validate([
             'commission_rate' => 'nullable|numeric|min:0|max:100',
         ]);

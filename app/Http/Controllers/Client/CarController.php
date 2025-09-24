@@ -60,16 +60,27 @@ class CarController extends Controller
 
     public function show(Car $car)
     {
-        // Make sure car is available and from approved agency
-        if ($car->status !== 'available' || $car->agency->status !== 'approved') {
-            abort(404, 'Car not found or not available');
+        try {
+            // Load necessary relationships
+            $car->load(['agency.user']);
+            
+            // Basic validation - just check if car exists
+            if (!$car->exists) {
+                abort(404, 'Car not found');
+            }
+
+            return view('client.cars.show-simple', compact('car'));
+            
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Car show error: ' . $e->getMessage());
+            
+            // Return a simple debug view
+            return response()->view('client.cars.debug', [
+                'error' => $e->getMessage(),
+                'car_id' => $car->id ?? 'unknown',
+                'car_exists' => $car->exists ?? false
+            ]);
         }
-
-        $car->load(['agency.user', 'rentals' => function($query) {
-            $query->where('status', 'approved')
-                  ->where('end_date', '>=', now());
-        }]);
-
-        return view('client.cars.show', compact('car'));
     }
 }

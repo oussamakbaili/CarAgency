@@ -165,37 +165,13 @@
                 </div>
             </div>
 
-            <!-- Recent Rentals -->
-            <div class="px-6 pb-6">
-                <h4 class="text-sm font-medium text-gray-900 mb-3">Locations récentes</h4>
-                <div class="space-y-2">
-                    @forelse($customer->rentals->take(3) as $rental)
-                    <div class="flex items-center justify-between text-sm">
-                        <div>
-                            <span class="font-medium text-gray-900">{{ $rental->car->brand }} {{ $rental->car->model }}</span>
-                            <span class="text-gray-500 ml-2">{{ \Carbon\Carbon::parse($rental->start_date)->format('d/m/Y') }}</span>
-                        </div>
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                            @if($rental->status == 'completed') bg-green-100 text-green-800
-                            @elseif($rental->status == 'active') bg-blue-100 text-blue-800
-                            @elseif($rental->status == 'pending') bg-yellow-100 text-yellow-800
-                            @elseif($rental->status == 'rejected') bg-red-100 text-red-800
-                            @else bg-gray-100 text-gray-800 @endif">
-                            {{ ucfirst($rental->status) }}
-                        </span>
-                    </div>
-                    @empty
-                    <p class="text-sm text-gray-500">Aucune location récente</p>
-                    @endforelse
-                </div>
-            </div>
 
             <!-- Actions -->
             <div class="px-6 pb-6 border-t border-gray-200 pt-4">
                 <div class="flex space-x-2">
-                    <button onclick="showCustomerDetails({{ $customer->id }})" class="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100">
+                    <a href="{{ route('agence.customers.show', $customer) }}" class="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 text-center">
                         Voir le profil
-                    </button>
+                    </a>
                     <a href="{{ route('agence.bookings.history') }}?client={{ $customer->user->email ?? '' }}" class="flex-1 px-3 py-2 text-sm font-medium text-gray-600 bg-gray-50 rounded-md hover:bg-gray-100 text-center">
                         Historique
                     </a>
@@ -221,64 +197,4 @@
     @endif
 </div>
 
-<!-- Customer Details Modal -->
-<div id="customerDetailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Détails du Client</h3>
-                <button onclick="closeCustomerDetails()" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <div id="customerDetailsContent" class="space-y-4">
-                <!-- Content will be loaded here -->
-            </div>
-            
-            <div class="flex justify-end mt-6">
-                <button onclick="closeCustomerDetails()" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
-                    Fermer
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-function showCustomerDetails(customerId) {
-    document.getElementById('customerDetailsContent').innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div><p class="mt-2 text-gray-600">Chargement...</p></div>';
-    document.getElementById('customerDetailsModal').classList.remove('hidden');
-    
-    // For now, we'll show a simple message. In a real implementation, you'd fetch customer details via AJAX
-    setTimeout(() => {
-        document.getElementById('customerDetailsContent').innerHTML = `
-            <div class="space-y-4">
-                <div class="bg-blue-50 p-4 rounded-lg">
-                    <h4 class="font-medium text-blue-900">Informations du Client</h4>
-                    <p class="text-blue-700">ID: ${customerId}</p>
-                    <p class="text-blue-700">Détails complets du client seront affichés ici.</p>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="font-medium text-gray-900">Actions Disponibles</h4>
-                    <div class="mt-2 space-x-2">
-                        <a href="${window.location.origin}/agence/bookings/history?client=${customerId}" class="inline-block px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
-                            Voir l'historique
-                        </a>
-                        <a href="${window.location.origin}/agence/customers" class="inline-block px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700">
-                            Retour à la liste
-                        </a>
-                    </div>
-                </div>
-            </div>
-        `;
-    }, 1000);
-}
-
-function closeCustomerDetails() {
-    document.getElementById('customerDetailsModal').classList.add('hidden');
-}
-</script>
 @endsection
