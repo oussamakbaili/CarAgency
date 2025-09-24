@@ -123,10 +123,30 @@ class BookingController extends Controller
                     'status' => $booking->status,
                     'color' => $this->getStatusColor($booking->status),
                     'url' => route('admin.bookings.show', $booking),
+                    'car' => [
+                        'brand' => $booking->car->brand,
+                        'model' => $booking->car->model
+                    ],
+                    'user' => [
+                        'name' => $booking->user->name
+                    ]
                 ];
             });
 
-        return view('admin.bookings.calendar', compact('bookings'));
+        // Get statistics for the calendar view
+        $statistics = [
+            'total' => Rental::count(),
+            'pending' => Rental::where('status', 'pending')->count(),
+            'active' => Rental::where('status', 'active')->count(),
+            'completed' => Rental::where('status', 'completed')->count(),
+            'cancelled' => Rental::where('status', 'rejected')->count(),
+            'totalRevenue' => Rental::whereIn('status', ['active', 'completed'])->sum('total_price'),
+            'monthlyRevenue' => Rental::whereIn('status', ['active', 'completed'])
+                ->whereMonth('created_at', Carbon::now()->month)
+                ->sum('total_price'),
+        ];
+
+        return view('admin.bookings.calendar', compact('bookings', 'statistics'));
     }
 
     public function show(Rental $booking)

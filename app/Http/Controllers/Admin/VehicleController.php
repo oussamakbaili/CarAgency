@@ -140,7 +140,7 @@ class VehicleController extends Controller
             ];
         }
 
-        return view('admin.vehicles.show', compact('vehicle', 'statistics', 'rentalHistory', 'monthlyPerformance', 'labels'));
+        return view('admin.vehicles.show-simple', compact('vehicle', 'statistics', 'rentalHistory', 'monthlyPerformance', 'labels'));
     }
 
     public function fleetAnalytics()

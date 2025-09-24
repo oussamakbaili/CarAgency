@@ -17,12 +17,6 @@
                         </svg>
                         Exporter CSV
                     </a>
-                    <a href="{{ route('agence.customers.profiles') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                        </svg>
-                        Profils Détaillés
-                    </a>
                 </div>
             </div>
         </div>
@@ -190,7 +184,7 @@
                     </div>
                     
                     <div class="mt-6 flex space-x-2">
-                        <a href="{{ route('agence.customers.profiles') }}" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 text-center">
+                        <a href="{{ route('agence.customers.show', $customer) }}" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 text-center">
                             Voir Profil
                         </a>
                         <a href="{{ route('agence.bookings.history') }}?client={{ $customer->user->email ?? '' }}" class="flex-1 bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 text-center">

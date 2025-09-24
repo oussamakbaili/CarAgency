@@ -36,7 +36,7 @@
 
 <!-- Agencies Table -->
 <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-    <form id="bulkForm" method="POST">
+    <form id="bulkForm" method="POST" action="{{ route('admin.agencies.bulk-approve') }}">
         @csrf
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -56,15 +56,12 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Date d'inscription
                     </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                    </th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($agencies as $agency)
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('admin.agencies.show', $agency) }}'">
+                    <td class="px-6 py-4 whitespace-nowrap" onclick="event.stopPropagation()">
                         <input type="checkbox" name="agency_ids[]" value="{{ $agency->id }}" class="agency-checkbox">
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -92,20 +89,10 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ $agency->created_at->format('d/m/Y H:i') }}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                            <a href="{{ route('admin.agencies.show', $agency) }}" 
-                               class="text-blue-600 hover:text-blue-900">Voir</a>
-                            <button onclick="approveAgency({{ $agency->id }})" 
-                                    class="text-green-600 hover:text-green-900">Approuver</button>
-                            <button onclick="rejectAgency({{ $agency->id }})" 
-                                    class="text-red-600 hover:text-red-900">Rejeter</button>
-                        </div>
-                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
                         Aucune agence en attente trouvée.
                     </td>
                 </tr>
@@ -125,7 +112,7 @@
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Approuver l'Agence</h3>
-            <form id="approvalForm" method="POST">
+            <form id="approvalForm" method="POST" action="#">
                 @csrf
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -137,7 +124,7 @@
                 <div class="flex justify-end space-x-2">
                     <button type="button" onclick="closeModal('approvalModal')" 
                             class="px-4 py-2 text-gray-600 hover:text-gray-800">Annuler</button>
-                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                    <button type="submit" id="approveBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                         Approuver
                     </button>
                 </div>
@@ -151,7 +138,7 @@
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Rejeter l'Agence</h3>
-            <form id="rejectionForm" method="POST">
+            <form id="rejectionForm" method="POST" action="#">
                 @csrf
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -164,7 +151,7 @@
                 <div class="flex justify-end space-x-2">
                     <button type="button" onclick="closeModal('rejectionModal')" 
                             class="px-4 py-2 text-gray-600 hover:text-gray-800">Annuler</button>
-                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                    <button type="submit" id="rejectBtn" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                         Rejeter
                     </button>
                 </div>
@@ -183,14 +170,38 @@ function toggleSelectAll() {
 }
 
 function approveAgency(agencyId) {
+    console.log('Approve agency:', agencyId);
     const form = document.getElementById('approvalForm');
-    form.action = `{{ route('admin.agencies.approve', '') }}/${agencyId}`;
+    form.action = `{{ url('admin/agencies') }}/${agencyId}/approve`;
+    
+    // Add agency ID as hidden input
+    let agencyIdInput = form.querySelector('input[name="agency_id"]');
+    if (!agencyIdInput) {
+        agencyIdInput = document.createElement('input');
+        agencyIdInput.type = 'hidden';
+        agencyIdInput.name = 'agency_id';
+        form.appendChild(agencyIdInput);
+    }
+    agencyIdInput.value = agencyId;
+    
     document.getElementById('approvalModal').classList.remove('hidden');
 }
 
 function rejectAgency(agencyId) {
+    console.log('Reject agency:', agencyId);
     const form = document.getElementById('rejectionForm');
-    form.action = `{{ route('admin.agencies.reject', '') }}/${agencyId}`;
+    form.action = `{{ url('admin/agencies') }}/${agencyId}/reject`;
+    
+    // Add agency ID as hidden input
+    let agencyIdInput = form.querySelector('input[name="agency_id"]');
+    if (!agencyIdInput) {
+        agencyIdInput = document.createElement('input');
+        agencyIdInput.type = 'hidden';
+        agencyIdInput.name = 'agency_id';
+        form.appendChild(agencyIdInput);
+    }
+    agencyIdInput.value = agencyId;
+    
     document.getElementById('rejectionModal').classList.remove('hidden');
 }
 
@@ -232,5 +243,37 @@ function bulkReject() {
 function closeModal(modalId) {
     document.getElementById(modalId).classList.add('hidden');
 }
+
+// Add form submission handlers
+document.addEventListener('DOMContentLoaded', function() {
+    // Approval form handler
+    const approvalForm = document.getElementById('approvalForm');
+    if (approvalForm) {
+        approvalForm.addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('approveBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Approbation...';
+            submitBtn.classList.add('opacity-50');
+        });
+    }
+
+    // Rejection form handler
+    const rejectionForm = document.getElementById('rejectionForm');
+    if (rejectionForm) {
+        rejectionForm.addEventListener('submit', function(e) {
+            const textarea = rejectionForm.querySelector('textarea[name="rejection_reason"]');
+            if (!textarea.value.trim()) {
+                e.preventDefault();
+                alert('Veuillez fournir une raison pour le rejet.');
+                return false;
+            }
+            
+            const submitBtn = document.getElementById('rejectBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Rejet...';
+            submitBtn.classList.add('opacity-50');
+        });
+    }
+});
 </script>
 @endsection

@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\AgencyRegisterController;
 use App\Http\Controllers\Admin\AgencyManagementController;
 use App\Http\Controllers\Agency\{AgencyController, CarController, DashboardController, RentalController};
 use App\Http\Controllers\Agency\AgencyDashboardController;
+use App\Http\Controllers\Agency\AgencyController as PublicAgencyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +23,13 @@ use App\Http\Controllers\Agency\AgencyDashboardController;
 
 Route::get('/', function () {
     return view('welcome');
+})->name('welcome');
+
+// Agency Registration Routes
+Route::prefix('agency')->name('agency.')->group(function () {
+    Route::get('/register', [PublicAgencyController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [PublicAgencyController::class, 'register'])->name('register');
+    Route::get('/success', [PublicAgencyController::class, 'success'])->name('register.success');
 });
 
 // General dashboard route that redirects based on user role
@@ -192,6 +200,7 @@ Route::middleware(['auth', 'role:agence'])->prefix('agence')->name('agence.')->g
         Route::get('/customers/support/{id}/details', [App\Http\Controllers\Agency\CustomerController::class, 'getTicketDetails'])->name('customers.support.details');
         Route::post('/customers/support/{id}/reply', [App\Http\Controllers\Agency\CustomerController::class, 'replyToTicket'])->name('customers.support.reply');
         Route::post('/customers/support/{id}/update-status', [App\Http\Controllers\Agency\CustomerController::class, 'updateTicketStatus'])->name('customers.support.update-status');
+        Route::get('/customers/{customer}', [App\Http\Controllers\Agency\CustomerController::class, 'show'])->name('customers.show');
         
         // Financial Management
         Route::get('/finance', [App\Http\Controllers\Agency\FinanceController::class, 'index'])->name('finance.index');
@@ -280,6 +289,11 @@ Route::prefix('client')->middleware(['auth', 'verified', 'client'])->name('clien
     // Car browsing
     Route::get('/cars', [App\Http\Controllers\Client\CarController::class, 'index'])->name('cars.index');
     Route::get('/cars/{car}', [App\Http\Controllers\Client\CarController::class, 'show'])->name('cars.show');
+    
+    // Car reviews
+    Route::post('/cars/{car}/reviews', [App\Http\Controllers\Client\CarReviewController::class, 'store'])->name('cars.reviews.store');
+    Route::put('/reviews/{avis}', [App\Http\Controllers\Client\CarReviewController::class, 'update'])->name('cars.reviews.update');
+    Route::delete('/reviews/{avis}', [App\Http\Controllers\Client\CarReviewController::class, 'destroy'])->name('cars.reviews.destroy');
     
     // Rental management
     Route::get('/rentals', [App\Http\Controllers\Client\RentalController::class, 'index'])->name('rentals.index');

@@ -139,6 +139,51 @@ class CustomerController extends Controller
         return view('agence.customers.index', compact('customers', 'stats'));
     }
     
+    public function show(Client $customer)
+    {
+        $agency = auth()->user()->agency;
+        
+        // Verify that the customer has rentals with this agency
+        $hasRentals = $customer->rentals()->where('agency_id', $agency->id)->exists();
+        
+        if (!$hasRentals) {
+            abort(404, 'Client non trouvé ou non autorisé');
+        }
+        
+        // Load customer with related data
+        $customer->load([
+            'user',
+            'rentals' => function($query) use ($agency) {
+                $query->where('agency_id', $agency->id)
+                      ->with(['car', 'car.category'])
+                      ->orderBy('created_at', 'desc');
+            }
+        ]);
+        
+        // Calculate customer statistics
+        $totalRentals = $customer->rentals->count();
+        $totalSpent = $customer->rentals->sum('total_price');
+        $averageRentalValue = $totalRentals > 0 ? $totalSpent / $totalRentals : 0;
+        $lastRental = $customer->rentals->first();
+        
+        // Get recent rentals (last 5)
+        $recentRentals = $customer->rentals->take(5);
+        
+        // Calculate loyalty status
+        $loyaltyStatus = $totalRentals > 5 ? 'VIP' : ($totalRentals > 2 ? 'Fidèle' : 'Nouveau');
+        
+        $stats = [
+            'total_rentals' => $totalRentals,
+            'total_spent' => $totalSpent,
+            'average_rental_value' => $averageRentalValue,
+            'loyalty_status' => $loyaltyStatus,
+            'last_rental' => $lastRental,
+            'recent_rentals' => $recentRentals,
+        ];
+        
+        return view('agence.customers.show', compact('customer', 'stats'));
+    }
+    
     public function profiles(Request $request)
     {
         $agency = auth()->user()->agency;

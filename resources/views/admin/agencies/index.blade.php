@@ -116,7 +116,8 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($agencies as $agency)
-                            <tr>
+                            <tr class="hover:bg-gray-50 cursor-pointer transition-colors duration-150" 
+                                onclick="window.location.href='{{ route('admin.agencies.show', $agency) }}'">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">{{ $agency->agency_name }}</div>
                                     <div class="text-sm text-gray-500">RC: {{ $agency->commercial_register_number }}</div>
@@ -140,10 +141,31 @@
                                     {{ $agency->created_at->format('d/m/Y H:i') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ route('admin.agencies.show', $agency) }}" 
-                                       class="text-indigo-600 hover:text-indigo-900">
-                                        Détails
-                                    </a>
+                                    <div class="flex space-x-2 justify-end" onclick="event.stopPropagation()">
+                                        @if($agency->status === 'pending')
+                                            <form action="{{ route('admin.agencies.approve', $agency) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" 
+                                                        class="inline-flex items-center px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                    Approuver
+                                                </button>
+                                            </form>
+                                            <button onclick="openRejectModal({{ $agency->id }})" 
+                                                    class="inline-flex items-center px-3 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                                Rejeter
+                                            </button>
+                                        @else
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                             @empty
@@ -165,5 +187,67 @@
         </div>
     </div>
 </div>
+
+<!-- Rejection Modal -->
+<div id="rejectModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Rejeter l'Agence</h3>
+                <button onclick="closeRejectModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="rejectForm" method="POST">
+                @csrf
+                <div class="mb-4">
+                    <label for="rejection_reason" class="block text-sm font-medium text-gray-700 mb-2">
+                        Raison du rejet
+                    </label>
+                    <textarea id="rejection_reason" name="rejection_reason" rows="4" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                              placeholder="Expliquez pourquoi cette agence est rejetée..."
+                              required></textarea>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeRejectModal()" 
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                        Annuler
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Rejeter l'Agence
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openRejectModal(agencyId) {
+    const modal = document.getElementById('rejectModal');
+    const form = document.getElementById('rejectForm');
+    
+    // Set the form action
+    form.action = `{{ route('admin.agencies.reject', '') }}/${agencyId}`;
+    
+    // Show modal
+    modal.classList.remove('hidden');
+}
+
+function closeRejectModal() {
+    document.getElementById('rejectModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('rejectModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeRejectModal();
+    }
+});
+</script>
 @endsection
 
