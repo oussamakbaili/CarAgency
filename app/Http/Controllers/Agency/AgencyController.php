@@ -4,108 +4,164 @@ namespace App\Http\Controllers\Agency;
 
 use App\Http\Controllers\Controller;
 use App\Models\Agency;
+use App\Models\Activity;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 
 class AgencyController extends Controller
 {
-    public function showRegisterForm()
+    public function showRejected()
     {
-        return view('agency.register');
-    }
+        $agency = auth()->user()->agency;
+        
+        if ($agency->status === 'approved') {
+            return redirect()->route('agence.dashboard');
+        }
 
-    public function register(Request $request)
-    {
-        $request->validate([
-            'agency_name' => 'required|string|max:255',
-            'commercial_register_number' => 'required|string|max:255|unique:agencies',
-            'email' => 'required|string|email|max:255|unique:agencies',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:500',
-            'city' => 'required|string|max:100',
-            'password' => 'required|string|min:8|confirmed',
-            'responsable_name' => 'required|string|max:255',
-            'responsable_position' => 'required|string|max:255',
-            'responsable_phone' => 'required|string|max:20',
-            'responsable_identity_number' => 'required|string|max:50',
-            'commercial_register_doc' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'identity_doc' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            'tax_doc' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
-        ]);
+        if ($agency->status === 'pending') {
+            return redirect()->route('agence.pending');
+        }
 
-        // Handle file uploads
-        $commercialRegisterDoc = $request->file('commercial_register_doc');
-        $identityDoc = $request->file('identity_doc');
-        $taxDoc = $request->file('tax_doc');
+        if ($agency->status === 'suspended') {
+            return redirect()->route('agence.suspended');
+        }
 
-        $commercialRegisterPath = $commercialRegisterDoc->store('agencies/documents', 'public');
-        $identityPath = $identityDoc->store('agencies/documents', 'public');
-        $taxPath = $taxDoc->store('agencies/documents', 'public');
+        if ($agency->status !== 'rejected') {
+            abort(403, 'Unauthorized action.');
+        }
 
-        // Create agency
-        $agency = Agency::create([
-            'agency_name' => $request->agency_name,
-            'commercial_register_number' => $request->commercial_register_number,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'city' => $request->city,
-            'password' => Hash::make($request->password),
-            'responsable_name' => $request->responsable_name,
-            'responsable_position' => $request->responsable_position,
-            'responsable_phone' => $request->responsable_phone,
-            'responsable_identity_number' => $request->responsable_identity_number,
-            'commercial_register_doc' => $commercialRegisterPath,
-            'identity_doc' => $identityPath,
-            'tax_doc' => $taxPath,
-            'status' => 'pending',
-        ]);
-
-        // Send notification email to admin
-        // You can implement email notification here
-
-        return redirect()->route('agency.register.success')
-            ->with('success', 'Votre demande d\'inscription a été soumise avec succès. Vous recevrez une réponse par email dans les 48 heures.');
-    }
-
-    public function success()
-    {
-        return view('agency.success');
+        $maxTries = Agency::MAX_TRIES;
+        return view('agence.rejected', compact('agency', 'maxTries'));
     }
 
     public function showPending()
     {
-        // This method is for agencies to view their pending status
-        return view('agency.pending');
+        $agency = auth()->user()->agency;
+        
+        if ($agency->status === 'approved') {
+            return redirect()->route('agence.dashboard');
+        }
+
+        if ($agency->status === 'rejected') {
+            return redirect()->route('agence.rejected');
+        }
+
+        if ($agency->status === 'suspended') {
+            return redirect()->route('agence.suspended');
+        }
+
+        return view('agence.pending', compact('agency'));
     }
 
-    public function showRejected()
+    public function showSuspended()
     {
-        // This method is for agencies to view their rejected status
-        return view('agency.rejected');
+        $agency = auth()->user()->agency;
+        
+        if ($agency->status === 'approved') {
+            return redirect()->route('agence.dashboard');
+        }
+
+        if ($agency->status === 'pending') {
+            return redirect()->route('agence.pending');
+        }
+
+        if ($agency->status === 'rejected') {
+            return redirect()->route('agence.rejected');
+        }
+
+        if ($agency->status !== 'suspended') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return view('agence.suspended', compact('agency'));
     }
 
     public function update(Request $request)
     {
-        // This method is for agencies to update their information
+        $agency = auth()->user()->agency;
+
+        // Check if agency has exceeded maximum tries
+        if ($agency->tries_count >= Agency::MAX_TRIES) {
+            // Delete the agency and its user
+            $user = $agency->user;
+            
+            // Send permanent rejection email
+            Mail::to($agency->email)->send(new \App\Mail\AgencyPermanentlyRejected($agency));
+            
+            // Delete the agency and user
+            $agency->delete();
+            $user->delete();
+
+            // Redirect to login with message
+            return redirect()->route('login')
+                ->with('error', 'Votre compte a été définitivement rejeté après avoir dépassé le nombre maximum de tentatives.');
+        }
+
         $request->validate([
             'agency_name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:500',
-            'city' => 'required|string|max:100',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'commercial_register_number' => 'required|string|max:255',
             'responsable_name' => 'required|string|max:255',
+            'responsable_phone' => 'required|string|max:255',
             'responsable_position' => 'required|string|max:255',
-            'responsable_phone' => 'required|string|max:20',
+            'responsable_identity_number' => 'required|string|max:255',
+            'commercial_register_doc' => 'nullable|mimes:pdf|max:2048',
+            'identity_doc' => 'nullable|mimes:pdf|max:2048',
+            'tax_doc' => 'nullable|mimes:pdf|max:2048',
         ]);
 
-        $agency = auth()->user()->agency;
-        $agency->update($request->only([        
-            'agency_name', 'phone', 'address', 'city', 
-            'responsable_name', 'responsable_position', 'responsable_phone'
-        ]));
+        $data = $request->only([
+            'agency_name',
+            'email',
+            'phone',
+            'address',
+            'city',
+            'commercial_register_number',
+            'responsable_name',
+            'responsable_phone',
+            'responsable_position',
+            'responsable_identity_number',
+        ]);
 
-        return redirect()->back()->with('success', 'Informations mises à jour avec succès.');
+        // Handle document uploads
+        if ($request->hasFile('commercial_register_doc')) {
+            Storage::disk('public')->delete($agency->commercial_register_doc);
+            $data['commercial_register_doc'] = $request->file('commercial_register_doc')->store('documents', 'public');
+        }
+
+        if ($request->hasFile('identity_doc')) {
+            Storage::disk('public')->delete($agency->identity_doc);
+            $data['identity_doc'] = $request->file('identity_doc')->store('documents', 'public');
+        }
+
+        if ($request->hasFile('tax_doc')) {
+            Storage::disk('public')->delete($agency->tax_doc);
+            $data['tax_doc'] = $request->file('tax_doc')->store('documents', 'public');
+        }
+
+        // Reset status to pending for re-review
+        $data['status'] = 'pending';
+        $data['rejection_reason'] = null;
+        $data['tries_count'] = $agency->tries_count + 1;
+
+        $agency->update($data);
+
+        // Create activity log
+        Activity::create([
+            'agency_id' => $agency->id,
+            'type' => 'resubmission',
+            'description' => 'Agency information updated and resubmitted for review',
+            'data' => json_encode([
+                'previous_rejection_reason' => $agency->rejection_reason,
+                'tries_count' => $data['tries_count']
+            ])
+        ]);
+
+        return redirect()->route('agence.pending')
+            ->with('success', 'Vos informations ont été mises à jour et soumises pour révision.');
     }
-}
+} 

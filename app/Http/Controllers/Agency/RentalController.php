@@ -7,9 +7,16 @@ use Illuminate\Http\Request;
 use App\Models\Rental;
 use App\Models\Activity;
 use App\Services\RentalService;
+use App\Services\AgencyCancellationService;
 
 class RentalController extends Controller
 {
+    protected $cancellationService;
+
+    public function __construct(AgencyCancellationService $cancellationService)
+    {
+        $this->cancellationService = $cancellationService;
+    }
     public function index(Request $request)
     {
         $agency = auth()->user()->agency;
@@ -400,12 +407,36 @@ class RentalController extends Controller
         $this->authorize('update', $rental);
 
         try {
+            $agency = auth()->user()->agency;
+            
             // Check if rental belongs to agency
-            if ($rental->agency_id !== auth()->user()->agency->id) {
+            if ($rental->agency_id !== $agency->id) {
                 return back()->with('error', 'Vous n\'êtes pas autorisé à modifier cette réservation.');
             }
 
-            // Update rental status
+            // Check if agency can reject (not suspended and under cancellation limit)
+            if (!$agency->canCancelBooking()) {
+                return back()->with('error', 'Vous ne pouvez pas rejeter cette réservation. Votre compte est suspendu pour trop d\'annulations.')
+                    ->with('warning', $agency->getCancellationWarningMessage());
+            }
+
+            // Get warning message before processing
+            $warningMessage = $agency->getCancellationWarningMessage();
+
+            // Use the cancellation service to handle the rejection
+            $result = $this->cancellationService->handleCancellation(
+                $agency,
+                $rental,
+                'agency_rejection',
+                'Rejeté par l\'agence'
+            );
+
+            if (!$result['success']) {
+                return back()->with('error', $result['message'])
+                    ->with('warning', $result['warning'] ?? null);
+            }
+
+            // Update rental status to rejected (the service sets it to cancelled, but we want rejected)
             $rental->update([
                 'status' => 'rejected',
                 'rejected_at' => now()
@@ -413,14 +444,21 @@ class RentalController extends Controller
 
             // Log the activity
             Activity::create([
-                'agency_id' => auth()->user()->agency->id,
+                'agency_id' => $agency->id,
                 'type' => 'rental_rejected',
                 'title' => 'Réservation rejetée',
                 'description' => "La réservation #{$rental->id} a été rejetée",
                 'data' => ['rental_id' => $rental->id, 'user_id' => $rental->user_id]
             ]);
             
-            return back()->with('success', 'La demande de location a été rejetée.');
+            $response = back()->with('success', 'La demande de location a été rejetée.');
+            
+            // Add warning message if present
+            if ($result['warning']) {
+                $response->with('warning', $result['warning']);
+            }
+            
+            return $response;
             
         } catch (\Exception $e) {
             \Log::error('Rental rejection error: ' . $e->getMessage(), [

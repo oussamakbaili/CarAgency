@@ -10,7 +10,6 @@ use App\Models\Avis;
 use App\Models\SupportTicket;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -87,8 +86,8 @@ class DashboardController extends Controller
         
         $activeRentals = Rental::where('user_id', $user->id)
             ->where('status', 'approved')
-            ->where('start_date', '<=', Carbon::now())
-            ->where('end_date', '>=', Carbon::now())
+            ->where('start_date', '<=', \Carbon\Carbon::now())
+            ->where('end_date', '>=', \Carbon\Carbon::now())
             ->count();
         
         $pendingRentals = Rental::where('user_id', $user->id)
@@ -110,8 +109,8 @@ class DashboardController extends Controller
 
         $thisMonthSpent = Rental::where('user_id', $user->id)
             ->whereIn('status', ['approved', 'completed'])
-            ->whereMonth('created_at', Carbon::now()->month)
-            ->whereYear('created_at', Carbon::now()->year)
+            ->whereMonth('created_at', \Carbon\Carbon::now()->month)
+            ->whereYear('created_at', \Carbon\Carbon::now()->year)
             ->sum('total_price');
 
         $averageRentalValue = $totalRentals > 0 ? $totalSpent / $totalRentals : 0;
@@ -212,7 +211,7 @@ class DashboardController extends Controller
         // Monthly spending for the last 6 months
         $monthlySpending = Rental::where('user_id', $user->id)
             ->whereIn('status', ['approved', 'completed'])
-            ->where('created_at', '>=', Carbon::now()->subMonths(6))
+            ->where('created_at', '>=', \Carbon\Carbon::now()->subMonths(6))
             ->select(
                 DB::raw('MONTH(created_at) as month'),
                 DB::raw('YEAR(created_at) as year'),
@@ -261,8 +260,8 @@ class DashboardController extends Controller
             'profileComplete' => $this->isProfileComplete($client),
             'hasActiveRentals' => Rental::where('user_id', $user->id)
                 ->where('status', 'approved')
-                ->where('start_date', '<=', Carbon::now())
-                ->where('end_date', '>=', Carbon::now())
+                ->where('start_date', '<=', \Carbon\Carbon::now())
+                ->where('end_date', '>=', \Carbon\Carbon::now())
                 ->exists(),
             'hasPendingRentals' => Rental::where('user_id', $user->id)
                 ->where('status', 'pending')
@@ -280,8 +279,8 @@ class DashboardController extends Controller
         // Upcoming rental reminders
         $upcomingRentals = Rental::where('user_id', $user->id)
             ->where('status', 'approved')
-            ->where('start_date', '>', Carbon::now())
-            ->where('start_date', '<=', Carbon::now()->addDays(3))
+            ->where('start_date', '>', \Carbon\Carbon::now())
+            ->where('start_date', '<=', \Carbon\Carbon::now()->addDays(3))
             ->get();
 
         foreach ($upcomingRentals as $rental) {
@@ -297,7 +296,7 @@ class DashboardController extends Controller
 
         // Rental status updates
         $recentStatusUpdates = Rental::where('user_id', $user->id)
-            ->where('updated_at', '>', Carbon::now()->subDays(7))
+            ->where('updated_at', '>', \Carbon\Carbon::now()->subDays(7))
             ->whereColumn('updated_at', '>', 'created_at')
             ->get();
 
@@ -319,7 +318,7 @@ class DashboardController extends Controller
     {
         return Rental::where('user_id', $user->id)
             ->where('status', 'approved')
-            ->where('start_date', '>', Carbon::now())
+            ->where('start_date', '>', \Carbon\Carbon::now())
             ->with(['car', 'agency.user'])
             ->orderBy('start_date', 'asc')
             ->take(3)

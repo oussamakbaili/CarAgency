@@ -49,7 +49,7 @@ class AuthenticatedSessionController extends Controller
 
             return redirect()->intended('/agence/dashboard');
         } elseif ($role === 'client') {
-            return redirect()->intended('/client/dashboard');
+            return redirect()->intended('/');
         }
 
         return redirect()->intended('/');

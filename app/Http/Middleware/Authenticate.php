@@ -12,6 +12,19 @@ class Authenticate extends Middleware
      */
     protected function redirectTo(Request $request): ?string
     {
-        return $request->expectsJson() ? null : route('login');
+        if ($request->expectsJson()) {
+            return null;
+        }
+        
+        // Store the intended URL for redirect after login
+        session(['url.intended' => $request->fullUrl()]);
+        
+        // If the request is for client routes, redirect to home page
+        if (str_starts_with($request->path(), 'client/')) {
+            return route('public.home');
+        }
+        
+        // For other routes, redirect to login
+        return route('login');
     }
 }

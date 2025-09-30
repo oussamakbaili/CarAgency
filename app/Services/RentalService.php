@@ -197,9 +197,9 @@ class RentalService
             return false;
         }
 
-        // Count conflicting rentals
+        // Count conflicting rentals (pending and active)
         $conflictingRentals = Rental::where('car_id', $car->id)
-            ->whereIn('status', ['active'])
+            ->whereIn('status', ['pending', 'active'])
             ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
                     ->orWhereBetween('end_date', [$startDate, $endDate])

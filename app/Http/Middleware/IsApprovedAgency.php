@@ -29,6 +29,10 @@ class IsApprovedAgency
             return redirect()->route('agence.rejected');
         }
 
+        if ($status === 'suspended') {
+            return redirect()->route('agence.suspended');
+        }
+
         if ($status !== 'approved') {
             return redirect()->route('agence.pending');
         }
