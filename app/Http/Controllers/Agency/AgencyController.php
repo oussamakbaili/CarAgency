@@ -23,6 +23,10 @@ class AgencyController extends Controller
             return redirect()->route('agence.pending');
         }
 
+        if ($agency->status === 'suspended') {
+            return redirect()->route('agence.suspended');
+        }
+
         if ($agency->status !== 'rejected') {
             abort(403, 'Unauthorized action.');
         }
@@ -43,7 +47,34 @@ class AgencyController extends Controller
             return redirect()->route('agence.rejected');
         }
 
+        if ($agency->status === 'suspended') {
+            return redirect()->route('agence.suspended');
+        }
+
         return view('agence.pending', compact('agency'));
+    }
+
+    public function showSuspended()
+    {
+        $agency = auth()->user()->agency;
+        
+        if ($agency->status === 'approved') {
+            return redirect()->route('agence.dashboard');
+        }
+
+        if ($agency->status === 'pending') {
+            return redirect()->route('agence.pending');
+        }
+
+        if ($agency->status === 'rejected') {
+            return redirect()->route('agence.rejected');
+        }
+
+        if ($agency->status !== 'suspended') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return view('agence.suspended', compact('agency'));
     }
 
     public function update(Request $request)

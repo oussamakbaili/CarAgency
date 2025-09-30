@@ -23,7 +23,7 @@
                      style="height: {{ ($month->total / $maxAmount) * 200 }}px">
                 </div>
                 <div class="text-xs text-gray-600 mt-2">
-                    {{ Carbon::create($month->year, $month->month, 1)->format('M') }}
+                    {{ \Carbon\Carbon::create($month->year, $month->month, 1)->format('M') }}
                 </div>
                 <div class="text-xs font-medium text-gray-900 group-hover:text-blue-600">
                     {{ number_format($month->total, 0) }}€

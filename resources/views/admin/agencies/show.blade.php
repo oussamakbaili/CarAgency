@@ -1,10 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('header')
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        {{ __('Détails de l\'Agence') }}
-    </h2>
-@endsection
+@section('header', 'Détails de l\'Agence')
 
 @section('content')
     <div class="py-12">
@@ -22,6 +18,7 @@
                             <span class="px-2 py-1 rounded text-white
                                 @if($agency->status === 'pending') bg-yellow-500
                                 @elseif($agency->status === 'approved') bg-green-500
+                                @elseif($agency->status === 'suspended') bg-orange-500
                                 @else bg-red-500
                                 @endif">
                                 {{ ucfirst($agency->status) }}
@@ -69,6 +66,16 @@
                         </div>
                     </div>
 
+                    @if($agency->status === 'suspended')
+                        <div class="mb-6">
+                            <h3 class="text-lg font-medium text-gray-900">Informations de Suspension</h3>
+                            <p><strong>Raison:</strong> {{ $agency->suspension_reason ?? 'Non spécifiée' }}</p>
+                            <p><strong>Date de suspension:</strong> {{ $agency->suspended_at ? $agency->suspended_at->format('d/m/Y à H:i') : 'N/A' }}</p>
+                            <p><strong>Nombre d'annulations:</strong> {{ $agency->cancellation_count ?? 0 }}</p>
+                            <p><strong>Limite d'annulations:</strong> {{ $agency->max_cancellations ?? 3 }}</p>
+                        </div>
+                    @endif
+
                     @if($agency->status === 'pending')
                         <div class="flex space-x-4">
                             <form action="{{ route('admin.agencies.approve', $agency) }}" method="POST">
@@ -81,6 +88,24 @@
                             <x-danger-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'reject-agency')">
                                 {{ __('Rejeter') }}
                             </x-danger-button>
+                        </div>
+                    @elseif($agency->status === 'suspended')
+                        <div class="flex space-x-4">
+                            <form action="{{ route('admin.agencies.suspension.unsuspend', $agency) }}" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <x-primary-button>
+                                    {{ __('Réactiver l\'Agence') }}
+                                </x-primary-button>
+                            </form>
+
+                            <form action="{{ route('admin.agencies.suspension.reset-cancellations', $agency) }}" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-25 transition ease-in-out duration-150">
+                                    {{ __('Réinitialiser les Annulations') }}
+                                </button>
+                            </form>
                         </div>
                     @endif
                 </div>
@@ -100,13 +125,14 @@
             <div class="mt-6">
                 <x-input-label for="rejection_reason" value="{{ __('Raison') }}" class="sr-only" />
 
-                <x-text-area
+                <textarea
                     id="rejection_reason"
                     name="rejection_reason"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                     placeholder="{{ __('Entrez la raison du rejet...') }}"
+                    rows="4"
                     required
-                />
+                ></textarea>
 
                 <x-input-error :messages="$errors->get('rejection_reason')" class="mt-2" />
             </div>

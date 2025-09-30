@@ -76,6 +76,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/agencies/bulk-reject', [App\Http\Controllers\Admin\AgencyController::class, 'bulkReject'])->name('agencies.bulk-reject');
     Route::put('/agencies/{agency}/commission', [App\Http\Controllers\Admin\AgencyController::class, 'updateCommission'])->name('agencies.update-commission');
     
+    // Agency Suspension Management
+    Route::get('/agencies/suspended', [App\Http\Controllers\Admin\AgencySuspensionController::class, 'index'])->name('agencies.suspended');
+    Route::get('/agencies/suspension/{agency}', [App\Http\Controllers\Admin\AgencySuspensionController::class, 'show'])->name('agencies.suspension.show');
+    Route::post('/agencies/suspension/{agency}/suspend', [App\Http\Controllers\Admin\AgencySuspensionController::class, 'suspend'])->name('agencies.suspension.suspend');
+    Route::patch('/agencies/suspension/{agency}/unsuspend', [App\Http\Controllers\Admin\AgencySuspensionController::class, 'unsuspend'])->name('agencies.suspension.unsuspend');
+    Route::patch('/agencies/suspension/{agency}/reset-cancellations', [App\Http\Controllers\Admin\AgencySuspensionController::class, 'resetCancellations'])->name('agencies.suspension.reset-cancellations');
+    Route::patch('/agencies/suspension/{agency}/update-max-cancellations', [App\Http\Controllers\Admin\AgencySuspensionController::class, 'updateMaxCancellations'])->name('agencies.suspension.update-max-cancellations');
+    
     // Customer Management
     Route::get('/customers', [App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('customers.index');
     Route::get('/customers/profiles', [App\Http\Controllers\Admin\CustomerController::class, 'profiles'])->name('customers.profiles');
@@ -146,6 +154,7 @@ Route::middleware(['auth', 'role:agence'])->prefix('agence')->name('agence.')->g
     // Routes accessible to all agencies regardless of status
     Route::get('/pending', [AgencyController::class, 'showPending'])->name('pending');
     Route::get('/rejected', [AgencyController::class, 'showRejected'])->name('rejected');
+    Route::get('/suspended', [AgencyController::class, 'showSuspended'])->name('suspended');
     Route::put('/update', [AgencyController::class, 'update'])->name('update');
 
     // Routes only accessible to approved agencies
@@ -173,6 +182,11 @@ Route::middleware(['auth', 'role:agence'])->prefix('agence')->name('agence.')->g
         Route::get('/bookings/active', [RentalController::class, 'active'])->name('bookings.active');
         Route::get('/bookings/calendar', [RentalController::class, 'calendar'])->name('bookings.calendar');
         Route::get('/bookings/history', [RentalController::class, 'history'])->name('bookings.history');
+        
+        // Cancellation Management
+        Route::get('/rentals/{rental}/cancel', [App\Http\Controllers\Agency\CancellationController::class, 'show'])->name('rentals.cancel');
+        Route::patch('/rentals/{rental}/cancel', [App\Http\Controllers\Agency\CancellationController::class, 'cancel'])->name('rentals.cancel');
+        Route::get('/cancellation/stats', [App\Http\Controllers\Agency\CancellationController::class, 'stats'])->name('cancellation.stats');
         
         // Rental Management (for backward compatibility)
         Route::get('/rentals/pending', [RentalController::class, 'pending'])->name('rentals.pending');
@@ -287,6 +301,7 @@ Route::prefix('client')->middleware(['auth', 'verified', 'client'])->name('clien
     Route::get('/cars/{car}/rent', [App\Http\Controllers\Client\RentalController::class, 'create'])->name('rentals.create');
     Route::post('/cars/{car}/rent', [App\Http\Controllers\Client\RentalController::class, 'store'])->name('rentals.store');
     Route::patch('/rentals/{rental}/cancel', [App\Http\Controllers\Client\RentalController::class, 'cancel'])->name('rentals.cancel');
+    Route::get('/cars/{car}/unavailable-dates', [App\Http\Controllers\Client\RentalController::class, 'getUnavailableDates'])->name('rentals.unavailable-dates');
     
         // Profile management
         Route::get('/profile', [App\Http\Controllers\Client\ProfileController::class, 'index'])->name('profile.index');
@@ -326,5 +341,36 @@ Route::get('/debug/data', function () {
         'cars' => \App\Models\Car::with(['agency.user:id,name'])->get(),
     ]);
 })->middleware('auth');
+
+// Public Routes (No Authentication Required)
+Route::get('/', [App\Http\Controllers\PublicController::class, 'home'])->name('public.home');
+Route::get('/agencies', [App\Http\Controllers\PublicController::class, 'agencies'])->name('public.agencies');
+Route::get('/search', [App\Http\Controllers\PublicController::class, 'search'])->name('public.search');
+Route::get('/agencies/{agency}', [App\Http\Controllers\PublicController::class, 'showAgency'])->name('public.agency.show');
+Route::get('/agencies/{agency}/cars', [App\Http\Controllers\PublicController::class, 'agencyCars'])->name('public.agency.cars');
+Route::get('/agencies/{agency}/cars/{car}', [App\Http\Controllers\PublicController::class, 'showCar'])->name('public.car.show');
+Route::get('/require-login', [App\Http\Controllers\PublicController::class, 'requireLogin'])->name('public.require-login');
+
+// Test cancellation system
+Route::get('/test/cancellation/{agency_id}', function ($agencyId) {
+    $agency = \App\Models\Agency::find($agencyId);
+    
+    if (!$agency) {
+        return response()->json(['error' => 'Agency not found'], 404);
+    }
+    
+    return response()->json([
+        'agency_name' => $agency->agency_name,
+        'cancellation_count' => $agency->cancellation_count,
+        'max_cancellations' => $agency->max_cancellations,
+        'is_suspended' => $agency->isSuspended(),
+        'can_cancel' => $agency->canCancelBooking(),
+        'warning_message' => $agency->getCancellationWarningMessage(),
+        'last_cancellation' => $agency->last_cancellation_at,
+        'suspended_at' => $agency->suspended_at,
+        'suspension_reason' => $agency->suspension_reason
+    ]);
+})->middleware('auth');
+
 
 require __DIR__ . '/auth.php';

@@ -52,6 +52,10 @@ class RentalController extends Controller
         $request->validate([
             'start_date' => 'required|date|after:today',
             'end_date' => 'required|date|after:start_date',
+            'terms_accepted' => 'required|accepted',
+        ], [
+            'terms_accepted.required' => 'Vous devez accepter les conditions de non-responsabilité pour continuer.',
+            'terms_accepted.accepted' => 'Vous devez accepter les conditions de non-responsabilité pour continuer.',
         ]);
 
         $startDate = Carbon::parse($request->start_date);
@@ -101,5 +105,35 @@ class RentalController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error cancelling rental: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Get unavailable dates for a car
+     */
+    public function getUnavailableDates(Car $car)
+    {
+        // Get all rentals that are pending, approved, or active
+        $unavailableRentals = Rental::where('car_id', $car->id)
+            ->whereIn('status', ['pending', 'active'])
+            ->where('end_date', '>=', now())
+            ->get();
+
+        $unavailableDates = [];
+        
+        foreach ($unavailableRentals as $rental) {
+            $startDate = \Carbon\Carbon::parse($rental->start_date);
+            $endDate = \Carbon\Carbon::parse($rental->end_date);
+            
+            // Add all dates in the rental period
+            $currentDate = $startDate->copy();
+            while ($currentDate->lte($endDate)) {
+                $unavailableDates[] = $currentDate->format('Y-m-d');
+                $currentDate->addDay();
+            }
+        }
+
+        return response()->json([
+            'unavailable_dates' => array_unique($unavailableDates)
+        ]);
     }
 }
