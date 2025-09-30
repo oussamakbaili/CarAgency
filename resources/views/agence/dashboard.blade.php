@@ -66,6 +66,9 @@
 
         <!-- Approved Agency Dashboard -->
         @if(auth()->user()->agency && auth()->user()->agency->status === 'approved')
+            <!-- Cancellation Warning Widget -->
+            <x-agency-cancellation-widget :agency="auth()->user()->agency" />
+            
             <!-- Welcome Header -->
             <div class="bg-white overflow-hidden shadow-sm rounded-lg mb-6">
                 <div class="p-6">

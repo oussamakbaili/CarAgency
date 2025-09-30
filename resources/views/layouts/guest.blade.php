@@ -144,7 +144,7 @@
 
             <div class="sm:mx-auto sm:w-full sm:max-w-md">
                 <div class="bg-white py-8 px-4 shadow-xl sm:rounded-2xl sm:px-10 fade-in">
-                    {{ $slot }}
+                    {{ $slot ?? '' }}
                 </div>
             </div>
         </div>
