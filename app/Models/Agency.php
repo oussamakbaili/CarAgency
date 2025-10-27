@@ -58,7 +58,10 @@ class Agency extends Model
         'is_suspended',
         'suspended_at',
         'suspension_reason',
-        'max_cancellations'
+        'max_cancellations',
+        'featured',
+        'show_on_homepage',
+        'homepage_priority'
     ];
 
     protected $casts = [
@@ -76,6 +79,10 @@ class Agency extends Model
         'last_cancellation_at' => 'datetime',
         'is_suspended' => 'boolean',
         'suspended_at' => 'datetime',
+        'featured' => 'boolean',
+        'show_on_homepage' => 'boolean',
+        'homepage_priority' => 'integer',
+        'featured_at' => 'datetime',
     ];
 
     public function user()
@@ -91,6 +98,21 @@ class Agency extends Model
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function approvedReviews()
+    {
+        return $this->reviews()->approved();
+    }
+
+    public function avis()
+    {
+        return $this->hasMany(Avis::class);
     }
 
     public function rentals()
@@ -198,5 +220,32 @@ class Agency extends Model
             return null;
         }
         return asset('storage/' . $this->$field);
+    }
+
+    // Scopes for homepage management
+    public function scopeFeatured($query)
+    {
+        return $query->where('featured', true);
+    }
+
+    public function scopeShowOnHomepage($query)
+    {
+        return $query->where('show_on_homepage', true);
+    }
+
+    // Méthodes pour les avis
+    public function getAverageRating()
+    {
+        return $this->approvedReviews()->avg('rating') ?: 0;
+    }
+
+    public function getReviewsCount()
+    {
+        return $this->approvedReviews()->count();
+    }
+
+    public function scopeOrderByPriority($query)
+    {
+        return $query->orderBy('homepage_priority', 'desc')->orderBy('created_at', 'desc');
     }
 }

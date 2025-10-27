@@ -22,12 +22,6 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
     ];
-    protected $routeMiddleware = [
-        // ...
-        'admin' => \App\Http\Middleware\AdminMiddleware::class,
-        'agence' => \App\Http\Middleware\AgenceMiddleware::class,
-        'client' => \App\Http\Middleware\ClientMiddleware::class,
-    ];
 
     /**
      * The application's route middleware groups.
@@ -72,5 +66,6 @@ class Kernel extends HttpKernel
         'approved.agency' => \App\Http\Middleware\IsApprovedAgency::class,
         'role' => \App\Http\Middleware\CheckRole::class,
         'client' => \App\Http\Middleware\ClientMiddleware::class,
+        'mark.online' => \App\Http\Middleware\MarkUserOnline::class,
     ];
 }

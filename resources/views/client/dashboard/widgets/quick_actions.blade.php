@@ -151,7 +151,7 @@
             <div class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div class="flex-shrink-0">
                     @if($rental->car->image)
-                        <img src="{{ asset('storage/' . $rental->car->image) }}" 
+                        <img src="{{ $rental->car->image_url }}" 
                              alt="{{ $rental->car->brand }} {{ $rental->car->model }}" 
                              class="w-12 h-12 object-cover rounded-lg">
                     @else
@@ -204,7 +204,7 @@
             <div class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div class="flex-shrink-0">
                     @if($car->image)
-                        <img src="{{ asset('storage/' . $car->image) }}" 
+                        <img src="{{ $car->image_url }}" 
                              alt="{{ $car->brand }} {{ $car->model }}" 
                              class="w-12 h-12 object-cover rounded-lg">
                     @else

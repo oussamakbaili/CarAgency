@@ -69,7 +69,7 @@ class CarController extends Controller
                 abort(404, 'Car not found');
             }
 
-            return view('client.cars.show-simple', compact('car'));
+            return view('client.cars.show', compact('car'));
             
         } catch (\Exception $e) {
             // Log the error

@@ -21,7 +21,8 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect(RouteServiceProvider::HOME);
+                // Redirect to public home instead of dashboard to avoid profile conflicts
+                return redirect()->route('public.home');
             }
         }
 

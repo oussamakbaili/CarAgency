@@ -407,54 +407,62 @@ function closeRefundModal() {
 }
 
 // Handle refund form submission
-document.getElementById('refundForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const paymentId = formData.get('payment_id');
-    const amount = formData.get('amount');
-    const reason = formData.get('reason');
-    const notes = formData.get('notes');
-    
-    // Validate amount
-    const maxAmount = parseFloat(document.getElementById('refundAmount').max);
-    if (parseFloat(amount) > maxAmount) {
-        alert('Le montant du remboursement ne peut pas dépasser le montant du paiement.');
-        return;
+document.addEventListener('DOMContentLoaded', function() {
+    const refundForm = document.getElementById('refundForm');
+    if (refundForm) {
+        refundForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const paymentId = formData.get('payment_id');
+            const amount = formData.get('amount');
+            const reason = formData.get('reason');
+            const notes = formData.get('notes');
+            
+            // Validate amount
+            const refundAmountField = document.getElementById('refundAmount');
+            if (refundAmountField) {
+                const maxAmount = parseFloat(refundAmountField.max);
+                if (parseFloat(amount) > maxAmount) {
+                    alert('Le montant du remboursement ne peut pas dépasser le montant du paiement.');
+                    return;
+                }
+            }
+            
+            if (parseFloat(amount) <= 0) {
+                alert('Le montant du remboursement doit être supérieur à 0.');
+                return;
+            }
+            
+            // Send refund request
+            fetch(`/agence/finance/payments/${paymentId}/refund`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    amount: amount,
+                    reason: reason,
+                    notes: notes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Remboursement traité avec succès!');
+                    closeRefundModal();
+                    location.reload();
+                } else {
+                    alert('Erreur lors du remboursement: ' + (data.message || 'Erreur inconnue'));
+                }
+            })
+            .catch(error => {
+                console.error('Error processing refund:', error);
+                alert('Erreur lors du traitement du remboursement');
+            });
+        });
     }
-    
-    if (parseFloat(amount) <= 0) {
-        alert('Le montant du remboursement doit être supérieur à 0.');
-        return;
-    }
-    
-    // Send refund request
-    fetch(`/agence/finance/payments/${paymentId}/refund`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            amount: amount,
-            reason: reason,
-            notes: notes
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Remboursement traité avec succès!');
-            closeRefundModal();
-            location.reload();
-        } else {
-            alert('Erreur lors du remboursement: ' + (data.message || 'Erreur inconnue'));
-        }
-    })
-    .catch(error => {
-        console.error('Error processing refund:', error);
-        alert('Erreur lors du traitement du remboursement');
-    });
 });
 </script>
 @endsection

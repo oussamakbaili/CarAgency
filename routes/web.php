@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\AgencyManagementController;
 use App\Http\Controllers\Agency\{AgencyController, CarController, DashboardController, RentalController};
 use App\Http\Controllers\Agency\AgencyDashboardController;
 use App\Http\Controllers\Agency\AgencyController as PublicAgencyController;
+use App\Http\Controllers\ReviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,9 +22,13 @@ use App\Http\Controllers\Agency\AgencyController as PublicAgencyController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+Route::get('/', [App\Http\Controllers\PublicController::class, 'home'])->name('welcome');
+Route::get('/', [App\Http\Controllers\PublicController::class, 'home'])->name('public.home');
+
+// Reviews Routes
+Route::middleware('auth')->group(function () {
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+});
 
 // Agency Registration Routes
 Route::prefix('agency')->name('agency.')->group(function () {
@@ -61,7 +66,8 @@ Route::middleware('guest')->group(function () {
     
     Route::get('register/agency', [App\Http\Controllers\Auth\AgencyRegisterController::class, 'showRegistrationForm'])
         ->name('register.agency');
-    Route::post('register/agency', [App\Http\Controllers\Auth\AgencyRegisterController::class, 'register']);
+    Route::post('register/agency', [App\Http\Controllers\Auth\AgencyRegisterController::class, 'register'])
+        ->name('register.agency.store');
 });
 
 // Admin Routes
@@ -71,6 +77,40 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/dashboard/stats', [App\Http\Controllers\Admin\DashboardController::class, 'getStats'])->name('dashboard.stats');
     Route::get('/dashboard/activity', [App\Http\Controllers\Admin\DashboardController::class, 'getActivity'])->name('dashboard.activity');
     Route::get('/dashboard/charts', [App\Http\Controllers\Admin\DashboardController::class, 'getCharts'])->name('dashboard.charts');
+    
+    // Navigation Pages
+    Route::get('/users-main', function() { return view('admin.users.index-main'); })->name('users.main');
+    Route::get('/vehicles-main', function() { return view('admin.vehicles.index-main'); })->name('vehicles.main');
+    Route::get('/bookings-main', function() { return view('admin.bookings.index-main'); })->name('bookings.main');
+    // Finance Dashboard
+    Route::prefix('finance')->name('finance.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\FinanceDashboardController::class, 'index'])->name('index');
+        Route::post('/export', [App\Http\Controllers\Admin\FinanceDashboardController::class, 'export'])->name('export');
+    });
+    
+    // Commissions Management
+    Route::prefix('commissions')->name('commissions.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\CommissionController::class, 'index'])->name('index');
+        Route::get('/agency/{agencyId}', [App\Http\Controllers\Admin\CommissionController::class, 'agencyDetails'])->name('agency');
+        Route::get('/report', [App\Http\Controllers\Admin\CommissionController::class, 'report'])->name('report');
+        Route::get('/validate', [App\Http\Controllers\Admin\CommissionController::class, 'validateCalculations'])->name('validate');
+        Route::get('/export', [App\Http\Controllers\Admin\CommissionController::class, 'export'])->name('export');
+    });
+    
+    // Competitor Analysis
+    Route::prefix('competitors')->name('competitors.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\CompetitorController::class, 'index'])->name('index');
+        Route::get('/{competitorName}', [App\Http\Controllers\Admin\CompetitorController::class, 'show'])->name('show');
+        Route::get('/report/analysis', [App\Http\Controllers\Admin\CompetitorController::class, 'report'])->name('report');
+        Route::get('/swot/analysis', [App\Http\Controllers\Admin\CompetitorController::class, 'swot'])->name('swot');
+        Route::get('/pricing/benchmark', [App\Http\Controllers\Admin\CompetitorController::class, 'pricingBenchmark'])->name('pricing');
+    });
+    
+    // System Management
+    Route::get('/system', function() { return view('admin.system.index'); })->name('system.index');
+    
+    // Reports
+    Route::get('/reports', function() { return view('admin.reports.index'); })->name('reports.index');
     
     // Agency Management
     Route::get('/agencies', [App\Http\Controllers\Admin\AgencyController::class, 'index'])->name('agencies.index');
@@ -91,6 +131,23 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch('/agencies/suspension/{agency}/unsuspend', [App\Http\Controllers\Admin\AgencySuspensionController::class, 'unsuspend'])->name('agencies.suspension.unsuspend');
     Route::patch('/agencies/suspension/{agency}/reset-cancellations', [App\Http\Controllers\Admin\AgencySuspensionController::class, 'resetCancellations'])->name('agencies.suspension.reset-cancellations');
     Route::patch('/agencies/suspension/{agency}/update-max-cancellations', [App\Http\Controllers\Admin\AgencySuspensionController::class, 'updateMaxCancellations'])->name('agencies.suspension.update-max-cancellations');
+    
+    // Featured/Homepage Content Management
+    Route::prefix('featured')->name('featured.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\FeaturedContentController::class, 'index'])->name('index');
+        
+        // Car Management
+        Route::post('/cars/{car}/toggle-featured', [App\Http\Controllers\Admin\FeaturedContentController::class, 'toggleCarFeatured'])->name('cars.toggle-featured');
+        Route::post('/cars/{car}/toggle-homepage', [App\Http\Controllers\Admin\FeaturedContentController::class, 'toggleCarHomepage'])->name('cars.toggle-homepage');
+        Route::put('/cars/{car}/priority', [App\Http\Controllers\Admin\FeaturedContentController::class, 'updateCarPriority'])->name('cars.update-priority');
+        Route::post('/cars/bulk-update', [App\Http\Controllers\Admin\FeaturedContentController::class, 'bulkUpdateCars'])->name('cars.bulk-update');
+        
+        // Agency Management
+        Route::post('/agencies/{agency}/toggle-featured', [App\Http\Controllers\Admin\FeaturedContentController::class, 'toggleAgencyFeatured'])->name('agencies.toggle-featured');
+        Route::post('/agencies/{agency}/toggle-homepage', [App\Http\Controllers\Admin\FeaturedContentController::class, 'toggleAgencyHomepage'])->name('agencies.toggle-homepage');
+        Route::put('/agencies/{agency}/priority', [App\Http\Controllers\Admin\FeaturedContentController::class, 'updateAgencyPriority'])->name('agencies.update-priority');
+        Route::post('/agencies/bulk-update', [App\Http\Controllers\Admin\FeaturedContentController::class, 'bulkUpdateAgencies'])->name('agencies.bulk-update');
+    });
     
     // Customer Management
     Route::get('/customers', [App\Http\Controllers\Admin\CustomerController::class, 'index'])->name('customers.index');
@@ -143,6 +200,50 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/reports/performance', [App\Http\Controllers\Admin\ReportController::class, 'performance'])->name('reports.performance');
     Route::get('/reports/audit', [App\Http\Controllers\Admin\ReportController::class, 'audit'])->name('reports.audit');
     
+    // Support & Tickets Management
+    Route::prefix('support')->name('support.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\SupportController::class, 'index'])->name('index');
+        Route::get('/tickets/{ticket}', [App\Http\Controllers\Admin\SupportController::class, 'show'])->name('show');
+        Route::post('/tickets/{ticket}/reply', [App\Http\Controllers\Admin\SupportController::class, 'reply'])->name('reply');
+        Route::patch('/tickets/{ticket}/status', [App\Http\Controllers\Admin\SupportController::class, 'updateStatus'])->name('update-status');
+        Route::patch('/tickets/{ticket}/priority', [App\Http\Controllers\Admin\SupportController::class, 'updatePriority'])->name('update-priority');
+        Route::post('/tickets/{ticket}/assign', [App\Http\Controllers\Admin\SupportController::class, 'assign'])->name('assign');
+        Route::delete('/tickets/{ticket}', [App\Http\Controllers\Admin\SupportController::class, 'destroy'])->name('destroy');
+        Route::get('/statistics', [App\Http\Controllers\Admin\SupportController::class, 'statistics'])->name('statistics');
+        Route::post('/bulk-action', [App\Http\Controllers\Admin\SupportController::class, 'bulkAction'])->name('bulk-action');
+        
+        // Support Messages
+        Route::get('/messages/{ticket}', [App\Http\Controllers\SupportMessageController::class, 'getMessages'])->name('messages');
+        Route::post('/messages/{ticket}/send', [App\Http\Controllers\SupportMessageController::class, 'sendMessage'])->name('messages.send');
+        Route::post('/messages/{ticket}/mark-read', [App\Http\Controllers\SupportMessageController::class, 'markAsRead'])->name('messages.mark-read');
+        Route::get('/unread-count', [App\Http\Controllers\SupportMessageController::class, 'getUnreadCount'])->name('unread-count');
+    });
+    
+    // Admin Messages (Support Tickets)
+    Route::prefix('messages')->name('messages.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\MessageController::class, 'index'])->name('index');
+        Route::get('/support/{ticketId}', [App\Http\Controllers\Admin\MessageController::class, 'showSupport'])->name('show-support');
+    });
+    
+    // Admin Support Messages
+    Route::prefix('support')->name('support.')->group(function () {
+        Route::get('/messages/{ticket}', [App\Http\Controllers\Admin\SupportMessageController::class, 'getMessages'])->name('messages.show');
+        Route::post('/messages/{ticket}/send', [App\Http\Controllers\Admin\SupportMessageController::class, 'sendMessage'])->name('messages.send');
+        Route::post('/messages/{ticket}/mark-read', [App\Http\Controllers\Admin\SupportMessageController::class, 'markAsRead'])->name('messages.mark-read');
+        Route::get('/unread-count', [App\Http\Controllers\Admin\SupportMessageController::class, 'getUnreadCount'])->name('unread-count');
+    });
+    
+    // Admin Notifications
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [App\Http\Controllers\Admin\NotificationController::class, 'getUnreadCount'])->name('unread-count');
+        Route::post('/{notification}/mark-read', [App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('mark-read');
+        Route::post('/mark-all-read', [App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::delete('/{notification}', [App\Http\Controllers\Admin\NotificationController::class, 'destroy'])->name('destroy');
+        Route::delete('/clear-all', [App\Http\Controllers\Admin\NotificationController::class, 'clearAll'])->name('clear-all');
+        Route::get('/stats', [App\Http\Controllers\Admin\NotificationController::class, 'getStats'])->name('stats');
+    });
+    
     // System Management
     Route::get('/system/health', [App\Http\Controllers\Admin\SystemController::class, 'health'])->name('system.health');
     Route::get('/system/backups', [App\Http\Controllers\Admin\SystemController::class, 'backups'])->name('system.backups');
@@ -170,8 +271,15 @@ Route::middleware(['auth', 'role:agence'])->prefix('agence')->name('agence.')->g
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         
+        // Notifications
+        Route::get('/notifications', [App\Http\Controllers\Agency\NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/{id}/read', [App\Http\Controllers\Agency\NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('/notifications/read-all', [App\Http\Controllers\Agency\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::delete('/notifications/{id}', [App\Http\Controllers\Agency\NotificationController::class, 'destroy'])->name('notifications.destroy');
+        
         // Fleet Management
         Route::resource('cars', CarController::class);
+        Route::put('/cars/{car}/status', [CarController::class, 'updateStatus'])->name('cars.update-status');
         Route::get('/fleet', [CarController::class, 'index'])->name('fleet.index');
         Route::get('/fleet/categories', [App\Http\Controllers\Agency\CategoryController::class, 'index'])->name('fleet.categories');
         Route::get('/fleet/maintenance', [App\Http\Controllers\Agency\MaintenanceController::class, 'index'])->name('fleet.maintenance');
@@ -285,13 +393,33 @@ Route::middleware(['auth', 'role:agence'])->prefix('agence')->name('agence.')->g
         Route::get('/marketing/communications', [App\Http\Controllers\Agency\MarketingController::class, 'communications'])->name('marketing.communications');
         Route::get('/marketing/referrals', [App\Http\Controllers\Agency\MarketingController::class, 'referrals'])->name('marketing.referrals');
         
+        // Support (Interface unifiée - Messages + Tickets Support)
+        
+        // Messages (Interface unifiée - Messages clients + Support)
+        Route::get('/messages', [App\Http\Controllers\Agency\MessageController::class, 'index'])->name('messages.index')->middleware('mark.online');
+        Route::get('/messages/{rental}', [App\Http\Controllers\Agency\MessageController::class, 'show'])->name('messages.show')->middleware('mark.online');
+        Route::post('/messages/{rental}', [App\Http\Controllers\Agency\MessageController::class, 'store'])->name('messages.store');
+        Route::patch('/messages/{message}/read', [App\Http\Controllers\Agency\MessageController::class, 'markAsRead'])->name('messages.mark-as-read');
+        Route::get('/messages/{rental}/new', [App\Http\Controllers\Agency\MessageController::class, 'getNewMessages'])->name('messages.new');
+        
+        // Support Messages (pour l'interface unifiée)
+        Route::get('/support/messages/{ticket}', [App\Http\Controllers\Agency\SupportMessageController::class, 'getMessages'])->name('support.messages.show');
+        Route::post('/support/messages/{ticket}/send', [App\Http\Controllers\Agency\SupportMessageController::class, 'sendMessage'])->name('support.messages.send');
+        Route::post('/support/messages/{ticket}/mark-read', [App\Http\Controllers\Agency\SupportMessageController::class, 'markAsRead'])->name('support.messages.mark-read');
+        Route::get('/support/unread-count', [App\Http\Controllers\Agency\SupportMessageController::class, 'getUnreadCount'])->name('support.unread-count');
+        
         // Support & Help
-        Route::get('/support', [App\Http\Controllers\Agency\SupportController::class, 'index'])->name('support.index');
-        Route::post('/support', [App\Http\Controllers\Agency\SupportController::class, 'store'])->name('support.store');
-        Route::get('/support/tickets/{id}', [App\Http\Controllers\Agency\SupportController::class, 'show'])->name('support.show');
-        Route::post('/support/tickets/{id}/reply', [App\Http\Controllers\Agency\SupportController::class, 'reply'])->name('support.reply');
-        Route::get('/support/contact', [App\Http\Controllers\Agency\SupportController::class, 'contact'])->name('support.contact');
-        Route::get('/support/training', [App\Http\Controllers\Agency\SupportController::class, 'training'])->name('support.training');
+        Route::prefix('support')->name('support.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Agency\SupportController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Agency\SupportController::class, 'create'])->name('create');
+            Route::post('/store', [App\Http\Controllers\Agency\SupportController::class, 'store'])->name('store');
+            Route::get('/tickets/{ticket}', [App\Http\Controllers\Agency\SupportController::class, 'show'])->name('show');
+            Route::post('/tickets/{ticket}/reply', [App\Http\Controllers\Agency\SupportController::class, 'reply'])->name('reply');
+            Route::patch('/tickets/{ticket}/resolve', [App\Http\Controllers\Agency\SupportController::class, 'markResolved'])->name('resolve');
+            Route::patch('/tickets/{ticket}/reopen', [App\Http\Controllers\Agency\SupportController::class, 'reopen'])->name('reopen');
+            Route::get('/tickets', [App\Http\Controllers\Agency\SupportController::class, 'getTickets'])->name('tickets');
+        });
+        
     });
 });
 
@@ -309,13 +437,14 @@ Route::prefix('client')->middleware(['auth', 'verified', 'client'])->name('clien
     Route::put('/reviews/{avis}', [App\Http\Controllers\Client\CarReviewController::class, 'update'])->name('cars.reviews.update');
     Route::delete('/reviews/{avis}', [App\Http\Controllers\Client\CarReviewController::class, 'destroy'])->name('cars.reviews.destroy');
     
-    // Rental management
+    // Rental management (Old system - keep for backward compatibility)
     Route::get('/rentals', [App\Http\Controllers\Client\RentalController::class, 'index'])->name('rentals.index');
     Route::get('/rentals/{rental}', [App\Http\Controllers\Client\RentalController::class, 'show'])->name('rentals.show');
     Route::get('/cars/{car}/rent', [App\Http\Controllers\Client\RentalController::class, 'create'])->name('rentals.create');
     Route::post('/cars/{car}/rent', [App\Http\Controllers\Client\RentalController::class, 'store'])->name('rentals.store');
     Route::patch('/rentals/{rental}/cancel', [App\Http\Controllers\Client\RentalController::class, 'cancel'])->name('rentals.cancel');
     Route::get('/cars/{car}/unavailable-dates', [App\Http\Controllers\Client\RentalController::class, 'getUnavailableDates'])->name('rentals.unavailable-dates');
+    
     
         // Profile management
         Route::get('/profile', [App\Http\Controllers\Client\ProfileController::class, 'index'])->name('profile.index');
@@ -330,6 +459,68 @@ Route::prefix('client')->middleware(['auth', 'verified', 'client'])->name('clien
         // Agencies
         Route::get('/agencies', [App\Http\Controllers\Client\AgencyController::class, 'index'])->name('agencies.index');
         Route::get('/agencies/{agency}', [App\Http\Controllers\Client\AgencyController::class, 'show'])->name('agencies.show');
+        
+        // Messages
+        Route::get('/messages', [App\Http\Controllers\Client\MessageController::class, 'index'])->name('messages.index')->middleware('mark.online');
+        Route::get('/messages/{rental}', [App\Http\Controllers\Client\MessageController::class, 'show'])->name('messages.show')->middleware('mark.online');
+        Route::post('/messages/{rental}', [App\Http\Controllers\Client\MessageController::class, 'store'])->name('messages.store');
+        Route::patch('/messages/{message}/read', [App\Http\Controllers\Client\MessageController::class, 'markAsRead'])->name('messages.mark-as-read');
+        Route::get('/messages/{rental}/new', [App\Http\Controllers\Client\MessageController::class, 'getNewMessages'])->name('messages.new');
+        
+        // Notifications
+        Route::get('/notifications', [App\Http\Controllers\Client\NotificationController::class, 'index'])->name('notifications.index');
+        Route::patch('/notifications/{notification}/read', [App\Http\Controllers\Client\NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+        Route::patch('/notifications/read-all', [App\Http\Controllers\Client\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+        Route::delete('/notifications/{notification}', [App\Http\Controllers\Client\NotificationController::class, 'destroy'])->name('notifications.destroy');
+        
+        // Support & Help
+        Route::prefix('support')->name('support.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Client\SupportController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Client\SupportController::class, 'create'])->name('create');
+            Route::post('/store', [App\Http\Controllers\Client\SupportController::class, 'store'])->name('store');
+            Route::get('/tickets/{ticket}', [App\Http\Controllers\Client\SupportController::class, 'show'])->name('show');
+            Route::post('/tickets/{ticket}/reply', [App\Http\Controllers\Client\SupportController::class, 'reply'])->name('reply');
+            Route::patch('/tickets/{ticket}/resolve', [App\Http\Controllers\Client\SupportController::class, 'markResolved'])->name('resolve');
+            Route::patch('/tickets/{ticket}/reopen', [App\Http\Controllers\Client\SupportController::class, 'reopen'])->name('reopen');
+            Route::get('/contact', [App\Http\Controllers\Client\SupportController::class, 'contact'])->name('contact');
+            Route::post('/contact', [App\Http\Controllers\Client\SupportController::class, 'storeContact'])->name('contact.store');
+            
+            // Support Messages
+            Route::get('/messages', [App\Http\Controllers\Client\SupportController::class, 'messages'])->name('messages');
+            Route::get('/tickets', [App\Http\Controllers\Client\SupportController::class, 'getTickets'])->name('tickets');
+            Route::get('/messages/{ticket}', [App\Http\Controllers\Client\SupportMessageController::class, 'getMessages'])->name('messages.show');
+            Route::post('/messages/{ticket}/send', [App\Http\Controllers\Client\SupportMessageController::class, 'sendMessage'])->name('messages.send');
+            Route::post('/messages/{ticket}/mark-read', [App\Http\Controllers\Client\SupportMessageController::class, 'markAsRead'])->name('messages.mark-read');
+            Route::get('/unread-count', [App\Http\Controllers\Client\SupportMessageController::class, 'getUnreadCount'])->name('unread-count');
+        });
+});
+
+// New booking system (Airbnb-style multi-step) - Public routes
+Route::prefix('booking')->name('booking.')->group(function () {
+    // Booking page (Airbnb-style design)
+    Route::get('/{car}', function(\App\Models\Car $car) {
+        return view('client.booking.main', compact('car'));
+    })->name('main');
+    
+    // Step 1: Date selection (public)
+    Route::get('/{car}/step1', [App\Http\Controllers\Client\BookingController::class, 'step1'])->name('step1');
+    Route::post('/{car}/step1', [App\Http\Controllers\Client\BookingController::class, 'processStep1'])->name('process-step1');
+    
+    // Step 2: Login (public)
+    Route::get('/step2', [App\Http\Controllers\Client\BookingController::class, 'step2'])->name('step2');
+    
+    // Steps 3-5: Require authentication
+    Route::middleware(['auth', 'client'])->group(function () {
+        Route::get('/{car}/review', function(\App\Models\Car $car) {
+            return view('client.booking.review', compact('car'));
+        })->name('review');
+        
+        Route::get('/step3', [App\Http\Controllers\Client\BookingController::class, 'step3'])->name('step3');
+        Route::get('/step4', [App\Http\Controllers\Client\BookingController::class, 'step4'])->name('step4');
+        Route::post('/process-payment', [App\Http\Controllers\Client\BookingController::class, 'processPayment'])->name('process-payment');
+        Route::get('/step5', [App\Http\Controllers\Client\BookingController::class, 'step5'])->name('step5');
+        Route::post('/cancel', [App\Http\Controllers\Client\BookingController::class, 'cancel'])->name('cancel');
+    });
 });
 
 // Profile Routes
@@ -357,9 +548,11 @@ Route::get('/debug/data', function () {
 })->middleware('auth');
 
 // Public Routes (No Authentication Required)
-Route::get('/', [App\Http\Controllers\PublicController::class, 'home'])->name('public.home');
 Route::get('/agencies', [App\Http\Controllers\PublicController::class, 'agencies'])->name('public.agencies');
+Route::get('/about', [App\Http\Controllers\PublicController::class, 'about'])->name('public.about');
+Route::get('/how-it-works', [App\Http\Controllers\PublicController::class, 'howItWorks'])->name('public.how-it-works');
 Route::get('/search', [App\Http\Controllers\PublicController::class, 'search'])->name('public.search');
+Route::get('/cars/search', [App\Http\Controllers\PublicController::class, 'searchCars'])->name('public.cars.search');
 Route::get('/agencies/{agency}', [App\Http\Controllers\PublicController::class, 'showAgency'])->name('public.agency.show');
 Route::get('/agencies/{agency}/cars', [App\Http\Controllers\PublicController::class, 'agencyCars'])->name('public.agency.cars');
 Route::get('/agencies/{agency}/cars/{car}', [App\Http\Controllers\PublicController::class, 'showCar'])->name('public.car.show');

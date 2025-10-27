@@ -14,6 +14,8 @@ class Transaction extends Model
     const TYPE_WITHDRAWAL_REQUEST = 'withdrawal_request';
     const TYPE_REFUND = 'refund';
     const TYPE_COMMISSION = 'commission';
+    const TYPE_ADMIN_COMMISSION = 'admin_commission';
+    const TYPE_AGENCY_COMMISSION = 'agency_commission';
     const TYPE_PENALTY = 'penalty';
 
     const STATUS_PENDING = 'pending';

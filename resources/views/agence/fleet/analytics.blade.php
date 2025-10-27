@@ -1,7 +1,7 @@
 @extends('layouts.agence')
 
 @section('content')
-<div class="py-12">
+<div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Header Section -->
         <div class="mb-8">
@@ -130,8 +130,8 @@
                         @forelse($topVehicles as $index => $vehicle)
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 {{ $index === 0 ? 'bg-blue-100' : ($index === 1 ? 'bg-gray-100' : 'bg-yellow-100') }} rounded-lg flex items-center justify-center">
-                                    <span class="{{ $index === 0 ? 'text-blue-600' : ($index === 1 ? 'text-gray-600' : 'text-yellow-600') }} font-semibold">{{ $index + 1 }}</span>
+                                <div class="w-10 h-10 {{ ($index === 0 ? 'bg-blue-100' : ($index === 1 ? 'bg-gray-100' : 'bg-yellow-100')) }} rounded-lg flex items-center justify-center">
+                                    <span class="{{ ($index === 0 ? 'text-blue-600' : ($index === 1 ? 'text-gray-600' : 'text-yellow-600')) }} font-semibold">{{ $index + 1 }}</span>
                                 </div>
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-900">{{ $vehicle->brand }} {{ $vehicle->model }} {{ $vehicle->year }}</h4>

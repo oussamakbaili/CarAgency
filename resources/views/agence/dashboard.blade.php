@@ -1,7 +1,7 @@
 @extends('layouts.agence')
 
 @section('content')
-<div class="py-12">
+<div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Check Agency Status -->
         @if(!auth()->user()->agency)
@@ -92,78 +92,78 @@
             </div>
 
             <!-- Top Row - Business Overview Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <!-- Total Fleet Size -->
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                    <div class="p-6">
+                <a href="{{ route('agence.cars.index') }}" class="block bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
+                    <div class="p-4">
                         <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-blue-100">
-                                <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="p-2 rounded-lg bg-blue-50">
+                                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                 </svg>
                             </div>
-                            <div class="ml-4">
-                                <h2 class="text-lg font-semibold text-gray-900">Flotte Totale</h2>
-                                <p class="text-3xl font-bold text-gray-900">{{ $totalCars ?? 0 }}</p>
-                                <div class="flex items-center mt-2 text-sm text-gray-600">
+                            <div class="ml-3 flex-1">
+                                <h2 class="text-sm font-medium text-gray-600">Flotte Totale</h2>
+                                <p class="text-2xl font-bold text-gray-900">{{ $totalCars ?? 0 }}</p>
+                                <div class="flex items-center mt-1 text-xs text-gray-500">
                                     <span class="text-green-600">{{ $availableCars ?? 0 }} disponibles</span>
-                                    <span class="mx-2">•</span>
+                                    <span class="mx-1.5">•</span>
                                     <span class="text-yellow-600">{{ $carsInMaintenance ?? 0 }} maintenance</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-4">
-                            <a href="{{ route('agence.cars.index') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        <div class="mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-blue-600 text-xs font-medium flex items-center">
                                 Gérer la flotte →
-                            </a>
+                            </span>
                         </div>
                     </div>
-                </div>
+                </a>
 
                 <!-- Active Rentals -->
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                    <div class="p-6">
+                <a href="{{ route('agence.bookings.pending') }}" class="block bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
+                    <div class="p-4">
                         <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-green-100">
-                                <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="p-2 rounded-lg bg-green-50">
+                                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
-                            <div class="ml-4">
-                                <h2 class="text-lg font-semibold text-gray-900">Locations Actives</h2>
-                                <p class="text-3xl font-bold text-gray-900">{{ $activeRentals ?? 0 }}</p>
-                                <div class="flex items-center mt-2 text-sm text-gray-600">
+                            <div class="ml-3 flex-1">
+                                <h2 class="text-sm font-medium text-gray-600">Locations Actives</h2>
+                                <p class="text-2xl font-bold text-gray-900">{{ $activeRentals ?? 0 }}</p>
+                                <div class="flex items-center mt-1 text-xs text-gray-500">
                                     <span class="text-yellow-600">{{ $pendingBookings ?? 0 }} en attente</span>
                             </div>
                             </div>
                         </div>
-                        <div class="mt-4">
-                            <a href="{{ route('agence.bookings.pending') }}" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                        <div class="mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-green-600 text-xs font-medium flex items-center">
                                 Voir les locations →
-                            </a>
+                            </span>
                         </div>
                     </div>
-                </div>
+                </a>
 
                 <!-- Monthly Revenue -->
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                    <div class="p-6">
+                <div class="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow">
+                    <div class="p-4">
                         <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-purple-100">
-                                <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="p-2 rounded-lg bg-purple-50">
+                                <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
                                 </svg>
                             </div>
-                            <div class="ml-4">
-                                <h2 class="text-lg font-semibold text-gray-900">Revenus Mensuels</h2>
-                                <p class="text-3xl font-bold text-gray-900">{{ number_format($monthlyRevenue ?? 0, 2) }}€</p>
-                                <div class="flex items-center mt-2 text-sm">
+                            <div class="ml-3 flex-1">
+                                <h2 class="text-sm font-medium text-gray-600">Revenus Mensuels</h2>
+                                <p class="text-2xl font-bold text-gray-900">{{ number_format($monthlyRevenue ?? 0, 2) }}€</p>
+                                <div class="flex items-center mt-1 text-xs">
                                     @if(($revenueGrowth ?? 0) >= 0)
                                         <span class="text-green-600">↗ +{{ number_format($revenueGrowth ?? 0, 1) }}%</span>
                                     @else
                                         <span class="text-red-600">↘ {{ number_format($revenueGrowth ?? 0, 1) }}%</span>
                                     @endif
-                                    <span class="ml-2 text-gray-600">vs mois dernier</span>
+                                    <span class="ml-1.5 text-gray-500">vs mois dernier</span>
                                 </div>
                             </div>
                         </div>
@@ -171,28 +171,33 @@
                 </div>
 
                 <!-- Customer Rating -->
-                <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                    <div class="p-6">
+                <a href="{{ route('agence.customers.reviews') }}" class="block bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
+                    <div class="p-4">
                         <div class="flex items-center">
-                            <div class="p-3 rounded-full bg-yellow-100">
-                                <svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="p-2 rounded-lg bg-yellow-50">
+                                <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
                                 </svg>
                             </div>
-                            <div class="ml-4">
-                                <h2 class="text-lg font-semibold text-gray-900">Satisfaction Client</h2>
-                                <p class="text-3xl font-bold text-gray-900">{{ $customerRating ?? 0 }}/5</p>
-                                <div class="flex items-center mt-2 text-sm text-gray-600">
+                            <div class="ml-3 flex-1">
+                                <h2 class="text-sm font-medium text-gray-600">Satisfaction Client</h2>
+                                <p class="text-2xl font-bold text-gray-900">{{ $customerRating ?? 0 }}/5</p>
+                                <div class="flex items-center mt-1 text-xs text-gray-500">
                                     <span>{{ $reviewCount ?? 0 }} avis</span>
                                 </div>
                             </div>
                         </div>
+                        <div class="mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-yellow-600 text-xs font-medium flex items-center">
+                                Voir les avis →
+                            </span>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <!-- Second Row - Recent Bookings and Revenue Chart -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                 <!-- Recent Bookings Table -->
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
@@ -210,13 +215,14 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Véhicule</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Période</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     @forelse($dataTables['recentBookings'] ?? [] as $booking)
-                                    <tr>
+                                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location.href='{{ route('agence.rentals.show', $booking->id) }}'">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{ $booking->client->first_name ?? 'N/A' }} {{ $booking->client->last_name ?? '' }}
+                                            {{ $booking->user->name ?? 'N/A' }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {{ $booking->car->brand }} {{ $booking->car->model }}
@@ -233,10 +239,15 @@
                                                 {{ ucfirst($booking->status) }}
                                             </span>
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <a href="{{ route('agence.rentals.show', $booking->id) }}" class="text-blue-600 hover:text-blue-900">
+                                                Voir détails
+                                            </a>
+                                        </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
+                                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
                                             Aucune réservation récente
                                         </td>
                                     </tr>
@@ -259,7 +270,7 @@
             </div>
 
             <!-- Third Row - Fleet Utilization and Maintenance -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                 <!-- Fleet Utilization -->
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
@@ -276,14 +287,27 @@
                         <h2 class="text-lg font-semibold text-gray-900 mb-4">Maintenance à Venir</h2>
                         <div class="space-y-3">
                             @forelse($dataTables['upcomingMaintenance'] ?? [] as $maintenance)
-                            <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ $maintenance->car->brand }} {{ $maintenance->car->model }}</p>
-                                    <p class="text-xs text-gray-500">{{ $maintenance->due_date }}</p>
+                            <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors cursor-pointer" onclick="window.location.href='{{ route('agence.maintenances.show', $maintenance->id) }}'">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">{{ $maintenance->car->brand ?? 'N/A' }} {{ $maintenance->car->model ?? '' }}</p>
+                                    <p class="text-xs text-gray-500">
+                                        {{ \Carbon\Carbon::parse($maintenance->scheduled_date)->format('d/m/Y') }}
+                                        @if($maintenance->description)
+                                        - {{ Str::limit($maintenance->description, 30) }}
+                                        @endif
+                                    </p>
                                 </div>
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                    {{ $maintenance->type }}
-                                </span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        {{ ucfirst($maintenance->status) }}
+                                    </span>
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        {{ ucfirst($maintenance->type) }}
+                                    </span>
+                                    <a href="{{ route('agence.maintenances.show', $maintenance->id) }}" class="text-blue-600 hover:text-blue-900 text-xs font-medium ml-2">
+                                        Voir détails
+                                    </a>
+                                </div>
                             </div>
                             @empty
                             <div class="text-center py-8">
@@ -304,7 +328,8 @@
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Activité Récente</h2>
                     <div class="space-y-4">
                         @forelse($recentActivity ?? [] as $activity)
-                        <div class="flex items-start space-x-3">
+                        <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer" 
+                             onclick="handleActivityClick('{{ $activity['type'] }}', {{ $activity['data']->id ?? 'null' }})">
                             <div class="flex-shrink-0">
                                 <div class="w-8 h-8 rounded-full flex items-center justify-center
                                     @if($activity['type'] === 'booking') bg-blue-100
@@ -329,13 +354,16 @@
                                 <p class="text-sm text-gray-500">{{ $activity['description'] }}</p>
                                 <p class="text-xs text-gray-400">{{ $activity['time']->diffForHumans() }}</p>
                             </div>
-                            <div class="flex-shrink-0">
+                            <div class="flex-shrink-0 flex items-center space-x-2">
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full
                                     @if($activity['status'] === 'pending') bg-yellow-100 text-yellow-800
                                     @elseif($activity['status'] === 'completed') bg-green-100 text-green-800
                                     @elseif($activity['status'] === 'active') bg-blue-100 text-blue-800
                                     @else bg-gray-100 text-gray-800 @endif">
                                     {{ ucfirst($activity['status']) }}
+                                </span>
+                                <span class="text-blue-600 hover:text-blue-900 text-xs font-medium">
+                                    Voir détails
                                 </span>
                             </div>
                         </div>
@@ -386,7 +414,7 @@
                             </div>
                         </a>
 
-                        <a href="#" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                        <a href="{{ route('agence.finance.reports') }}" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
                             <svg class="h-8 w-8 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
@@ -463,6 +491,22 @@
 
 @push('scripts')
 <script>
+// Function to handle activity clicks
+function handleActivityClick(type, id) {
+    if (!id) return;
+    
+    switch(type) {
+        case 'booking':
+            window.location.href = `/agence/rentals/${id}`;
+            break;
+        case 'transaction':
+            window.location.href = `/agence/finance/payments/${id}/details`;
+            break;
+        default:
+            console.log('Unknown activity type:', type);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Revenue Chart
     const revenueCtx = document.getElementById('revenueChart').getContext('2d');

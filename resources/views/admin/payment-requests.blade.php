@@ -251,37 +251,42 @@ function showRequestDetails(requestId) {
 }
 
 // Handle reject form submission
-document.getElementById('rejectForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const requestId = formData.get('request_id');
-    const reason = formData.get('reason');
-    
-    fetch(`/admin/payment-requests/${requestId}/reject`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            reason: reason
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Demande rejetée avec succès!');
-            closeRejectModal();
-            location.reload();
-        } else {
-            alert('Erreur lors du rejet: ' + (data.message || 'Erreur inconnue'));
-        }
-    })
-    .catch(error => {
-        console.error('Error rejecting request:', error);
-        alert('Erreur lors du rejet de la demande');
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    const rejectForm = document.getElementById('rejectForm');
+    if (rejectForm) {
+        rejectForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const requestId = formData.get('request_id');
+            const reason = formData.get('reason');
+            
+            fetch(`/admin/payment-requests/${requestId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    reason: reason
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Demande rejetée avec succès!');
+                    closeRejectModal();
+                    location.reload();
+                } else {
+                    alert('Erreur lors du rejet: ' + (data.message || 'Erreur inconnue'));
+                }
+            })
+            .catch(error => {
+                console.error('Error rejecting request:', error);
+                alert('Erreur lors du rejet de la demande');
+            });
+        });
+    }
 });
 </script>
 @endsection

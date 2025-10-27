@@ -1,200 +1,237 @@
 @extends('layouts.admin')
 
-@section('header', 'Tableau de Bord Financier')
+@section('title', 'Dashboard Financier')
 
 @section('content')
-<!-- Financial Statistics Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-        <div class="p-6">
+<div class="p-6">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Dashboard Financier</h1>
+        <p class="text-gray-600 mt-2">Vue d'ensemble complète des finances et performances de ToubCar</p>
+    </div>
+
+    <!-- Filtres de période -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Période d'analyse</label>
+                    <select class="form-select" onchange="window.location.href='?period='+this.value">
+                        <option value="month" {{ $period === 'month' ? 'selected' : '' }}>Mensuel</option>
+                        <option value="day" {{ $period === 'day' ? 'selected' : '' }}>Quotidien</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="exportFinancialData()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-download mr-2"></i>Exporter Données
+                </button>
+                <a href="{{ route('admin.commissions.index') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-chart-line mr-2"></i>Commissions Détaillées
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques principales -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <!-- Revenus Totaux -->
+        <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100">
-                    <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
                 <div class="ml-4">
-                    <h2 class="text-lg font-semibold text-gray-900">Revenus Totaux</h2>
-                    <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['totalRevenue'], 0, ',', ' ') }} MAD</p>
+                    <h3 class="text-lg font-semibold text-gray-900">Revenus Totaux</h3>
+                    <p class="text-2xl font-bold text-green-600">{{ number_format($financialStats['total_revenue'], 2) }} MAD</p>
+                    <p class="text-sm text-gray-500">Ce mois: {{ number_format($financialStats['monthly_revenue'], 2) }} MAD</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Commissions Admin -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Commissions Admin</h3>
+                    <p class="text-2xl font-bold text-blue-600">{{ number_format($financialStats['total_admin_commission'], 2) }} MAD</p>
+                    <p class="text-sm text-gray-500">Ce mois: {{ number_format($financialStats['monthly_admin_commission'], 2) }} MAD</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Réservations -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Réservations</h3>
+                    <p class="text-2xl font-bold text-purple-600">{{ number_format($financialStats['total_bookings']) }}</p>
+                    <p class="text-sm text-gray-500">Ce mois: {{ number_format($financialStats['monthly_bookings']) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Valeur Moyenne -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Valeur Moyenne</h3>
+                    <p class="text-2xl font-bold text-orange-600">{{ number_format($financialStats['average_booking_value'], 2) }} MAD</p>
+                    <p class="text-sm text-gray-500">Par réservation</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-        <div class="p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100">
-                    <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h2 class="text-lg font-semibold text-gray-900">Revenus Mensuels</h2>
-                    <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['monthlyRevenue'], 0, ',', ' ') }} MAD</p>
-                </div>
-            </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Graphique des revenus -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Évolution des Revenus</h3>
+            <canvas id="revenueChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Graphique des commissions -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Évolution des Commissions</h3>
+            <canvas id="commissionChart" width="400" height="200"></canvas>
         </div>
     </div>
 
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-        <div class="p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-purple-100">
-                    <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h2 class="text-lg font-semibold text-gray-900">Commissions Totales</h2>
-                    <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['totalCommissions'], 0, ',', ' ') }} MAD</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-        <div class="p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-100">
-                    <svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h2 class="text-lg font-semibold text-gray-900">Paiements en Attente</h2>
-                    <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['pendingPayouts'], 0, ',', ' ') }} MAD</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Revenue Chart and Top Agencies -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <!-- Revenue Trends Chart -->
-    <div class="bg-white rounded-lg shadow-sm p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Tendances des Revenus</h3>
-        <div class="h-64">
-            <canvas id="revenueChart"></canvas>
-        </div>
-    </div>
-
-    <!-- Top Performing Agencies -->
-    <div class="bg-white rounded-lg shadow-sm p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Top Agences Performantes</h3>
-        <div class="space-y-4">
-            @forelse($topAgencies as $agency)
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10">
-                        <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                            </svg>
+    <!-- Top Agences -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        <!-- Top par revenus -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Top 10 Agences par Revenus</h3>
+            <div class="space-y-3">
+                @foreach($topAgencies as $index => $agency)
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                            {{ $index + 1 }}
+                        </div>
+                        <div class="ml-3">
+                            <p class="font-medium text-gray-900">{{ $agency->agency_name }}</p>
+                            <p class="text-sm text-gray-500">{{ $agency->rentals_count }} réservations</p>
                         </div>
                     </div>
-                    <div class="ml-4">
-                        <h4 class="text-sm font-medium text-gray-900">{{ $agency->agency_name }}</h4>
-                        <p class="text-sm text-gray-500">{{ $agency->city }}</p>
+                    <div class="text-right">
+                        <p class="font-semibold text-gray-900">{{ number_format($agency->rentals_sum_total_price ?? 0, 2) }} MAD</p>
                     </div>
                 </div>
-                <div class="text-right">
-                    <p class="text-sm font-medium text-gray-900">{{ number_format($agency->transactions_sum_amount ?? 0, 0, ',', ' ') }} MAD</p>
-                    <p class="text-sm text-gray-500">Revenus</p>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Top par commissions -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Top 10 Agences par Commissions</h3>
+            <div class="space-y-3">
+                @foreach($topAgenciesByCommission as $index => $agency)
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                            {{ $index + 1 }}
+                        </div>
+                        <div class="ml-3">
+                            <p class="font-medium text-gray-900">{{ $agency->agency_name }}</p>
+                            <p class="text-sm text-gray-500">{{ $agency->transaction_count }} transactions</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold text-gray-900">{{ number_format($agency->total_commission, 2) }} MAD</p>
+                    </div>
                 </div>
+                @endforeach
             </div>
-            @empty
-            <div class="text-center py-8">
-                <p class="text-gray-500">Aucune donnée disponible.</p>
-            </div>
-            @endforelse
+        </div>
+    </div>
+
+    <!-- Transactions récentes -->
+    <div class="bg-white rounded-lg shadow-md p-6 mt-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Transactions Récentes</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agence</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($recentTransactions as $transaction)
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                {{ $transaction->type === 'admin_commission' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
+                                {{ $transaction->type === 'admin_commission' ? 'Commission Admin' : 'Paiement Location' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ $transaction->agency->agency_name ?? 'N/A' }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-semibold {{ $transaction->type === 'admin_commission' ? 'text-blue-600' : 'text-green-600' }}">
+                                {{ number_format($transaction->amount, 2) }} MAD
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ $transaction->created_at->format('d/m/Y H:i') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                {{ $transaction->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                {{ ucfirst($transaction->status) }}
+                            </span>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<!-- Recent Transactions -->
-<div class="bg-white rounded-lg shadow-sm p-6">
-    <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium text-gray-900">Transactions Récentes</h3>
-        <a href="{{ route('admin.finance.payments') }}" class="text-blue-600 hover:text-blue-800 text-sm">Voir tout</a>
-    </div>
-    
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Type
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Agence
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Montant
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Statut
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                    </th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($recentTransactions as $transaction)
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                            {{ $transaction->type === 'rental_payment' ? 'bg-green-100 text-green-800' : 
-                               ($transaction->type === 'commission' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">
-                            {{ $transaction->type === 'rental_payment' ? 'Paiement Location' : 
-                               ($transaction->type === 'commission' ? 'Commission' : ucfirst($transaction->type)) }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {{ $transaction->agency->agency_name ?? 'N/A' }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {{ number_format($transaction->amount, 0, ',', ' ') }} MAD
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                            {{ $transaction->status === 'completed' ? 'bg-green-100 text-green-800' : 
-                               ($transaction->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
-                            {{ $transaction->status === 'completed' ? 'Terminé' : 
-                               ($transaction->status === 'pending' ? 'En attente' : 'Échoué') }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ $transaction->created_at->format('d/m/Y H:i') }}
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                        Aucune transaction récente.
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
-@endsection
-
-@push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Revenue Chart
+// Graphique des revenus
 const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+const revenueData = @json($revenueTrends);
+
 new Chart(revenueCtx, {
     type: 'line',
     data: {
-        labels: @json($labels),
+        labels: revenueData.map(item => {
+            if ('{{ $period }}' === 'month') {
+                const date = new Date(item.year, item.month - 1);
+                return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+            } else {
+                const date = new Date(item.period);
+                return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+            }
+        }),
         datasets: [{
             label: 'Revenus (MAD)',
-            data: @json($revenueTrends),
+            data: revenueData.map(item => item.revenue),
             borderColor: 'rgb(34, 197, 94)',
             backgroundColor: 'rgba(34, 197, 94, 0.1)',
             tension: 0.4,
@@ -203,7 +240,6 @@ new Chart(revenueCtx, {
     },
     options: {
         responsive: true,
-        maintainAspectRatio: false,
         plugins: {
             legend: {
                 display: false
@@ -214,12 +250,71 @@ new Chart(revenueCtx, {
                 beginAtZero: true,
                 ticks: {
                     callback: function(value) {
-                        return value.toLocaleString() + ' MAD';
+                        return value.toLocaleString('fr-FR') + ' MAD';
                     }
                 }
             }
         }
     }
 });
+
+// Graphique des commissions
+const commissionCtx = document.getElementById('commissionChart').getContext('2d');
+const commissionData = @json($commissionTrends);
+
+new Chart(commissionCtx, {
+    type: 'line',
+    data: {
+        labels: commissionData.map(item => {
+            if ('{{ $period }}' === 'month') {
+                const date = new Date(item.year, item.month - 1);
+                return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+            } else {
+                const date = new Date(item.period);
+                return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+            }
+        }),
+        datasets: [{
+            label: 'Commissions Admin (MAD)',
+            data: commissionData.map(item => item.total_commission),
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return value.toLocaleString('fr-FR') + ' MAD';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Fonction d'export
+function exportFinancialData() {
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 1);
+    
+    const params = new URLSearchParams({
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: new Date().toISOString().split('T')[0],
+        format: 'csv'
+    });
+    
+    window.open('{{ route("admin.finance.export") }}?' + params.toString(), '_blank');
+}
 </script>
-@endpush
+@endsection

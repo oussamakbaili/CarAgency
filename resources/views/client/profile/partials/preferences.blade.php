@@ -15,7 +15,7 @@
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="notifications_email" value="1" 
-                               {{ ($client->preferences['notifications_email'] ?? true) ? 'checked' : '' }}
+                               {{ (($client->preferences['notifications_email'] ?? true) ? 'checked' : '') }}
                                class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
@@ -28,7 +28,7 @@
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="notifications_sms" value="1" 
-                               {{ ($client->preferences['notifications_sms'] ?? false) ? 'checked' : '' }}
+                               {{ (($client->preferences['notifications_sms'] ?? false) ? 'checked' : '') }}
                                class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
@@ -41,7 +41,7 @@
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="marketing_emails" value="1" 
-                               {{ ($client->preferences['marketing_emails'] ?? false) ? 'checked' : '' }}
+                               {{ (($client->preferences['marketing_emails'] ?? false) ? 'checked' : '') }}
                                class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
@@ -69,18 +69,18 @@
                     <label for="preferred_language" class="block text-sm font-medium text-gray-700 mb-2">Langue Préférée</label>
                     <select name="preferred_language" id="preferred_language" 
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="fr" {{ ($client->preferences['preferred_language'] ?? 'fr') == 'fr' ? 'selected' : '' }}>Français</option>
-                        <option value="ar" {{ ($client->preferences['preferred_language'] ?? 'fr') == 'ar' ? 'selected' : '' }}>العربية</option>
-                        <option value="en" {{ ($client->preferences['preferred_language'] ?? 'fr') == 'en' ? 'selected' : '' }}>English</option>
+                        <option value="fr" {{ (($client->preferences['preferred_language'] ?? 'fr') == 'fr' ? 'selected' : '') }}>Français</option>
+                        <option value="ar" {{ (($client->preferences['preferred_language'] ?? 'fr') == 'ar' ? 'selected' : '') }}>العربية</option>
+                        <option value="en" {{ (($client->preferences['preferred_language'] ?? 'fr') == 'en' ? 'selected' : '') }}>English</option>
                     </select>
                 </div>
                 <div>
                     <label for="timezone" class="block text-sm font-medium text-gray-700 mb-2">Fuseau Horaire</label>
                     <select name="timezone" id="timezone" 
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="Africa/Casablanca" {{ ($client->preferences['timezone'] ?? 'Africa/Casablanca') == 'Africa/Casablanca' ? 'selected' : '' }}>Casablanca (GMT+1)</option>
-                        <option value="Africa/Rabat" {{ ($client->preferences['timezone'] ?? 'Africa/Casablanca') == 'Africa/Rabat' ? 'selected' : '' }}>Rabat (GMT+1)</option>
-                        <option value="Europe/Paris" {{ ($client->preferences['timezone'] ?? 'Africa/Casablanca') == 'Europe/Paris' ? 'selected' : '' }}>Paris (GMT+1)</option>
+                        <option value="Africa/Casablanca" {{ (($client->preferences['timezone'] ?? 'Africa/Casablanca') == 'Africa/Casablanca' ? 'selected' : '') }}>Casablanca (GMT+1)</option>
+                        <option value="Africa/Rabat" {{ (($client->preferences['timezone'] ?? 'Africa/Casablanca') == 'Africa/Rabat' ? 'selected' : '') }}>Rabat (GMT+1)</option>
+                        <option value="Europe/Paris" {{ (($client->preferences['timezone'] ?? 'Africa/Casablanca') == 'Europe/Paris' ? 'selected' : '') }}>Paris (GMT+1)</option>
                     </select>
                 </div>
             </div>
@@ -109,7 +109,7 @@
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="public_profile" value="1" 
-                               {{ ($client->preferences['public_profile'] ?? false) ? 'checked' : '' }}
+                               {{ (($client->preferences['public_profile'] ?? false) ? 'checked' : '') }}
                                class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
@@ -122,7 +122,7 @@
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="data_sharing" value="1" 
-                               {{ ($client->preferences['data_sharing'] ?? true) ? 'checked' : '' }}
+                               {{ (($client->preferences['data_sharing'] ?? true) ? 'checked' : '') }}
                                class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
@@ -194,7 +194,7 @@
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="dark_mode" value="1" 
-                               {{ ($client->preferences['dark_mode'] ?? false) ? 'checked' : '' }}
+                               {{ (($client->preferences['dark_mode'] ?? false) ? 'checked' : '') }}
                                class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
@@ -207,7 +207,7 @@
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" name="booking_reminders" value="1" 
-                               {{ ($client->preferences['booking_reminders'] ?? true) ? 'checked' : '' }}
+                               {{ (($client->preferences['booking_reminders'] ?? true) ? 'checked' : '') }}
                                class="sr-only peer">
                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>

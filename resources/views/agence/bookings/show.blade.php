@@ -1,7 +1,7 @@
 @extends('layouts.agence')
 
 @section('content')
-<div class="py-12">
+<div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Header Section -->
         <div class="mb-8">
@@ -153,8 +153,8 @@
                     </div>
                     <div class="p-6">
                         <div class="flex items-start space-x-4">
-                            @if($rental->car->image)
-                                <img class="h-20 w-20 rounded-lg object-cover" src="{{ asset('storage/' . $rental->car->image) }}" alt="{{ $rental->car->brand }} {{ $rental->car->model }}">
+                            @if($rental->car->image_url)
+                                <img class="h-20 w-20 rounded-lg object-cover" src="{{ $rental->car->image_url }}" alt="{{ $rental->car->brand }} {{ $rental->car->model }}">
                             @else
                                 <div class="h-20 w-20 rounded-lg bg-gray-200 flex items-center justify-center">
                                     <svg class="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

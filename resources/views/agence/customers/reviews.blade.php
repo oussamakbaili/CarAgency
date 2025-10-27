@@ -276,39 +276,44 @@ function generateStars(rating) {
 }
 
 // Handle form submission
-document.getElementById('replyForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const reviewId = formData.get('review_id');
-    const message = formData.get('message');
-    
-    // Send reply
-    fetch(`/agence/customers/reviews/${reviewId}/reply`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            message: message
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Réponse envoyée avec succès!');
-            closeReplyModal();
-            // Optionally refresh the page or update the UI
-            location.reload();
-        } else {
-            alert('Erreur lors de l\'envoi de la réponse: ' + (data.message || 'Erreur inconnue'));
-        }
-    })
-    .catch(error => {
-        console.error('Error sending reply:', error);
-        alert('Erreur lors de l\'envoi de la réponse');
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    const replyForm = document.getElementById('replyForm');
+    if (replyForm) {
+        replyForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const reviewId = formData.get('review_id');
+            const message = formData.get('message');
+            
+            // Send reply
+            fetch(`/agence/customers/reviews/${reviewId}/reply`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    message: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Réponse envoyée avec succès!');
+                    closeReplyModal();
+                    // Optionally refresh the page or update the UI
+                    location.reload();
+                } else {
+                    alert('Erreur lors de l\'envoi de la réponse: ' + (data.message || 'Erreur inconnue'));
+                }
+            })
+            .catch(error => {
+                console.error('Error sending reply:', error);
+                alert('Erreur lors de l\'envoi de la réponse');
+            });
+        });
+    }
 });
 </script>
 @endsection

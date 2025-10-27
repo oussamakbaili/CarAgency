@@ -9,13 +9,21 @@ use App\Models\Car;
 use App\Models\User;
 use App\Models\Client;
 use App\Models\Transaction;
+use App\Services\CommissionService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index()
+    private CommissionService $commissionService;
+
+    public function __construct(CommissionService $commissionService)
+    {
+        $this->commissionService = $commissionService;
+    }
+
+    public function index(Request $request)
     {
         // Overview Statistics
         $stats = $this->getOverviewStatistics();
@@ -35,13 +43,29 @@ class DashboardController extends Controller
         // Quick Actions Data
         $quickActionsData = $this->getQuickActionsData();
 
+        // Financial additions (merged from financial dashboard)
+        $period = $request->get('period', 'month');
+        $financialStats = $this->getFinancialStats();
+        $revenueTrends = $this->getRevenueTrends($period);
+        $commissionTrends = $this->commissionService->getAdminCommissionStats($period);
+        $topAgencies = $this->getTopAgenciesByRevenue();
+        $topAgenciesByCommission = $this->getTopAgenciesByCommission();
+        $recentTransactions = $this->getRecentTransactions();
+
         return view('admin.dashboard', compact(
             'stats',
             'recentActivity',
             'chartsData',
             'recentApplications',
             'systemHealth',
-            'quickActionsData'
+            'quickActionsData',
+            'financialStats',
+            'revenueTrends',
+            'commissionTrends',
+            'topAgencies',
+            'topAgenciesByCommission',
+            'recentTransactions',
+            'period'
         ));
     }
 
@@ -118,7 +142,7 @@ class DashboardController extends Controller
         return $activities->sortByDesc('time')->take(10);
     }
 
-    private function getChartsData()
+    public function getChartsData()
     {
         // Revenue trends (last 12 months)
         $revenueData = [];
@@ -132,7 +156,7 @@ class DashboardController extends Controller
                 ->whereYear('created_at', $date->year)
                 ->sum('amount');
             
-            $revenueData[] = $revenue;
+            $revenueData[] = $revenue ?? 0;
             $labels[] = $date->format('M Y');
         }
 
@@ -144,7 +168,7 @@ class DashboardController extends Controller
             $date = Carbon::now()->subDays($i);
             $bookings = Rental::whereDate('created_at', $date)->count();
             
-            $bookingData[] = $bookings;
+            $bookingData[] = $bookings ?? 0;
             $bookingLabels[] = $date->format('M d');
         }
 
@@ -227,5 +251,80 @@ class DashboardController extends Controller
     public function getCharts()
     {
         return response()->json($this->getChartsData());
+    }
+
+    private function getFinancialStats(): array
+    {
+        return [
+            'total_revenue' => Rental::whereIn('status', ['active', 'completed'])->sum('total_price'),
+            'monthly_revenue' => Rental::whereIn('status', ['active', 'completed'])
+                ->whereMonth('created_at', Carbon::now()->month)
+                ->sum('total_price'),
+            'total_admin_commission' => $this->commissionService->getTotalAdminCommission(),
+            'monthly_admin_commission' => $this->commissionService->getTotalAdminCommission(
+                Carbon::now()->startOfMonth(),
+                Carbon::now()->endOfMonth()
+            ),
+            'total_bookings' => Rental::whereIn('status', ['active', 'completed'])->count(),
+            'monthly_bookings' => Rental::whereIn('status', ['active', 'completed'])
+                ->whereMonth('created_at', Carbon::now()->month)
+                ->count(),
+            'average_booking_value' => Rental::whereIn('status', ['active', 'completed'])->avg('total_price'),
+        ];
+    }
+
+    private function getRevenueTrends(string $period)
+    {
+        if ($period === 'month') {
+            return Rental::whereIn('status', ['active', 'completed'])
+                ->selectRaw('MONTH(created_at) as month, YEAR(created_at) as year, SUM(total_price) as revenue, COUNT(*) as bookings_count')
+                ->where('created_at', '>=', Carbon::now()->subMonths(12))
+                ->groupBy('year', 'month')
+                ->orderBy('year', 'desc')
+                ->orderBy('month', 'desc')
+                ->get();
+        }
+
+        return Rental::whereIn('status', ['active', 'completed'])
+            ->selectRaw('DATE(created_at) as period, SUM(total_price) as revenue, COUNT(*) as bookings_count')
+            ->where('created_at', '>=', Carbon::now()->subDays(30))
+            ->groupBy('period')
+            ->orderBy('period', 'desc')
+            ->get();
+    }
+
+    private function getTopAgenciesByRevenue()
+    {
+        return Agency::where('status', 'approved')
+            ->withSum(['rentals' => function ($query) {
+                $query->whereIn('status', ['active', 'completed']);
+            }], 'total_price')
+            ->withCount(['rentals' => function ($query) {
+                $query->whereIn('status', ['active', 'completed']);
+            }])
+            ->orderBy('rentals_sum_total_price', 'desc')
+            ->take(10)
+            ->get();
+    }
+
+    private function getTopAgenciesByCommission()
+    {
+        return Transaction::where('type', 'admin_commission')
+            ->join('agencies', 'transactions.agency_id', '=', 'agencies.id')
+            ->select('agencies.agency_name', DB::raw('COUNT(*) as transaction_count'), DB::raw('SUM(transactions.amount) as total_commission'))
+            ->where('transactions.created_at', '>=', Carbon::now()->subMonths(6))
+            ->groupBy('agencies.id', 'agencies.agency_name')
+            ->orderBy('total_commission', 'desc')
+            ->take(10)
+            ->get();
+    }
+
+    private function getRecentTransactions()
+    {
+        return Transaction::whereIn('type', ['admin_commission', 'rental_payment'])
+            ->with(['agency:id,agency_name', 'rental:id,car_id', 'rental.car:id,brand,model'])
+            ->latest()
+            ->take(20)
+            ->get();
     }
 } 

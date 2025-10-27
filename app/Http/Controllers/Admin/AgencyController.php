@@ -168,8 +168,17 @@ class AgencyController extends Controller
             \Log::error('Failed to send approval email: ' . $e->getMessage());
         }
 
-        return redirect()->route('admin.agencies.show', $agency)
-            ->with('success', 'L\'agence a été approuvée avec succès.');
+        // If the request expects JSON (AJAX), return the updated row data
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'status' => $agency->status,
+                'badge_class' => 'bg-green-100 text-green-800',
+                'status_label' => 'Approved'
+            ]);
+        }
+
+        return back()->with('success', 'L\'agence a été approuvée avec succès.');
     }
 
     public function reject(Request $request, Agency $agency)
@@ -223,8 +232,16 @@ class AgencyController extends Controller
             \Log::error('Failed to send rejection email: ' . $e->getMessage());
         }
 
-        return redirect()->route('admin.agencies.index')
-            ->with('success', 'L\'agence a été rejetée avec succès.');
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'status' => $agency->status,
+                'badge_class' => 'bg-red-100 text-red-800',
+                'status_label' => 'Rejected'
+            ]);
+        }
+
+        return back()->with('success', 'L\'agence a été rejetée avec succès.');
     }
 
     public function bulkApprove(Request $request)

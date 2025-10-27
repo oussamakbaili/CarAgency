@@ -15,6 +15,7 @@ class AdminMiddleware
             return $next($request);
         }
 
-        return redirect('/'); // or a 403 page
+        // Redirect to public home page instead of root
+        return redirect()->route('public.home');
     }
 }

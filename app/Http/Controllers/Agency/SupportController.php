@@ -5,84 +5,241 @@ namespace App\Http\Controllers\Agency;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SupportTicket;
+use App\Models\Rental;
 use Illuminate\Support\Facades\Auth;
 
 class SupportController extends Controller
 {
-    public function index()
+    /**
+     * Display agency support page with their tickets
+     */
+    public function index(Request $request)
     {
-        $tickets = SupportTicket::where('agency_id', auth()->user()->agency->id)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-            
+        $agency = auth()->user()->agency;
+        
+        $tickets = SupportTicket::where('agency_id', $agency->id)
+            ->whereNull('client_id') // S'assurer que c'est un ticket créé par l'agence, pas par un client
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
         return view('agence.support.index', compact('tickets'));
     }
 
+    /**
+     * Show form to create new ticket
+     */
+    public function create()
+    {
+        $agency = auth()->user()->agency;
+        
+        // Get agency's recent rentals with valid start dates
+        $rentals = Rental::whereHas('car', function($q) use ($agency) {
+                $q->where('agency_id', $agency->id);
+            })
+            ->where('status', '!=', 'rejected')
+            ->whereNotNull('start_date')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('agence.support.create', compact('rentals'));
+    }
+
+    /**
+     * Store new support ticket
+     */
     public function store(Request $request)
     {
         $request->validate([
+            'category' => 'required|in:technical,billing,booking,general,complaint,account',
+            'priority' => 'required|in:low,medium,high,urgent',
             'subject' => 'required|string|max:255',
-            'priority' => 'required|in:low,medium,high',
             'message' => 'required|string|max:2000',
+            'rental_id' => 'nullable|exists:rentals,id'
         ]);
 
-        SupportTicket::create([
-            'agency_id' => auth()->user()->agency->id,
-            'subject' => $request->subject,
+        $agency = auth()->user()->agency;
+
+        // Verify rental belongs to agency if provided
+        if ($request->rental_id) {
+            $rental = Rental::whereHas('car', function($q) use ($agency) {
+                    $q->where('agency_id', $agency->id);
+                })
+                ->where('id', $request->rental_id)
+                ->first();
+            
+            if (!$rental) {
+                return redirect()->back()
+                    ->with('error', 'Location invalide.')
+                    ->withInput();
+            }
+        }
+
+        $ticket = SupportTicket::create([
+            'agency_id' => $agency->id,
+            'rental_id' => $request->rental_id,
+            'ticket_number' => SupportTicket::generateTicketNumber(),
+            'category' => $request->category,
             'priority' => $request->priority,
-            'status' => 'open',
+            'subject' => $request->subject,
             'message' => $request->message,
-            'description' => $request->message, // Use message as description too
-            'ticket_number' => 'TKT-' . strtoupper(uniqid()),
-            'category' => 'general',
+            'description' => $request->message,
+            'status' => 'open',
         ]);
 
-        return redirect()->back()->with('success', 'Ticket de support créé avec succès. Notre équipe vous répondra dans les plus brefs délais.');
+        return redirect()->route('agence.support.index')
+            ->with('success', 'Votre ticket de support a été envoyé avec succès ! Notre équipe vous répondra dans les plus brefs délais.');
     }
 
+    /**
+     * Display ticket details
+     */
     public function show($id)
     {
+        $agency = auth()->user()->agency;
+        
         $ticket = SupportTicket::where('id', $id)
-            ->where('agency_id', auth()->user()->agency->id)
+            ->where('agency_id', $agency->id)
+            ->with(['rental', 'assignedTo'])
             ->firstOrFail();
             
         return view('agence.support.show', compact('ticket'));
     }
 
+    /**
+     * Add reply to ticket
+     */
     public function reply(Request $request, $id)
     {
+        $request->validate([
+            'message' => 'required|string|max:2000'
+        ]);
+
+        $agency = auth()->user()->agency;
+        
         $ticket = SupportTicket::where('id', $id)
-            ->where('agency_id', auth()->user()->agency->id)
+            ->where('agency_id', $agency->id)
             ->firstOrFail();
 
-        $request->validate([
-            'message' => 'required|string|max:2000',
-        ]);
+        $ticket->addReply(
+            $request->message,
+            auth()->id(),
+            'agency'
+        );
 
-        // Add reply to ticket
-        $replies = $ticket->replies ?? [];
-        $replies[] = [
-            'user_id' => auth()->id(),
-            'user_type' => 'agency',
-            'message' => $request->message,
-            'created_at' => now()->toISOString(),
-        ];
-
-        $ticket->update([
-            'replies' => $replies,
-            'status' => 'open', // Reopen if closed
-        ]);
+        // If ticket was resolved or closed, reopen it
+        if (in_array($ticket->status, ['resolved', 'closed'])) {
+            $ticket->reopen();
+        }
 
         return redirect()->back()->with('success', 'Réponse envoyée avec succès.');
     }
 
+    /**
+     * Mark ticket as resolved (agency satisfaction)
+     */
+    public function markResolved($id)
+    {
+        $agency = auth()->user()->agency;
+        
+        $ticket = SupportTicket::where('id', $id)
+            ->where('agency_id', $agency->id)
+            ->firstOrFail();
+
+        $ticket->markAsResolved();
+        
+        $ticket->addReply(
+            'Agence a marqué ce ticket comme résolu.',
+            auth()->id(),
+            'system'
+        );
+
+        return redirect()->back()->with('success', 'Ticket marqué comme résolu. Merci pour votre retour !');
+    }
+
+    /**
+     * Reopen a closed ticket
+     */
+    public function reopen($id)
+    {
+        $agency = auth()->user()->agency;
+        
+        $ticket = SupportTicket::where('id', $id)
+            ->where('agency_id', $agency->id)
+            ->firstOrFail();
+
+        $ticket->reopen();
+        
+        $ticket->addReply(
+            'Agence a rouvert ce ticket.',
+            auth()->id(),
+            'system'
+        );
+
+        return redirect()->back()->with('success', 'Ticket rouvert avec succès.');
+    }
+
+    /**
+     * Contact page
+     */
     public function contact()
     {
         return view('agence.support.contact');
     }
 
+    /**
+     * Training resources page
+     */
     public function training()
     {
         return view('agence.support.training');
+    }
+
+    /**
+     * Store contact form submission
+     */
+    public function storeContact(Request $request)
+    {
+        $request->validate([
+            'subject' => 'required|string|max:255',
+            'priority' => 'required|in:low,medium,high,urgent',
+            'message' => 'required|string|max:2000',
+        ]);
+
+        $agency = auth()->user()->agency;
+
+        $ticket = SupportTicket::create([
+            'agency_id' => $agency->id,
+            'ticket_number' => SupportTicket::generateTicketNumber(),
+            'category' => 'general', // Par défaut général pour le formulaire de contact
+            'priority' => $request->priority,
+            'subject' => $request->subject,
+            'message' => $request->message,
+            'description' => $request->message,
+            'status' => 'open',
+        ]);
+
+        return redirect()->route('agence.support.index')
+            ->with('success', 'Votre message de support a été envoyé avec succès ! Notre équipe vous répondra dans les plus brefs délais.');
+    }
+
+    /**
+     * Get tickets for agency (for AJAX requests)
+     */
+    public function getTickets()
+    {
+        $agency = auth()->user()->agency;
+        
+        $tickets = SupportTicket::where('agency_id', $agency->id)
+            ->orderBy('updated_at', 'desc')
+            ->get()
+            ->map(function($ticket) {
+                $ticket->unread_messages_count = $ticket->getUnreadMessagesCount($agency);
+                return $ticket;
+            });
+
+        return response()->json([
+            'success' => true,
+            'tickets' => $tickets,
+        ]);
     }
 }

@@ -10,19 +10,65 @@ use Illuminate\Support\Facades\DB;
 class PublicController extends Controller
 {
     /**
-     * Show the public homepage with top-rated agencies
+     * Show the public homepage with featured and top-rated cars from all agencies
      */
-    public function home()
+    public function home(Request $request)
     {
-        // Get top-rated agencies (for now, we'll use approved agencies with most cars)
-        $topAgencies = Agency::where('status', 'approved')
-            ->withCount('cars')
-            ->with('user')
-            ->orderBy('cars_count', 'desc')
-            ->take(6)
-            ->get();
+        // Get active categories
+        $categories = \App\Models\Category::active()->ordered()->get();
+        
+        // Build query for cars that should be shown on homepage
+        $carsQuery = Car::whereHas('agency', function($query) {
+                $query->where('status', 'approved')
+                      ->showOnHomepage();  // Only show agencies marked for homepage
+            })
+            ->where('status', 'available')
+            ->showOnHomepage()  // Only show cars marked for homepage
+            ->with(['agency.user', 'category'])
+            ->withCount(['avis as reviews_count' => function($query) {
+                $query->where('is_public', true);
+            }]);
+        
+        // Filter by category if provided
+        if ($request->filled('category')) {
+            $carsQuery->where('category_id', $request->category);
+        }
+        
+        // Filter by location if provided
+        if ($request->filled('where')) {
+            $carsQuery->whereHas('agency', function($query) use ($request) {
+                $query->where('city', 'like', '%' . $request->where . '%')
+                      ->orWhere('address', 'like', '%' . $request->where . '%');
+            });
+        }
+        
+        // Get all cars with ratings, prioritizing featured ones and featured agency cars
+        $allCars = $carsQuery->get()
+            ->map(function($car) {
+                $car->average_rating = $car->getAverageRating();
+                return $car;
+            })
+            ->sortByDesc(function($car) {
+                // Sort by: 
+                // 1. Featured cars first (10000 points)
+                // 2. Cars from featured agencies (5000 points)
+                // 3. Homepage priority (0-100) * 100
+                // 4. Average rating (0-5)
+                $featuredCar = $car->featured ? 10000 : 0;
+                $featuredAgency = $car->agency->featured ? 5000 : 0;
+                $priority = $car->homepage_priority * 100;
+                $rating = $car->average_rating;
+                
+                return $featuredCar + $featuredAgency + $priority + $rating;
+            });
+        
+        // Top picks: prioritize featured cars, then featured agency cars, then by rating (limited to 4)
+        $topCars = $allCars->take(4);
+        
+        // All cars for "Discover" section (up to 12)
+        $discoverCars = $allCars->take(12);
 
-        return view('public.home', compact('topAgencies'));
+        return view('public.home', compact('topCars', 'discoverCars', 'categories'));
     }
 
     /**
@@ -62,15 +108,28 @@ class PublicController extends Controller
     /**
      * Show agency details with reviews
      */
-    public function showAgency(Agency $agency)
+    public function showAgency(Agency $agency, Request $request)
     {
         if ($agency->status !== 'approved') {
             abort(404, 'Agence non trouvée');
         }
 
-        $agency->load(['user', 'cars' => function($query) {
-            $query->where('status', 'available');
-        }]);
+        // Get active categories
+        $categories = \App\Models\Category::active()->ordered()->get();
+
+        // Build query for cars
+        $carsQuery = $agency->cars()->where('status', 'available');
+        
+        // Filter by category if provided
+        if ($request->filled('category')) {
+            $carsQuery->where('category_id', $request->category);
+        }
+        
+        // Get the cars
+        $cars = $carsQuery->get();
+        
+        // Load user relationship
+        $agency->load('user');
 
         // Get recent reviews (for now, we'll create mock data)
         $reviews = collect([
@@ -97,7 +156,7 @@ class PublicController extends Controller
             ]
         ]);
 
-        return view('public.agency.show', compact('agency', 'reviews'));
+        return view('public.agency.show', compact('agency', 'reviews', 'categories', 'cars'));
     }
 
     /**
@@ -193,6 +252,65 @@ class PublicController extends Controller
         $agencies = $query->orderBy('agency_name')->paginate(12);
 
         return view('public.agencies', compact('agencies'));
+    }
+
+    /**
+     * Search cars with filters (Airbnb-style)
+     */
+    public function searchCars(Request $request)
+    {
+        // Build query for available cars
+        $carsQuery = Car::whereHas('agency', function($query) {
+                $query->where('status', 'approved');
+            })
+            ->where('status', 'available')
+            ->with(['agency.user', 'category'])
+            ->withCount(['avis as reviews_count' => function($query) {
+                $query->where('is_public', true);
+            }]);
+        
+        // Filter by location
+        if ($request->filled('where')) {
+            $carsQuery->whereHas('agency', function($query) use ($request) {
+                $query->where('city', 'like', '%' . $request->where . '%')
+                      ->orWhere('address', 'like', '%' . $request->where . '%');
+            });
+        }
+        
+        // Filter by number of passengers (seats)
+        if ($request->filled('passengers')) {
+            $carsQuery->where('seats', '>=', $request->passengers);
+        }
+        
+        // TODO: Filter by availability dates (check_in, check_out)
+        // This will require checking against existing rentals
+        
+        // Get cars with ratings
+        $cars = $carsQuery->paginate(12)->through(function($car) {
+            $car->average_rating = $car->getAverageRating();
+            return $car;
+        });
+        
+        // Pass request parameters to maintain search context
+        $cars->appends($request->all());
+
+        return view('public.cars-search', compact('cars'));
+    }
+
+    /**
+     * Show About Us page
+     */
+    public function about()
+    {
+        return view('public.about');
+    }
+
+    /**
+     * Show How it Works page
+     */
+    public function howItWorks()
+    {
+        return view('public.how-it-works');
     }
 
     /**

@@ -1,302 +1,412 @@
-@auth
-    @if(auth()->user()->role === 'client')
-        @extends('layouts.client')
-        @section('title', $agency->agency_name)
-        @section('content')
-    @else
-        <!DOCTYPE html>
-        <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-        <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <meta name="csrf-token" content="{{ csrf_token() }}">
-            <title>{{ $agency->agency_name }} - RentCar Platform</title>
-    @endif
-@else
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $agency->agency_name }} - RentCar Platform</title>
-@endauth
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#eff6ff',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        },
-                        accent: {
-                            50: '#f0fdf4',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-</head>
-<body class="font-sans antialiased bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="{{ route('public.home') }}" class="flex-shrink-0 flex items-center">
-                        <svg class="h-8 w-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
-                        </svg>
-                        <span class="ml-2 text-xl font-bold text-gray-900">RentCar Platform</span>
-                    </a>
-                </div>
-                
-                <div class="flex items-center space-x-4">
-                    <a href="{{ route('public.home') }}" class="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
-                        Accueil
-                    </a>
-                    <a href="{{ route('public.agencies') }}" class="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium">
-                        Toutes les Agences
-                    </a>
-                    <a href="{{ route('login') }}" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                        Se connecter
-                    </a>
-                    <a href="{{ route('register.client') }}" class="bg-accent-600 hover:bg-accent-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                        S'inscrire
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
+@extends('layouts.public')
 
-    <!-- Agency Header -->
-    <div class="bg-white shadow">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">{{ $agency->agency_name }}</h1>
-                    <div class="flex items-center mt-2">
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                            </svg>
-                            <span class="ml-1 text-lg font-medium text-gray-900">4.8</span>
-                            <span class="ml-1 text-sm text-gray-500">({{ $reviews->count() }} avis)</span>
+@section('title', $agency->user->name . ' - Agence de Location')
+
+@section('content')
+    <!-- Hero Section - Parallax Effect -->
+    <div class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" style="min-height: 100vh;">
+        <!-- Content Overlay -->
+        <div class="relative z-10 min-h-screen flex items-center justify-center text-center">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20">
+                <div class="space-y-8" id="hero-content">
+                    <div class="text-center">
+                        <h1 class="text-5xl md:text-7xl font-bold text-white leading-tight mb-6 hero-title">
+                            {{ $agency->user->name }}
+                            <span class="block text-orange-500">
+                                Agence Premium
+                            </span>
+                        </h1>
+                        
+                        <p class="text-xl text-gray-300 leading-relaxed hero-subtitle">
+                            Découvrez notre large gamme de véhicules disponibles dans cette agence. Simple, rapide et sécurisé.
+                        </p>
+                    </div>
+                
+                    <!-- Search Form - Airbnb Style -->
+                    <div class="bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border border-gray-200 p-2 hero-search">
+                        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+                            <!-- Where -->
+                            <div class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-l-full transition-colors" onclick="openSearchModal('where')">
+                                <label class="block text-xs font-semibold text-gray-900 mb-1">Where</label>
+                                <div class="text-sm text-gray-600" id="whereDisplay">{{ $agency->city ?? 'Search destinations' }}</div>
+                            </div>
+                            
+                            <!-- Check in -->
+                            <div class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkin')">
+                                <label class="block text-xs font-semibold text-gray-900 mb-1">Check in</label>
+                                <div class="text-sm text-gray-400" id="checkInDisplay">Add dates</div>
+                            </div>
+                            
+                            <!-- Check out -->
+                            <div class="flex-1 px-6 py-3 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkout')">
+                                <label class="block text-xs font-semibold text-gray-900 mb-1">Check out</label>
+                                <div class="text-sm text-gray-400" id="checkOutDisplay">Add dates</div>
+                            </div>
+                            
+                            <!-- Search Button -->
+                            <button type="button" onclick="performSearch()" class="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-full font-semibold flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                                <span class="hidden md:inline">Search</span>
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="flex space-x-4">
-                    <a href="{{ route('public.agency.cars', $agency) }}" 
-                       class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200">
-                        Voir les voitures
-                    </a>
-                </div>
+            </div>
+        </div>
+        
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20" id="scroll-indicator">
+            <div class="flex flex-col items-center gap-2 text-white animate-bounce">
+                <span class="text-sm font-medium">Scroll to explore</span>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                </svg>
             </div>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Agency Information -->
-            <div class="lg:col-span-2 space-y-8">
-                <!-- Contact Information -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Informations de contact</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                            <div>
-                                <p class="text-sm font-medium text-gray-900">Adresse</p>
-                                <p class="text-sm text-gray-600">{{ $agency->address }}, {{ $agency->city }}</p>
-                            </div>
+    <!-- Top Picks for this month -->
+    <div id="top-picks" class="py-16 bg-white reveal-section">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Véhicules Populaires</h2>
+                <p class="text-lg text-gray-600">Nos voitures les plus demandées de cette agence</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                @forelse($cars->take(4) as $car)
+                    <div onclick="window.location='{{ route('public.car.show', [$agency, $car]) }}'" class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+                        <!-- Car Image -->
+                        <div class="relative h-48 bg-gray-100">
+                            @if($car->image)
+                                <img src="{{ $car->image_url }}" 
+                                     alt="{{ $car->brand }} {{ $car->model }}" 
+                                     class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                    </svg>
+                                </div>
+                            @endif
+                            
+                            <!-- Featured Badge -->
+                            @if($car->featured || $car->agency->featured)
+                                <div class="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-lg bg-orange-600 text-white shadow-md">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <span class="text-xs font-bold">{{ $car->featured ? 'FEATURED' : 'TOP PARTNER' }}</span>
+                                </div>
+                            @endif
+                            
+                            <!-- Rating Badge -->
+                            @if($car->getAverageRating() > 0)
+                                <div class="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg bg-white shadow-sm">
+                                    <x-star-rating :rating="$car->getAverageRating()" size="w-4 h-4" />
+                                    <span class="text-sm font-semibold text-gray-900">{{ number_format($car->getAverageRating(), 1) }}</span>
+                                </div>
+                            @endif
                         </div>
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                            </svg>
-                            <div>
-                                <p class="text-sm font-medium text-gray-900">Téléphone</p>
-                                <p class="text-sm text-gray-600">{{ $agency->phone }}</p>
+                        
+                        <!-- Car Details -->
+                        <div class="p-5">
+                            <div class="mb-4">
+                                <h3 class="text-lg font-bold text-gray-900">{{ $car->brand }}</h3>
+                                <p class="text-sm text-gray-600">{{ $car->model }}</p>
                             </div>
+                            
+                            <!-- Features -->
+                            <div class="flex items-center gap-4 mb-4 text-sm text-gray-600">
+                                <div class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                    </svg>
+                                    <span>{{ ucfirst($car->transmission ?? 'Auto') }}</span>
                         </div>
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                <div class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                             </svg>
-                            <div>
-                                <p class="text-sm font-medium text-gray-900">Email</p>
-                                <p class="text-sm text-gray-600">{{ $agency->email }}</p>
+                                    <span>{{ $car->seats ?? 5 }}</span>
+                                </div>
                             </div>
+                            
+                            <!-- Price & CTA -->
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <div>
+                                    <div class="text-2xl font-bold text-gray-900">{{ number_format($car->price_per_day, 0) }} MAD</div>
+                                    <div class="text-sm text-gray-500">par jour</div>
                         </div>
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                            </svg>
-                            <div>
-                                <p class="text-sm font-medium text-gray-900">Voitures disponibles</p>
-                                <p class="text-sm text-gray-600">{{ $agency->cars->count() }} véhicules</p>
+                                <a href="{{ route('booking.main', $car) }}" 
+                                   class="bg-[#C2410C] hover:bg-[#9A3412] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                                   onclick="event.stopPropagation()">
+                                    Réserver
+                                </a>
                             </div>
                         </div>
                     </div>
+                @empty
+                    <div class="col-span-full text-center py-12">
+                        <p class="text-gray-500">Aucune voiture disponible pour le moment</p>
+                    </div>
+                @endforelse
                 </div>
-
-                <!-- About Agency -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-4">À propos de l'agence</h2>
-                    <p class="text-gray-600 leading-relaxed">
-                        {{ $agency->business_description ?? 'Cette agence propose des services de location de voitures de qualité avec une large gamme de véhicules pour répondre à tous vos besoins de déplacement.' }}
-                    </p>
                 </div>
-
-                <!-- Reviews Section -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Avis des clients</h2>
-                    
-                    @if($reviews->count() > 0)
-                        <div class="space-y-6">
-                            @foreach($reviews as $review)
-                                <div class="border-b border-gray-200 pb-6 last:border-b-0">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <div class="flex items-center">
-                                            <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
-                                                <span class="text-primary-600 font-medium text-sm">
-                                                    {{ substr($review->user_name, 0, 1) }}
-                                                </span>
                                             </div>
-                                            <div class="ml-3">
-                                                <p class="text-sm font-medium text-gray-900">{{ $review->user_name }}</p>
-                                                <div class="flex items-center">
-                                                    @for($i = 1; $i <= 5; $i++)
-                                                        <svg class="w-4 h-4 {{ $i <= $review->rating ? 'text-yellow-400' : 'text-gray-300' }}" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+    <!-- Join Us Banner -->
+    <div class="bg-orange-600 py-16 reveal-section">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+                Prêt à Réserver?
+            </h2>
+            <p class="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+                Choisissez votre véhicule parfait et réservez en quelques clics
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#top-picks" 
+                   class="inline-flex items-center gap-2 bg-white hover:bg-gray-100 text-orange-600 px-8 py-3 rounded-lg font-semibold transition-colors">
+                    Voir les Voitures
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                                                         </svg>
-                                                    @endfor
+                </a>
+                <a href="{{ route('public.agencies') }}" 
+                   class="inline-flex items-center gap-2 bg-transparent border-2 border-white hover:bg-white hover:text-orange-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+                    Autres Agences
+                </a>
                                                 </div>
                                             </div>
                                         </div>
-                                        <span class="text-sm text-gray-500">{{ $review->created_at->format('d/m/Y') }}</span>
-                                    </div>
-                                    <p class="text-gray-600">{{ $review->comment }}</p>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center py-8">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                            </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun avis pour le moment</h3>
-                            <p class="mt-1 text-sm text-gray-500">Soyez le premier à laisser un avis sur cette agence.</p>
-                        </div>
-                    @endif
+
+    <!-- Discover our wide range of cars -->
+    <div id="discover" class="py-16 bg-gray-50 reveal-section">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8">Parcourir Par Catégorie</h2>
+                
+                <!-- Category Filters -->
+                <div class="flex flex-wrap gap-3 mb-8">
+                    <a href="{{ route('public.agency.show', $agency) }}" 
+                       class="px-5 py-2 rounded-lg font-semibold text-sm transition-colors {{ !request('category') ? 'bg-orange-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
+                        Tous
+                    </a>
+                    @foreach($categories as $category)
+                        <a href="{{ route('public.agency.show', ['agency' => $agency, 'category' => $category->id]) }}" 
+                           class="px-5 py-2 rounded-lg font-semibold text-sm transition-colors {{ request('category') == $category->id ? 'bg-orange-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
+                            {{ $category->name }}
+                        </a>
+                    @endforeach
                 </div>
             </div>
 
-            <!-- Sidebar -->
-            <div class="space-y-6">
-                <!-- Quick Stats -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Statistiques</h3>
-                    <div class="space-y-3">
-                        <div class="flex justify-between">
-                            <span class="text-sm text-gray-600">Note moyenne</span>
-                            <span class="text-sm font-medium text-gray-900">4.8/5</span>
+            <!-- Cars Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                @forelse($cars as $car)
+                    <div onclick="window.location='{{ route('public.car.show', [$agency, $car]) }}'" class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+                        <!-- Car Image -->
+                        <div class="relative h-48 bg-gray-100">
+                            @if($car->image)
+                                <img src="{{ $car->image_url }}" alt="{{ $car->brand }} {{ $car->model }}" 
+                                     class="w-full h-full object-cover">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                    </svg>
+                                    </div>
+                            @endif
+                            
+                            <!-- Featured Badge -->
+                            @if($car->featured || $car->agency->featured)
+                                <div class="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-lg bg-orange-600 text-white shadow-md">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <span class="text-xs font-bold">{{ $car->featured ? 'FEATURED' : 'TOP PARTNER' }}</span>
+                                </div>
+                            @endif
+                            
+                            <!-- Rating Badge -->
+                            <div class="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg bg-white shadow-sm">
+                                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                                <span class="text-sm font-semibold text-gray-900">4.8</span>
+                            </div>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-sm text-gray-600">Nombre d'avis</span>
-                            <span class="text-sm font-medium text-gray-900">{{ $reviews->count() }}</span>
+                        
+                        <!-- Car Details -->
+                        <div class="p-5">
+                            <div class="mb-4">
+                                <h3 class="text-lg font-bold text-gray-900">{{ $car->brand }}</h3>
+                                <p class="text-sm text-gray-600">{{ $car->model }}</p>
+                            </div>
+                            
+                            <!-- Features -->
+                            <div class="flex items-center gap-4 mb-4 text-sm text-gray-600">
+                                <div class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                            </svg>
+                                    <span>{{ ucfirst($car->transmission ?? 'Auto') }}</span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-sm text-gray-600">Voitures disponibles</span>
-                            <span class="text-sm font-medium text-gray-900">{{ $agency->cars->count() }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-sm text-gray-600">Membre depuis</span>
-                            <span class="text-sm font-medium text-gray-900">{{ $agency->created_at->format('Y') }}</span>
-                        </div>
-                    </div>
+                                <div class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
+                                    <span>{{ $car->seats ?? 5 }}</span>
                 </div>
+            </div>
 
-                <!-- Action Buttons -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
-                    <div class="space-y-3">
-                        <a href="{{ route('public.agency.cars', $agency) }}" 
-                           class="w-full bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium text-center block transition duration-200">
-                            Voir toutes les voitures
-                        </a>
-                        <a href="{{ route('public.require-login') }}" 
-                           class="w-full bg-accent-600 hover:bg-accent-700 text-white px-4 py-2 rounded-lg font-medium text-center block transition duration-200">
-                            Réserver maintenant
-                        </a>
+                            <!-- Price & CTA -->
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <div>
+                                    <div class="text-2xl font-bold text-gray-900">{{ number_format($car->price_per_day, 0) }} MAD</div>
+                                    <div class="text-sm text-gray-500">par jour</div>
+                        </div>
+                                <a href="{{ route('booking.main', $car) }}" 
+                                   class="bg-[#C2410C] hover:bg-[#9A3412] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                                   onclick="event.stopPropagation()">
+                                    Réserver
+                                </a>
+                        </div>
+                        </div>
                     </div>
-                </div>
+                @empty
+                    <div class="col-span-full text-center py-12">
+                        <p class="text-gray-500">Aucune voiture disponible dans cette catégorie</p>
+                    </div>
+                @endforelse
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white">
-        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">RentCar Platform</h3>
-                    <p class="text-gray-400">La plateforme de location de voitures qui connecte les clients aux meilleures agences.</p>
-                </div>
-                <div>
-                    <h4 class="text-md font-semibold mb-4">Liens utiles</h4>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="{{ route('public.agencies') }}" class="hover:text-white">Toutes les agences</a></li>
-                        <li><a href="#" class="hover:text-white">Comment ça marche</a></li>
-                        <li><a href="#" class="hover:text-white">Aide</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-md font-semibold mb-4">Pour les agences</h4>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="{{ route('register.agency') }}" class="hover:text-white">Rejoindre la plateforme</a></li>
-                        <li><a href="#" class="hover:text-white">Tarifs</a></li>
-                        <li><a href="#" class="hover:text-white">Support</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-md font-semibold mb-4">Contact</h4>
-                    <ul class="space-y-2 text-gray-400">
-                        <li>Email: contact@rentcar.com</li>
-                        <li>Téléphone: +212 5XX XXX XXX</li>
-                        <li>Adresse: Casablanca, Maroc</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                <p>&copy; {{ date('Y') }} RentCar Platform. Tous droits réservés.</p>
-            </div>
-        </div>
-    </footer>
-@auth
-    @if(auth()->user()->role === 'client')
+    <style>
+        /* Hero section styles */
+        .reveal-section {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        
+        /* Hero content initial state - hidden for animation */
+        .hero-title,
+        .hero-subtitle,
+        .hero-search {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+    </style>
+
+    <script>
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Register GSAP plugins
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Hero Parallax Animation
+            gsap.to("#hero-bg", {
+                scrollTrigger: {
+                    trigger: ".relative.overflow-hidden",
+                    start: "top top",
+                    end: "bottom top",
+                    scrub: 1
+                },
+                y: 300,
+                scale: 1.2,
+                ease: "none"
+            });
+
+            gsap.to("#hero-car", {
+                scrollTrigger: {
+                    trigger: ".relative.overflow-hidden",
+                    start: "top top",
+                    end: "bottom top",
+                    scrub: 1.5
+                },
+                y: 200,
+                scale: 0.8,
+                opacity: 0.3,
+                ease: "none"
+            });
+
+            // Hero Content Animation (On Load) - Animate FROM hidden TO visible
+            gsap.timeline({delay: 0.3})
+                .to(".hero-title", {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: "power3.out"
+                })
+                .to(".hero-subtitle", {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.8,
+                    ease: "power3.out"
+                }, "-=0.5")
+                .to(".hero-search", {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.8,
+                    ease: "power3.out"
+                }, "-=0.5");
+
+            // Scroll Indicator fade out
+            gsap.to("#scroll-indicator", {
+                scrollTrigger: {
+                    trigger: ".relative.overflow-hidden",
+                    start: "top top",
+                    end: "bottom top",
+                    scrub: true
+                },
+                opacity: 0,
+                y: -20
+            });
+
+            // Reveal sections on scroll
+            gsap.utils.toArray('.reveal-section').forEach((section) => {
+                gsap.to(section, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: section,
+                        start: "top 80%",
+                        end: "top 50%",
+                        toggleActions: "play none none reverse"
+                    }
+                });
+            });
+
+            // Animate car cards on scroll
+            gsap.utils.toArray('.group').forEach((card, index) => {
+                gsap.from(card, {
+                    opacity: 0,
+                    y: 50,
+                    duration: 0.6,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 85%",
+                        toggleActions: "play none none reverse"
+                    },
+                    delay: (index % 4) * 0.1
+                });
+            });
+        });
+
+        // Search modal functions
+        function openSearchModal(section) {
+            // For now, just scroll to cars section
+            document.getElementById('top-picks').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function performSearch() {
+            // For now, just scroll to cars section
+            document.getElementById('top-picks').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
         @endsection
-    @else
-        </body>
-        </html>
-    @endif
-@else
-    </body>
-    </html>
-@endauth

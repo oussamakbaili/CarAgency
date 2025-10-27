@@ -4,23 +4,23 @@
 
 @section('content')
 <!-- Overview Statistics Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     <!-- Total Agencies Card -->
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-        <div class="p-6">
+    <div class="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow">
+        <div class="p-4">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100">
-                    <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-2 rounded-lg bg-blue-50">
+                    <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                     </svg>
                 </div>
-                <div class="ml-4">
-                    <h2 class="text-lg font-semibold text-gray-900">Total Agences</h2>
-                    <p class="text-3xl font-bold text-gray-900">{{ $stats['totalAgencies'] }}</p>
-                    <div class="flex items-center mt-2">
-                        <span class="text-sm text-gray-600">{{ $stats['approvedAgencies'] }} approuvées</span>
-                        <span class="mx-2 text-gray-400">•</span>
-                        <span class="text-sm text-yellow-600">{{ $stats['pendingAgencies'] }} en attente</span>
+                <div class="ml-3 flex-1">
+                    <h2 class="text-sm font-medium text-gray-600">Total Agences</h2>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['totalAgencies'] }}</p>
+                    <div class="flex items-center mt-1 text-xs text-gray-500">
+                        <span class="text-green-600">{{ $stats['approvedAgencies'] }} approuvées</span>
+                        <span class="mx-1.5">•</span>
+                        <span class="text-yellow-600">{{ $stats['pendingAgencies'] }} en attente</span>
                     </div>
                 </div>
             </div>
@@ -28,39 +28,39 @@
     </div>
 
     <!-- Total Customers Card -->
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-        <div class="p-6">
+    <div class="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow">
+        <div class="p-4">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100">
-                    <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-2 rounded-lg bg-green-50">
+                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
                     </svg>
                 </div>
-                <div class="ml-4">
-                    <h2 class="text-lg font-semibold text-gray-900">Total Clients</h2>
-                    <p class="text-3xl font-bold text-gray-900">{{ $stats['totalCustomers'] }}</p>
-                    <div class="flex items-center mt-2">
-                        <span class="text-sm text-green-600">+12% ce mois</span>
+                <div class="ml-3 flex-1">
+                    <h2 class="text-sm font-medium text-gray-600">Total Clients</h2>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['totalCustomers'] }}</p>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-green-600">+12% ce mois</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Active Rentals Card -->
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-        <div class="p-6">
+    <!-- Commissions Admin Card (replaces Active Rentals) -->
+    <div class="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow">
+        <div class="p-4">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-purple-100">
-                    <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                <div class="p-2 rounded-lg bg-blue-50">
+                    <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
                 </div>
-                <div class="ml-4">
-                    <h2 class="text-lg font-semibold text-gray-900">Locations Actives</h2>
-                    <p class="text-3xl font-bold text-gray-900">{{ $stats['activeRentals'] }}</p>
-                    <div class="flex items-center mt-2">
-                        <span class="text-sm text-gray-600">{{ $stats['totalCars'] }} véhicules disponibles</span>
+                <div class="ml-3 flex-1">
+                    <h2 class="text-sm font-medium text-gray-600">Commissions Admin</h2>
+                    <p class="text-2xl font-bold text-gray-900">{{ number_format($financialStats['total_admin_commission'] ?? 0, 0, ',', ' ') }} MAD</p>
+                    <div class="flex items-center mt-1 text-xs text-gray-500">
+                        <span>Ce mois: <span class="text-blue-600 font-medium">{{ number_format($financialStats['monthly_admin_commission'] ?? 0, 0, ',', ' ') }} MAD</span></span>
                     </div>
                 </div>
             </div>
@@ -68,19 +68,19 @@
     </div>
 
     <!-- Monthly Revenue Card -->
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-        <div class="p-6">
+    <div class="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow">
+        <div class="p-4">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-100">
-                    <svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-2 rounded-lg bg-yellow-50">
+                    <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
                     </svg>
                 </div>
-                <div class="ml-4">
-                    <h2 class="text-lg font-semibold text-gray-900">Revenus Mensuels</h2>
-                    <p class="text-3xl font-bold text-gray-900">{{ number_format($stats['monthlyRevenue'], 0, ',', ' ') }} MAD</p>
-                    <div class="flex items-center mt-2">
-                        <span class="text-sm text-green-600">+8% vs mois dernier</span>
+                <div class="ml-3 flex-1">
+                    <h2 class="text-sm font-medium text-gray-600">Revenus Mensuels</h2>
+                    <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['monthlyRevenue'], 0, ',', ' ') }} MAD</p>
+                    <div class="flex items-center mt-1 text-xs">
+                        <span class="text-green-600">+8% vs mois dernier</span>
                     </div>
                 </div>
             </div>
@@ -89,21 +89,21 @@
 </div>
 
 <!-- Second Row: Recent Applications and Revenue Chart -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
     <!-- Recent Agency Applications -->
     <div class="bg-white overflow-hidden shadow-sm rounded-lg">
         <div class="p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900">Demandes Récentes</h3>
-                <a href="{{ route('admin.agencies.pending') }}" class="text-sm text-blue-600 hover:text-blue-800">Voir tout</a>
+                <a href="{{ route('admin.agencies.pending') }}" class="text-sm text-orange-600 hover:text-orange-700 font-medium">Voir tout</a>
             </div>
             <div class="space-y-3">
                 @forelse($recentApplications as $application)
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-gray-100">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="w-10 h-10 bg-[#C2410C] rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                 </svg>
                             </div>
@@ -113,7 +113,7 @@
                             <p class="text-sm text-gray-500">{{ $application->created_at->diffForHumans() }}</p>
                         </div>
                     </div>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
                         En attente
                     </span>
                 </div>
@@ -130,10 +130,16 @@
         </div>
     </div>
 
-    <!-- Revenue Chart -->
+    <!-- Revenue Chart (with period controls) -->
     <div class="bg-white overflow-hidden shadow-sm rounded-lg">
         <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Tendances des Revenus</h3>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Évolution des Revenus</h3>
+                <div>
+                    <a href="?period=month" class="text-xs px-2 py-1 rounded {{ ($period ?? 'month')==='month' ? 'bg-orange-100 text-orange-700' : 'text-gray-500 hover:text-gray-700' }}">Mensuel</a>
+                    <a href="?period=day" class="ml-1 text-xs px-2 py-1 rounded {{ ($period ?? 'month')==='day' ? 'bg-orange-100 text-orange-700' : 'text-gray-500 hover:text-gray-700' }}">Quotidien</a>
+                </div>
+            </div>
             <div class="h-64">
                 <canvas id="revenueChart"></canvas>
             </div>
@@ -141,8 +147,8 @@
     </div>
 </div>
 
-<!-- Third Row: Booking Trends and System Alerts -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+<!-- Third Row: Booking and Commission Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
     <!-- Booking Trends Chart -->
     <div class="bg-white overflow-hidden shadow-sm rounded-lg">
         <div class="p-6">
@@ -153,28 +159,56 @@
         </div>
     </div>
 
-    <!-- System Alerts -->
+    <!-- Commission Trends Chart -->
     <div class="bg-white overflow-hidden shadow-sm rounded-lg">
         <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Alertes Système</h3>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Évolution des Commissions Admin</h3>
+            <div class="h-64">
+                <canvas id="commissionChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Agencies by Revenue and Commission -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+        <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Top 10 Agences par Revenus</h3>
             <div class="space-y-3">
-                @foreach($systemHealth as $component => $status)
+                @foreach(($topAgencies ?? []) as $index => $agency)
                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            @if($status === 'healthy')
-                            <div class="w-3 h-3 bg-green-400 rounded-full"></div>
-                            @else
-                            <div class="w-3 h-3 bg-red-400 rounded-full"></div>
-                            @endif
-                        </div>
+                        <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-semibold">{{ $index + 1 }}</div>
                         <div class="ml-3">
-                            <p class="text-sm font-medium text-gray-900 capitalize">{{ $component }}</p>
+                            <p class="font-medium text-gray-900">{{ $agency->agency_name }}</p>
+                            <p class="text-sm text-gray-500">{{ $agency->rentals_count }} réservations</p>
                         </div>
                     </div>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $status === 'healthy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        {{ $status === 'healthy' ? 'Opérationnel' : 'Problème' }}
-                    </span>
+                    <div class="text-right">
+                        <p class="font-semibold text-gray-900">{{ number_format($agency->rentals_sum_total_price ?? 0, 2) }} MAD</p>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+        <div class="p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Top 10 Agences par Commissions</h3>
+            <div class="space-y-3">
+                @foreach(($topAgenciesByCommission ?? []) as $index => $agency)
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-semibold">{{ $index + 1 }}</div>
+                        <div class="ml-3">
+                            <p class="font-medium text-gray-900">{{ $agency->agency_name }}</p>
+                            <p class="text-sm text-gray-500">{{ $agency->transaction_count }} transactions</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold text-gray-900">{{ number_format($agency->total_commission, 2) }} MAD</p>
+                    </div>
                 </div>
                 @endforeach
             </div>
@@ -196,7 +230,7 @@
                         @endif
                         <div class="relative flex space-x-3">
                             <div>
-                                <span class="h-8 w-8 rounded-full {{ $activity['color'] === 'green' ? 'bg-green-500' : ($activity['color'] === 'yellow' ? 'bg-yellow-500' : 'bg-red-500') }} flex items-center justify-center ring-8 ring-white">
+                                <span class="h-8 w-8 rounded-full {{ ($activity['color'] === 'green' ? 'bg-green-500' : ($activity['color'] === 'yellow' ? 'bg-yellow-500' : 'bg-red-500')) }} flex items-center justify-center ring-8 ring-white">
                                     @if($activity['icon'] === 'building')
                                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -295,72 +329,145 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
-// Revenue Chart
-const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-new Chart(revenueCtx, {
-    type: 'line',
-    data: {
-        labels: @json($chartsData['revenue']['labels']),
-        datasets: [{
-            label: 'Revenus (MAD)',
-            data: @json($chartsData['revenue']['data']),
-            borderColor: 'rgb(59, 130, 246)',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            tension: 0.4,
-            fill: true
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: function(value) {
-                        return value.toLocaleString() + ' MAD';
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DASHBOARD DEBUG START ===');
+    const commissionData = @json($commissionTrends ?? []);
+    
+    // Test Chart.js loading
+    console.log('Chart.js loaded:', typeof Chart !== 'undefined');
+    if (typeof Chart !== 'undefined') {
+        console.log('Chart.js version:', Chart.version);
+    } else {
+        console.error('Chart.js failed to load!');
+        return;
+    }
+    
+    // Test data
+    const revenueData = @json($chartsData['revenue']);
+    const bookingData = @json($chartsData['bookings']);
+    
+    console.log('Raw revenue data:', revenueData);
+    console.log('Raw booking data:', bookingData);
+    
+    // Test canvas elements
+    const revenueCanvas = document.getElementById('revenueChart');
+    const bookingCanvas = document.getElementById('bookingChart');
+    const commissionCanvas = document.getElementById('commissionChart');
+    
+    console.log('Revenue canvas found:', !!revenueCanvas);
+    console.log('Booking canvas found:', !!bookingCanvas);
+    
+    if (!revenueCanvas || !bookingCanvas) {
+        console.error('Canvas elements not found!');
+        return;
+    }
+    
+    // Create charts with real data
+    try {
+        // Revenue Chart
+        new Chart(revenueCanvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: revenueData.labels || [],
+                datasets: [{
+                    label: 'Revenus (MAD)',
+                    data: revenueData.data || [],
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' MAD';
+                            }
+                        }
                     }
                 }
             }
+        });
+        console.log('✅ Revenue chart created successfully');
+    } catch (error) {
+        console.error('❌ Error creating revenue chart:', error);
+    }
+    
+    try {
+        // Booking Chart
+        new Chart(bookingCanvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: bookingData.labels || [],
+                datasets: [{
+                    label: 'Réservations',
+                    data: bookingData.data || [],
+                    backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                    borderColor: 'rgb(16, 185, 129)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        console.log('✅ Booking chart created successfully');
+    } catch (error) {
+        console.error('❌ Error creating booking chart:', error);
+    }
+    
+    if (commissionCanvas && Array.isArray(commissionData)) {
+        try {
+            new Chart(commissionCanvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: commissionData.map(item => item.period || (item.month + '/' + item.year)),
+                    datasets: [{
+                        label: 'Commissions Admin (MAD)',
+                        data: commissionData.map(item => item.total_commission),
+                        borderColor: 'rgb(99, 102, 241)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+            console.log('✅ Commission chart created successfully');
+        } catch (error) {
+            console.error('❌ Error creating commission chart:', error);
         }
     }
-});
-
-// Booking Chart
-const bookingCtx = document.getElementById('bookingChart').getContext('2d');
-new Chart(bookingCtx, {
-    type: 'bar',
-    data: {
-        labels: @json($chartsData['bookings']['labels']),
-        datasets: [{
-            label: 'Réservations',
-            data: @json($chartsData['bookings']['data']),
-            backgroundColor: 'rgba(16, 185, 129, 0.8)',
-            borderColor: 'rgb(16, 185, 129)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
-    }
+    
+    console.log('=== DASHBOARD DEBUG END ===');
 });
 </script>
 @endpush

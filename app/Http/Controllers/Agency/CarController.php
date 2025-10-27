@@ -144,6 +144,21 @@ class CarController extends Controller
         return redirect()->route('agence.cars.index')->with('success', 'Voiture supprimée avec succès.');
     }
 
+    public function updateStatus(Request $request, Car $car)
+    {
+        $this->authorize('update', $car);
+        
+        $request->validate([
+            'status' => 'required|in:available,rented,maintenance',
+        ]);
+
+        $car->update([
+            'status' => $request->status,
+        ]);
+
+        return redirect()->back()->with('success', 'Statut du véhicule mis à jour avec succès.');
+    }
+
     public function categories()
     {
         // This method is now handled by CategoryController
