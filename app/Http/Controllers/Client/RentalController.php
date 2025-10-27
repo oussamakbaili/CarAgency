@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Rental;
 use App\Models\Car;
 use App\Services\RentalService;
+use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -69,7 +70,7 @@ class RentalController extends Controller
 
         $totalPrice = $days * $car->price_per_day;
 
-        Rental::create([
+        $rental = Rental::create([
             'user_id' => auth()->id(),
             'car_id' => $car->id,
             'agency_id' => $car->agency_id,
@@ -78,6 +79,9 @@ class RentalController extends Controller
             'total_price' => $totalPrice,
             'status' => 'pending'
         ]);
+
+        // Créer une notification pour l'agence
+        NotificationHelper::notifyNewBooking($car->agency_id, $rental, $car, auth()->user());
 
         return redirect()->route('client.rentals.index')
             ->with('success', 'Rental request submitted successfully! The agency will review your request.');

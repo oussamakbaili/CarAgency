@@ -60,12 +60,31 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Get user info before logout for logging
+        $user = Auth::user();
+        $userRole = $user ? $user->role : 'unknown';
+        
+        // Complete logout process
         Auth::guard('web')->logout();
-
+        
+        // Invalidate the session completely
         $request->session()->invalidate();
-
+        
+        // Regenerate CSRF token
         $request->session()->regenerateToken();
+        
+        // Clear all session data
+        $request->session()->flush();
+        
+        // Add success message
+        $request->session()->flash('success', 'Vous avez été déconnecté avec succès.');
 
-        return redirect('/');
+        // Force redirect to home page using route name
+        // This ensures we go to the public home page, not any profile page
+        return redirect()->route('public.home', ['logout' => 'success'])->withHeaders([
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0'
+        ]);
     }
 }

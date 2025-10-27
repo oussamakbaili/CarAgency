@@ -1,7 +1,7 @@
 @extends('layouts.agence')
 
 @section('content')
-<div class="py-12">
+<div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Header Section -->
         <div class="mb-8">
@@ -10,19 +10,29 @@
                     <h1 class="text-3xl font-bold text-gray-900">Toutes les Réservations</h1>
                     <p class="mt-2 text-gray-600">Gérez toutes les réservations de votre flotte</p>
                 </div>
-                <div class="flex space-x-4">
-                    <form method="GET" class="flex space-x-2">
-                        <select name="status" onchange="this.form.submit()" class="border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            <option value="">Toutes les réservations</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>En attente</option>
-                            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Actives</option>
-                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Terminées</option>
-                            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Annulées</option>
-                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejetées</option>
-                        </select>
+                <div class="flex space-x-3">
+                    <form method="GET" class="flex space-x-3">
+                        <!-- Dropdown Filter -->
+                        <div class="relative inline-block min-w-[240px]">
+                            <select name="status" onchange="this.form.submit()" class="appearance-none w-full pl-4 pr-10 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer">
+                                <option value="">Toutes les réservations</option>
+                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>En attente</option>
+                                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Actives</option>
+                                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Terminées</option>
+                                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Annulées</option>
+                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejetées</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <!-- Export Button -->
                         <a href="{{ route('agence.bookings.index', array_merge(request()->query(), ['export' => 'csv'])) }}" 
-                           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           class="inline-flex items-center px-5 py-2.5 bg-[#C2410C] hover:bg-[#9A3412] text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                             Exporter
@@ -117,7 +127,16 @@
         <!-- Bookings Table -->
         <div class="bg-white shadow-sm rounded-lg overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Toutes les Réservations</h3>
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-gray-900">Toutes les Réservations</h3>
+                    <div class="text-sm text-gray-500">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        Cliquez sur une ligne pour voir les détails
+                    </div>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -134,7 +153,7 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($rentals as $rental)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50 cursor-pointer" onclick="handleRowClick(event, {{ $rental->id }})">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-10 w-10">
@@ -205,22 +224,30 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex justify-end space-x-2">
+                                <div class="flex justify-end space-x-2" onclick="event.stopPropagation()">
                                     @if($rental->status === 'pending')
                                         <form method="POST" action="{{ route('agence.rentals.approve', $rental) }}" class="inline">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" class="text-green-600 hover:text-green-900">Approuver</button>
+                                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-xs font-medium transition duration-200">
+                                                Approuver
+                                            </button>
                                         </form>
                                         <form method="POST" action="{{ route('agence.rentals.reject', $rental) }}" class="inline">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" class="text-red-600 hover:text-red-900">Rejeter</button>
+                                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-xs font-medium transition duration-200">
+                                                Rejeter
+                                            </button>
                                         </form>
                                     @else
-                                        <a href="{{ route('agence.rentals.show', $rental) }}" class="text-blue-600 hover:text-blue-900">Voir</a>
+                                        <a href="{{ route('agence.rentals.show', $rental) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium transition duration-200">
+                                            Voir
+                                        </a>
                                         @if($rental->status === 'completed')
-                                            <a href="{{ route('agence.rentals.invoice', $rental) }}" class="text-gray-600 hover:text-gray-900">Facture</a>
+                                            <a href="{{ route('agence.rentals.invoice', $rental) }}" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-md text-xs font-medium transition duration-200">
+                                                Facture
+                                            </a>
                                         @endif
                                     @endif
                                 </div>
@@ -273,4 +300,48 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+function handleRowClick(event, rentalId) {
+    // Empêche le clic si l'utilisateur clique sur un bouton ou un lien
+    if (event.target.tagName === 'BUTTON' || event.target.tagName === 'A' || event.target.closest('button') || event.target.closest('a')) {
+        return;
+    }
+    
+    // Redirige vers la page de détails de la réservation
+    window.location.href = `/agence/rentals/${rentalId}`;
+}
+
+// Améliorer l'expérience utilisateur avec des effets visuels
+document.addEventListener('DOMContentLoaded', function() {
+    // Ajouter un effet de survol plus prononcé
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(2px)';
+            this.style.transition = 'transform 0.2s ease';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+    
+    // Ajouter des animations aux boutons
+    const buttons = document.querySelectorAll('button, .bg-blue-600, .bg-green-600, .bg-red-600, .bg-gray-600');
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+            this.style.transition = 'transform 0.2s ease';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>
+@endpush
+
 @endsection

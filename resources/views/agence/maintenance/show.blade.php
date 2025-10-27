@@ -1,7 +1,7 @@
 @extends('layouts.agence')
 
 @section('content')
-<div class="py-12">
+<div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Header Section -->
         <div class="mb-8">
@@ -138,9 +138,9 @@
                     <h2 class="text-xl font-semibold text-gray-900 mb-6">Véhicule</h2>
                     
                     <!-- Vehicle Image -->
-                    @if($maintenance->car->image)
+                    @if($maintenance->car->image_url)
                     <div class="mb-4">
-                        <img src="{{ asset('storage/' . $maintenance->car->image) }}" alt="{{ $maintenance->car->brand }} {{ $maintenance->car->model }}" class="w-full h-32 object-cover rounded-lg">
+                        <img src="{{ $maintenance->car->image_url }}" alt="{{ $maintenance->car->brand }} {{ $maintenance->car->model }}" class="w-full h-32 object-cover rounded-lg">
                     </div>
                     @endif
 

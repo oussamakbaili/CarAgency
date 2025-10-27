@@ -15,7 +15,7 @@ class BookingController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Rental::with(['user', 'car.agency', 'agency']);
+        $query = Rental::with(['user.client', 'car.agency', 'agency']);
 
         // Advanced filtering
         if ($request->has('status') && $request->status !== '') {
@@ -45,11 +45,11 @@ class BookingController extends Controller
         }
 
         if ($request->has('date_from') && $request->date_from !== '') {
-            $query->whereDate('created_at', '>=', $request->date_from);
+            $query->where('created_at', '>=', $request->date_from . ' 00:00:00');
         }
 
         if ($request->has('date_to') && $request->date_to !== '') {
-            $query->whereDate('created_at', '<=', $request->date_to);
+            $query->where('created_at', '<=', $request->date_to . ' 23:59:59');
         }
 
         if ($request->has('price_min') && $request->price_min !== '') {
@@ -246,11 +246,11 @@ class BookingController extends Controller
         }
 
         if ($request->has('date_from') && $request->date_from !== '') {
-            $query->whereDate('created_at', '>=', $request->date_from);
+            $query->where('created_at', '>=', $request->date_from . ' 00:00:00');
         }
 
         if ($request->has('date_to') && $request->date_to !== '') {
-            $query->whereDate('created_at', '<=', $request->date_to);
+            $query->where('created_at', '<=', $request->date_to . ' 23:59:59');
         }
 
         $bookings = $query->get();

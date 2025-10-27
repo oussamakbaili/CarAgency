@@ -401,73 +401,81 @@ function closeStatusModal() {
 }
 
 // Handle reply form submission
-document.getElementById('replyForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', function() {
+    const replyForm = document.getElementById('replyForm');
+    if (replyForm) {
+        replyForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const ticketId = formData.get('ticket_id');
+            const message = formData.get('message');
+            
+            fetch(`/agence/customers/support/${ticketId}/reply`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    message: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Réponse envoyée avec succès!');
+                    closeReplyModal();
+                    location.reload();
+                } else {
+                    alert('Erreur lors de l\'envoi de la réponse: ' + (data.message || 'Erreur inconnue'));
+                }
+            })
+            .catch(error => {
+                console.error('Error sending reply:', error);
+                alert('Erreur lors de l\'envoi de la réponse');
+            });
+        });
+    }
     
-    const formData = new FormData(this);
-    const ticketId = formData.get('ticket_id');
-    const message = formData.get('message');
-    
-    fetch(`/agence/customers/support/${ticketId}/reply`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            message: message
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Réponse envoyée avec succès!');
-            closeReplyModal();
-            location.reload();
-        } else {
-            alert('Erreur lors de l\'envoi de la réponse: ' + (data.message || 'Erreur inconnue'));
-        }
-    })
-    .catch(error => {
-        console.error('Error sending reply:', error);
-        alert('Erreur lors de l\'envoi de la réponse');
-    });
-});
-
-// Handle status form submission
-document.getElementById('statusForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const ticketId = formData.get('ticket_id');
-    const status = formData.get('status');
-    const priority = formData.get('priority');
-    
-    fetch(`/agence/customers/support/${ticketId}/update-status`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            status: status,
-            priority: priority
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Statut mis à jour avec succès!');
-            closeStatusModal();
-            location.reload();
-        } else {
-            alert('Erreur lors de la mise à jour: ' + (data.message || 'Erreur inconnue'));
-        }
-    })
-    .catch(error => {
-        console.error('Error updating status:', error);
-        alert('Erreur lors de la mise à jour du statut');
-    });
+    // Handle status form submission
+    const statusForm = document.getElementById('statusForm');
+    if (statusForm) {
+        statusForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const ticketId = formData.get('ticket_id');
+            const status = formData.get('status');
+            const priority = formData.get('priority');
+            
+            fetch(`/agence/customers/support/${ticketId}/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    status: status,
+                    priority: priority
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Statut mis à jour avec succès!');
+                    closeStatusModal();
+                    location.reload();
+                } else {
+                    alert('Erreur lors de la mise à jour: ' + (data.message || 'Erreur inconnue'));
+                }
+            })
+            .catch(error => {
+                console.error('Error updating status:', error);
+                alert('Erreur lors de la mise à jour du statut');
+            });
+        });
+    }
 });
 </script>
 @endsection

@@ -15,6 +15,7 @@ class AgenceMiddleware
             return $next($request);
         }
 
-        return redirect('/');
+        // Redirect to public home page instead of root
+        return redirect()->route('public.home');
     }
 }

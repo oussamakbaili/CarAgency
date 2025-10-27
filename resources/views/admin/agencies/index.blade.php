@@ -116,8 +116,7 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($agencies as $agency)
-                            <tr class="hover:bg-gray-50 cursor-pointer transition-colors duration-150" 
-                                onclick="window.location.href='{{ route('admin.agencies.show', $agency) }}'">
+                            <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">{{ $agency->agency_name }}</div>
                                     <div class="text-sm text-gray-500">RC: {{ $agency->commercial_register_number }}</div>
@@ -143,7 +142,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex space-x-2 justify-end" onclick="event.stopPropagation()">
                                         @if($agency->status === 'pending')
-                                            <form action="{{ route('admin.agencies.approve', $agency) }}" method="POST" class="inline">
+                                            <form action="{{ route('admin.agencies.approve', $agency) }}" method="POST" class="inline" onsubmit="return handleApprove(event, {{ $agency->id }})">
                                                 @csrf
                                                 <button type="submit" 
                                                         class="inline-flex items-center px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700">
@@ -153,7 +152,7 @@
                                                     Approuver
                                                 </button>
                                             </form>
-                                            <button onclick="openRejectModal({{ $agency->id }})" 
+                                            <button type="button" onclick="openRejectModal({{ $agency->id }})" 
                                                     class="inline-flex items-center px-3 py-1 bg-red-600 text-white text-xs rounded-md hover:bg-red-700">
                                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -200,7 +199,7 @@
                     </svg>
                 </button>
             </div>
-            <form id="rejectForm" method="POST">
+            <form id="rejectForm" method="POST" onsubmit="return handleReject(event)">
                 @csrf
                 <div class="mb-4">
                     <label for="rejection_reason" class="block text-sm font-medium text-gray-700 mb-2">
@@ -227,27 +226,114 @@
 </div>
 
 <script>
+async function handleApprove(e, agencyId) {
+    e.preventDefault();
+    const form = e.target;
+    try {
+        const resp = await fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                'Accept': 'application/json'
+            }
+        });
+        if (resp.ok) {
+            // Update status badge in the same row
+            const row = form.closest('tr');
+            const badge = row.querySelector('span.rounded-full');
+            if (badge) {
+                badge.className = 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800';
+                badge.textContent = 'Approved';
+            }
+            // Hide action buttons
+            form.parentElement.querySelectorAll('button').forEach(b => b.disabled = true);
+        } else {
+            window.location.reload();
+        }
+    } catch (err) {
+        window.location.reload();
+    }
+    return false;
+}
+
+async function handleReject(e) {
+    e.preventDefault();
+    const form = e.target;
+    try {
+        const resp = await fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
+                'Accept': 'application/json'
+            },
+            body: new FormData(form)
+        });
+        if (resp.ok) {
+            // Find the pending row (modal was opened from it previously) and update badge
+            const idMatch = form.action.match(/agencies\/(\d+)\/reject/);
+            if (idMatch) {
+                const agencyId = idMatch[1];
+                const rows = document.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    if (row.textContent.includes(agencyId)) {
+                        // fallback if id is printed; otherwise just close modal and reload
+                    }
+                });
+            }
+            // Simplest reliable UX: reload to reflect list and counters
+            window.location.reload();
+        } else {
+            window.location.reload();
+        }
+    } catch (err) {
+        window.location.reload();
+    }
+    return false;
+}
+
 function openRejectModal(agencyId) {
     const modal = document.getElementById('rejectModal');
     const form = document.getElementById('rejectForm');
     
-    // Set the form action
-    form.action = `{{ route('admin.agencies.reject', '') }}/${agencyId}`;
+    // Set the form action correctly to match /admin/agencies/{agency}/reject
+    form.action = `{{ url('admin/agencies') }}/${agencyId}/reject`;
     
     // Show modal
     modal.classList.remove('hidden');
 }
 
 function closeRejectModal() {
-    document.getElementById('rejectModal').classList.add('hidden');
+    const modal = document.getElementById('rejectModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
 }
 
 // Close modal when clicking outside
-document.getElementById('rejectModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeRejectModal();
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('rejectModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRejectModal();
+            }
+        });
     }
 });
 </script>
+
+@push('scripts')
+<script>
+// Ensure our handlers are attached after layout scripts
+document.addEventListener('DOMContentLoaded', function() {
+    // Remove any hover styling class that might be injected elsewhere
+    document.querySelectorAll('tbody tr').forEach(function(row) {
+        row.classList.remove('hover:bg-gray-50');
+    });
+});
+</script>
+@endpush
 @endsection
 

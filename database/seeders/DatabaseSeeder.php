@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             CategorySeeder::class,
             AgencyDashboardSeeder::class,
+            AdminDashboardSeeder::class,
+            ReviewSeeder::class,
             MaintenanceSeeder::class,
         ]);
     }

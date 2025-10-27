@@ -139,8 +139,8 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-lg shadow p-6">
                         <h2 class="text-xl font-semibold mb-4">Photos du Véhicule</h2>
-                        @if($car->image ?? false)
-                            <img src="{{ asset('storage/' . $car->image) }}" alt="Car Photo" class="w-full h-64 object-cover rounded-lg">
+                        @if($car->image_url)
+                            <img src="{{ $car->image_url }}" alt="Car Photo" class="w-full h-64 object-cover rounded-lg">
                         @else
                             <div class="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
                                 <p class="text-gray-500">Aucune photo disponible</p>

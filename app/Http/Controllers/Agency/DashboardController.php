@@ -12,6 +12,7 @@ use App\Models\Client;
 use App\Services\RentalService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -57,14 +58,18 @@ class DashboardController extends Controller
 
     private function getBusinessOverview($agency)
     {
-        // Fleet Statistics
-        $totalCars = Car::where('agency_id', $agency->id)->sum('stock_quantity');
-        $availableCars = Car::where('agency_id', $agency->id)
-            ->where('available_stock', '>', 0)
-            ->sum('available_stock');
-        $carsInMaintenance = Car::where('agency_id', $agency->id)
-            ->where('status', 'maintenance')
-            ->count();
+        // Cache key for business overview (5 minutes cache)
+        $cacheKey = "agency.{$agency->id}.business_overview";
+        
+        return Cache::remember($cacheKey, 300, function() use ($agency) {
+            // Fleet Statistics
+            $totalCars = Car::where('agency_id', $agency->id)->sum('stock_quantity');
+            $availableCars = Car::where('agency_id', $agency->id)
+                ->where('available_stock', '>', 0)
+                ->sum('available_stock');
+            $carsInMaintenance = Car::where('agency_id', $agency->id)
+                ->where('status', 'maintenance')
+                ->count();
         
         // Rental Statistics
         $activeRentals = Rental::where('rentals.agency_id', $agency->id)
@@ -96,31 +101,37 @@ class DashboardController extends Controller
             ->count();
         $conversionRate = $totalBookings > 0 ? ($completedBookings / $totalBookings) * 100 : 0;
         
-        // Customer Satisfaction (placeholder - would need review system)
-        $customerRating = 4.5; // This would come from reviews table
-        $reviewCount = 0; // This would come from reviews table
+        // Customer Satisfaction - Real calculation from reviews
+        $reviews = \App\Models\Avis::where('agency_id', $agency->id)
+            ->where('is_public', true)
+            ->get();
         
-        return [
-            'totalCars' => $totalCars,
-            'availableCars' => $availableCars,
-            'carsInMaintenance' => $carsInMaintenance,
-            'activeRentals' => $activeRentals,
-            'pendingBookings' => $pendingBookings,
-            'monthlyRevenue' => $monthlyRevenue,
-            'revenueGrowth' => $revenueGrowth,
-            'conversionRate' => $conversionRate,
-            'customerRating' => $customerRating,
-            'reviewCount' => $reviewCount,
-        ];
+        $reviewCount = $reviews->count();
+        $customerRating = $reviewCount > 0 ? round($reviews->avg('rating'), 1) : 0;
+        
+            return [
+                'totalCars' => $totalCars,
+                'availableCars' => $availableCars,
+                'carsInMaintenance' => $carsInMaintenance,
+                'activeRentals' => $activeRentals,
+                'pendingBookings' => $pendingBookings,
+                'monthlyRevenue' => $monthlyRevenue,
+                'revenueGrowth' => $revenueGrowth,
+                'conversionRate' => $conversionRate,
+                'customerRating' => $customerRating,
+                'reviewCount' => $reviewCount,
+            ];
+        });
     }
 
     private function getRecentActivity($agency)
     {
         $activities = collect();
         
-        // Recent bookings
+        // Recent bookings - Optimized with eager loading
         $recentBookings = Rental::where('rentals.agency_id', $agency->id)
-            ->with(['car', 'client'])
+            ->with(['car:id,brand,model', 'client:id,user_id', 'user:id,name'])
+            ->select('id', 'car_id', 'user_id', 'agency_id', 'status', 'created_at')
             ->latest()
             ->take(5)
             ->get()
@@ -135,8 +146,9 @@ class DashboardController extends Controller
                 ];
             });
         
-        // Recent transactions
+        // Recent transactions - Optimized
         $recentTransactions = Transaction::where('transactions.agency_id', $agency->id)
+            ->select('id', 'agency_id', 'amount', 'description', 'status', 'created_at')
             ->latest()
             ->take(5)
             ->get()
@@ -151,8 +163,9 @@ class DashboardController extends Controller
                 ];
             });
         
-        // System activities
+        // System activities - Optimized
         $systemActivities = Activity::where('activities.agency_id', $agency->id)
+            ->select('id', 'agency_id', 'description', 'created_at')
             ->latest()
             ->take(5)
             ->get()
@@ -219,22 +232,37 @@ class DashboardController extends Controller
 
     private function getDataTables($agency)
     {
-        // Recent bookings
+        // Recent bookings - Optimized with select
         $recentBookings = Rental::where('rentals.agency_id', $agency->id)
-            ->with(['car', 'client'])
+            ->with([
+                'car:id,brand,model,registration_number',
+                'client:id,phone,user_id',
+                'user:id,name,email'
+            ])
+            ->select('id', 'car_id', 'user_id', 'agency_id', 'start_date', 'end_date', 'status', 'total_price', 'created_at')
             ->latest()
             ->take(10)
             ->get();
         
-        // Fleet status overview
+        // Fleet status overview - Optimized
         $fleetStatus = Car::where('agency_id', $agency->id)
             ->with(['rentals' => function($query) {
-                $query->where('status', 'active');
+                $query->where('status', 'active')
+                    ->select('id', 'car_id', 'start_date', 'end_date', 'status');
             }])
+            ->select('id', 'agency_id', 'brand', 'model', 'status', 'stock_quantity', 'available_stock')
             ->get();
         
-        // Upcoming maintenance (placeholder - would need maintenance table)
-        $upcomingMaintenance = collect();
+        // Upcoming maintenance - Real data with optimized query
+        $upcomingMaintenance = \App\Models\Maintenance::where('agency_id', $agency->id)
+            ->whereIn('status', ['scheduled', 'pending'])
+            ->where('scheduled_date', '>=', Carbon::now())
+            ->where('scheduled_date', '<=', Carbon::now()->addDays(30))
+            ->with('car:id,brand,model,registration_number')
+            ->select('id', 'agency_id', 'car_id', 'type', 'status', 'scheduled_date', 'description')
+            ->orderBy('scheduled_date', 'asc')
+            ->take(5)
+            ->get();
         
         return [
             'recentBookings' => $recentBookings,

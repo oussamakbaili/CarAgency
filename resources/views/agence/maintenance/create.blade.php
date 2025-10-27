@@ -1,7 +1,7 @@
 @extends('layouts.agence')
 
 @section('content')
-<div class="py-12">
+<div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Header Section -->
         <div class="mb-8">
@@ -222,16 +222,21 @@
 @push('scripts')
 <script>
 // Auto-fill start date when status is in_progress
-document.getElementById('status').addEventListener('change', function() {
-    if (this.value === 'in_progress') {
-        document.getElementById('start_date').value = new Date().toISOString().split('T')[0];
-    }
-});
-
-// Auto-fill end date when status is completed
-document.getElementById('status').addEventListener('change', function() {
-    if (this.value === 'completed') {
-        document.getElementById('end_date').value = new Date().toISOString().split('T')[0];
+document.addEventListener('DOMContentLoaded', function() {
+    const statusField = document.getElementById('status');
+    const startDateField = document.getElementById('start_date');
+    const endDateField = document.getElementById('end_date');
+    
+    if (statusField && startDateField && endDateField) {
+        statusField.addEventListener('change', function() {
+            if (this.value === 'in_progress') {
+                startDateField.value = new Date().toISOString().split('T')[0];
+            }
+            
+            if (this.value === 'completed') {
+                endDateField.value = new Date().toISOString().split('T')[0];
+            }
+        });
     }
 });
 </script>

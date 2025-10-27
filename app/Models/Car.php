@@ -36,7 +36,10 @@ class Car extends Model
         'transmission',
         'seats',
         'engine_size',
-        'features'
+        'features',
+        'featured',
+        'show_on_homepage',
+        'homepage_priority'
     ];
 
     protected $casts = [
@@ -52,6 +55,10 @@ class Car extends Model
         'seats' => 'integer',
         'features' => 'array',
         'pictures' => 'array',
+        'featured' => 'boolean',
+        'show_on_homepage' => 'boolean',
+        'homepage_priority' => 'integer',
+        'featured_at' => 'datetime',
     ];
 
     protected $appends = ['is_available'];
@@ -81,6 +88,16 @@ class Car extends Model
         return $this->hasManyThrough(\App\Models\Avis::class, Rental::class, 'car_id', 'rental_id');
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function approvedReviews()
+    {
+        return $this->reviews()->approved();
+    }
+
     public function isAvailable()
     {
         return $this->status === self::STATUS_AVAILABLE;
@@ -96,12 +113,15 @@ class Car extends Model
         return $this->status === self::STATUS_MAINTENANCE;
     }
 
-    // Review methods
+    // Méthodes pour les avis
     public function getAverageRating()
     {
-        return \App\Models\Avis::whereHas('rental', function($query) {
-            $query->where('car_id', $this->id);
-        })->where('is_public', true)->avg('rating') ?? 0;
+        return $this->approvedReviews()->avg('rating') ?: 0;
+    }
+
+    public function getReviewsCount()
+    {
+        return $this->approvedReviews()->count();
     }
 
     public function getTotalReviews()
@@ -179,6 +199,24 @@ class Car extends Model
                     ->whereHas('agency', function($q) {
                         $q->where('status', 'approved');
                     });
+    }
+
+    // Scope for featured cars
+    public function scopeFeatured($query)
+    {
+        return $query->where('featured', true);
+    }
+
+    // Scope for homepage cars
+    public function scopeShowOnHomepage($query)
+    {
+        return $query->where('show_on_homepage', true);
+    }
+
+    // Scope to order by homepage priority
+    public function scopeOrderByPriority($query)
+    {
+        return $query->orderBy('homepage_priority', 'desc')->orderBy('created_at', 'desc');
     }
 
     // Get the image URL

@@ -19,6 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Configuration du mapping des relations polymorphes
+        \Illuminate\Database\Eloquent\Relations\Relation::morphMap([
+            'client' => \App\Models\User::class,
+            'agency' => \App\Models\User::class,
+        ]);
     }
 }

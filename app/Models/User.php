@@ -43,6 +43,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'last_seen_at' => 'datetime',
         'password' => 'hashed',
     ];
 
@@ -69,5 +70,61 @@ class User extends Authenticatable implements MustVerifyEmail
     public function client()
     {
         return $this->hasOne(Client::class);
+    }
+
+    /**
+     * Messages envoyés par cet utilisateur
+     */
+    public function sentMessages()
+    {
+        return $this->morphMany(Message::class, 'sender');
+    }
+
+    /**
+     * Messages reçus par cet utilisateur
+     */
+    public function receivedMessages()
+    {
+        return $this->morphMany(Message::class, 'receiver');
+    }
+
+    /**
+     * Obtenir le type d'utilisateur pour les messages
+     */
+    public function getMessageType(): string
+    {
+        if ($this->isAdmin()) {
+            return 'admin';
+        } elseif ($this->isAgence()) {
+            return 'agency';
+        } elseif ($this->isClient()) {
+            return 'client';
+        }
+        
+        return 'user';
+    }
+
+    /**
+     * Marquer l'utilisateur comme en ligne
+     */
+    public function markOnline(): void
+    {
+        $this->update(['last_seen_at' => now()]);
+    }
+
+    /**
+     * Vérifier si l'utilisateur est en ligne (vu dans les 5 dernières minutes)
+     */
+    public function isOnline(): bool
+    {
+        return $this->last_seen_at && $this->last_seen_at->diffInMinutes(now()) <= 5;
+    }
+
+    /**
+     * Relation avec les notifications client
+     */
+    public function clientNotifications()
+    {
+        return $this->hasMany(ClientNotification::class);
     }
 }

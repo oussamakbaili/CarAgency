@@ -5,9 +5,9 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    @if(auth()->user()->role === 'admin')
+                    @if(auth()->user() && auth()->user()->role === 'admin')
                         <a href="{{ route('admin.dashboard') }}">
-                    @elseif(auth()->user()->role === 'agence')
+                    @elseif(auth()->user() && auth()->user()->role === 'agence')
                         <a href="{{ route('agence.dashboard') }}">
                     @else
                         <a href="{{ route('client.dashboard') }}">
@@ -18,11 +18,11 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                    @if(auth()->user()->role === 'admin')
+                    @if(auth()->user() && auth()->user()->role === 'admin')
                         <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                             {{ __('Dashboard') }}
                         </x-nav-link>
-                    @elseif(auth()->user()->role === 'agence')
+                    @elseif(auth()->user() && auth()->user()->role === 'agence')
                         <x-nav-link :href="route('agence.dashboard')" :active="request()->routeIs('agence.dashboard')">
                             {{ __('Dashboard') }}
                         </x-nav-link>
@@ -83,11 +83,11 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            @if(auth()->user()->role === 'admin')
+            @if(auth()->user() && auth()->user()->role === 'admin')
                 <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
                     {{ __('Dashboard') }}
                 </x-responsive-nav-link>
-            @elseif(auth()->user()->role === 'agence')
+            @elseif(auth()->user() && auth()->user()->role === 'agence')
                 <x-responsive-nav-link :href="route('agence.dashboard')" :active="request()->routeIs('agence.dashboard')">
                     {{ __('Dashboard') }}
                 </x-responsive-nav-link>

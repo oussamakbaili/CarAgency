@@ -18,7 +18,23 @@ class VehicleController extends Controller
 
         // Advanced filtering
         if ($request->has('status') && $request->status !== '') {
-            $query->where('status', $request->status);
+            // Normalize incoming status (supports FR labels just in case)
+            $rawStatus = strtolower(trim($request->status));
+            $statusMap = [
+                'available' => Car::STATUS_AVAILABLE,
+                'disponible' => Car::STATUS_AVAILABLE,
+                'rented' => Car::STATUS_RENTED,
+                'en location' => Car::STATUS_RENTED,
+                'location' => Car::STATUS_RENTED,
+                'maintenance' => Car::STATUS_MAINTENANCE,
+                'en maintenance' => Car::STATUS_MAINTENANCE,
+            ];
+
+            $normalizedStatus = $statusMap[$rawStatus] ?? $rawStatus;
+
+            if (in_array($normalizedStatus, [Car::STATUS_AVAILABLE, Car::STATUS_RENTED, Car::STATUS_MAINTENANCE], true)) {
+                $query->where('cars.status', $normalizedStatus);
+            }
         }
 
         if ($request->has('brand') && $request->brand !== '') {

@@ -1,7 +1,7 @@
 @extends('layouts.agence')
 
 @section('content')
-<div class="py-12">
+<div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Header Section -->
         <div class="mb-8">
@@ -391,53 +391,58 @@ function downloadTaxDocuments() {
 }
 
 // Handle payment request form submission
-document.getElementById('paymentRequestForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const amount = formData.get('amount');
-    const paymentMethod = formData.get('payment_method');
-    const notes = formData.get('notes');
-    
-    // Validate amount
-    const maxAmount = {{ $overview['current_balance'] ?? 0 }};
-    if (parseFloat(amount) > maxAmount) {
-        alert('Le montant demandé ne peut pas dépasser votre solde disponible.');
-        return;
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentRequestForm = document.getElementById('paymentRequestForm');
+    if (paymentRequestForm) {
+        paymentRequestForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const amount = formData.get('amount');
+            const paymentMethod = formData.get('payment_method');
+            const notes = formData.get('notes');
+            
+            // Validate amount
+            const maxAmount = {{ $overview['current_balance'] ?? 0 }};
+            if (parseFloat(amount) > maxAmount) {
+                alert('Le montant demandé ne peut pas dépasser votre solde disponible.');
+                return;
+            }
+            
+            if (parseFloat(amount) < 100) {
+                alert('Le montant minimum de retrait est de 100 DH.');
+                return;
+            }
+            
+            // Send payment request
+            fetch('/agence/finance/request-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    amount: amount,
+                    payment_method: paymentMethod,
+                    notes: notes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Demande de paiement envoyée avec succès!');
+                    closePaymentRequestModal();
+                    location.reload();
+                } else {
+                    alert('Erreur lors de l\'envoi de la demande: ' + (data.message || 'Erreur inconnue'));
+                }
+            })
+            .catch(error => {
+                console.error('Error sending payment request:', error);
+                alert('Erreur lors de l\'envoi de la demande de paiement');
+            });
+        });
     }
-    
-    if (parseFloat(amount) < 100) {
-        alert('Le montant minimum de retrait est de 100 DH.');
-        return;
-    }
-    
-    // Send payment request
-    fetch('/agence/finance/request-payment', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            amount: amount,
-            payment_method: paymentMethod,
-            notes: notes
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Demande de paiement envoyée avec succès!');
-            closePaymentRequestModal();
-            location.reload();
-        } else {
-            alert('Erreur lors de l\'envoi de la demande: ' + (data.message || 'Erreur inconnue'));
-        }
-    })
-    .catch(error => {
-        console.error('Error sending payment request:', error);
-        alert('Erreur lors de l\'envoi de la demande de paiement');
-    });
 });
 </script>
 @endpush

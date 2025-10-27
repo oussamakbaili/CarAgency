@@ -30,27 +30,9 @@ class RentalService
                 throw new Exception('Impossible de réserver cette voiture.');
             }
 
-            // Calculate commission
-            $commissionRate = $rental->agency->commission_rate / 100;
-            $commissionAmount = $rental->total_price * $commissionRate;
-            $agencyAmount = $rental->total_price - $commissionAmount;
-
-            // Create payment transaction for agency
-            Transaction::createTransaction(
-                $rental->agency_id,
-                Transaction::TYPE_RENTAL_PAYMENT,
-                $agencyAmount,
-                "Paiement pour location #{$rental->id} - {$rental->car->brand} {$rental->car->model}",
-                $rental->id,
-                [
-                    'commission_rate' => $rental->agency->commission_rate,
-                    'commission_amount' => $commissionAmount,
-                    'original_amount' => $rental->total_price
-                ]
-            );
-
-            // Update agency earnings
-            $rental->agency->increment('total_earnings', $agencyAmount);
+            // Process commissions using the new CommissionService
+            $commissionService = new \App\Services\CommissionService();
+            $breakdown = $commissionService->processCommissions($rental);
 
             // Update rental status
             $rental->update(['status' => Rental::STATUS_APPROVED]);

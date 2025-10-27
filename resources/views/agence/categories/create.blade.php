@@ -1,7 +1,7 @@
 @extends('layouts.agence')
 
 @section('content')
-<div class="py-12">
+<div>
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Header Section -->
         <div class="mb-8">
@@ -128,13 +128,20 @@
 @push('scripts')
 <script>
 // Sync color picker with text input
-document.getElementById('color').addEventListener('input', function() {
-    document.getElementById('color_text').value = this.value;
-});
-
-document.getElementById('color_text').addEventListener('input', function() {
-    if (this.value.match(/^#[0-9A-F]{6}$/i)) {
-        document.getElementById('color').value = this.value;
+document.addEventListener('DOMContentLoaded', function() {
+    const colorPicker = document.getElementById('color');
+    const colorText = document.getElementById('color_text');
+    
+    if (colorPicker && colorText) {
+        colorPicker.addEventListener('input', function() {
+            colorText.value = this.value;
+        });
+        
+        colorText.addEventListener('input', function() {
+            if (this.value.match(/^#[0-9A-F]{6}$/i)) {
+                colorPicker.value = this.value;
+            }
+        });
     }
 });
 </script>

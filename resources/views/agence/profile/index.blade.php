@@ -164,13 +164,21 @@ function showProfilePictureModal() {
 }
 
 function closeProfilePictureModal() {
-    document.getElementById('profilePictureModal').classList.add('hidden');
+    const modal = document.getElementById('profilePictureModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
 }
 
 // Close modal when clicking outside
-document.getElementById('profilePictureModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeProfilePictureModal();
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('profilePictureModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProfilePictureModal();
+            }
+        });
     }
 });
 </script>

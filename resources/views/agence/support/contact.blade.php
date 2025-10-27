@@ -16,7 +16,7 @@
     </div>
 
     <!-- Contact Methods -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Phone Support -->
         <div class="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
             <div class="flex items-center mb-4">
@@ -106,25 +106,29 @@
             <p class="text-gray-600">Envoyez-nous un message et nous vous répondrons rapidement</p>
         </div>
         <div class="p-6">
-            <form action="{{ route('agence.support.store') }}" method="POST" class="space-y-6">
+            <form action="{{ route('agence.support.contact.store') }}" method="POST" class="space-y-6">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nom complet</label>
-                        <input type="text" name="name" id="name" value="{{ auth()->user()->name }}" required 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" name="name" id="name" value="{{ auth()->user()->agency->nom ?? 'Agence Test' }}" readonly
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600">
                     </div>
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input type="email" name="email" id="email" value="{{ auth()->user()->email }}" required 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="email" name="email" id="email" value="{{ auth()->user()->email }}" readonly
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600">
                     </div>
                 </div>
                 
                 <div>
                     <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">Sujet</label>
                     <input type="text" name="subject" id="subject" required 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="Ex: Question sur les commissions">
+                    @error('subject')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
                 
                 <div>
@@ -134,7 +138,11 @@
                         <option value="low">Faible - Question générale</option>
                         <option value="medium" selected>Moyenne - Problème technique</option>
                         <option value="high">Élevée - Problème urgent</option>
+                        <option value="urgent">Urgente - Besoin immédiat</option>
                     </select>
+                    @error('priority')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
                 
                 <div>
@@ -142,6 +150,9 @@
                     <textarea name="message" id="message" rows="6" required 
                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                               placeholder="Décrivez votre problème ou votre question en détail..."></textarea>
+                    @error('message')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
                 
                 <div class="flex justify-end">
@@ -154,42 +165,53 @@
         </div>
     </div>
 
-    <!-- Business Hours -->
-    <div class="bg-white rounded-lg shadow-sm border">
-        <div class="p-6 border-b border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-900">Heures d'Ouverture du Support</h2>
-        </div>
-        <div class="p-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h3 class="font-medium text-gray-900 mb-3">Support Standard</h3>
-                    <div class="space-y-2 text-sm text-gray-600">
-                        <div class="flex justify-between">
-                            <span>Lundi - Vendredi</span>
-                            <span>8h00 - 18h00</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Samedi</span>
-                            <span>9h00 - 16h00</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Dimanche</span>
-                            <span>Fermé</span>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <h3 class="font-medium text-gray-900 mb-3">Support Urgent</h3>
-                    <div class="space-y-2 text-sm text-gray-600">
-                        <div class="flex justify-between">
-                            <span>24h/24 - 7j/7</span>
-                            <span class="text-green-600 font-medium">Disponible</span>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">
-                            Pour les problèmes critiques affectant vos opérations
-                        </p>
-                    </div>
-                </div>
+</div>
+
+<!-- Messages de succès/erreur -->
+@if(session('success'))
+    <div id="success-toast" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        {{ session('success') }}
+    </div>
+    <script>
+        setTimeout(() => {
+            document.getElementById('success-toast').style.display = 'none';
+        }, 5000);
+    </script>
+@endif
+
+@if(session('error'))
+    <div id="error-toast" class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        {{ session('error') }}
+    </div>
+    <script>
+        setTimeout(() => {
+            document.getElementById('error-toast').style.display = 'none';
+        }, 5000);
+    </script>
+@endif
+
+<!-- Modal de Chat -->
+<div id="chatModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 mb-4">
+                <svg class="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 text-center mb-2">
+                127.0.0.1:8000 indique
+            </h3>
+            <div class="text-center">
+                <p class="text-sm text-gray-500 mb-4">
+                    Fonctionnalité de chat en direct bientôt disponible !
+                </p>
+                <p class="text-xs text-gray-400 mb-6">
+                    En attendant, utilisez le formulaire de contact ou appelez-nous directement.
+                </p>
+                <button onclick="closeChatModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    OK
+                </button>
             </div>
         </div>
     </div>
@@ -197,7 +219,25 @@
 
 <script>
 function startLiveChat() {
-    alert('Fonctionnalité de chat en direct bientôt disponible !\n\nEn attendant, utilisez le formulaire de contact ou appelez-nous directement.');
+    document.getElementById('chatModal').classList.remove('hidden');
 }
+
+function closeChatModal() {
+    document.getElementById('chatModal').classList.add('hidden');
+}
+
+// Fermer le modal en cliquant à l'extérieur
+document.getElementById('chatModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeChatModal();
+    }
+});
+
+// Fermer le modal avec la touche Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeChatModal();
+    }
+});
 </script>
 @endsection

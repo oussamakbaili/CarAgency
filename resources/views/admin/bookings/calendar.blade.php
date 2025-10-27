@@ -3,121 +3,113 @@
 @section('header', 'Vue Calendrier des Réservations')
 
 @section('content')
-<div class="p-6">
+<div class="space-y-6">
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
-                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                        </svg>
-                    </div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                    </svg>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Revenus du mois</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($statistics['monthlyRevenue'] ?? 0, 0) }} MAD</p>
+                <div>
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Revenus du mois</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ number_format($statistics['monthlyRevenue'] ?? 0, 0) }} MAD</p>
                 </div>
             </div>
         </div>
         
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
-                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                        </svg>
-                    </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Locations actives</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $statistics['active'] ?? 0 }}</p>
+                <div>
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Locations actives</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $statistics['active'] ?? 0 }}</p>
                 </div>
             </div>
         </div>
         
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-yellow-100 rounded-md flex items-center justify-center">
-                        <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg bg-yellow-50 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">En attente</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $statistics['pending'] ?? 0 }}</p>
+                <div>
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">En attente</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $statistics['pending'] ?? 0 }}</p>
                 </div>
             </div>
         </div>
         
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center">
-                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-lg bg-gray-50 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Terminées</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $statistics['completed'] ?? 0 }}</p>
+                <div>
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Terminées</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $statistics['completed'] ?? 0 }}</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Calendrier des Réservations</h1>
-        <p class="text-gray-600">Visualisez et gérez les réservations sur le calendrier</p>
+    <div>
+        <h1 class="text-xl font-bold text-gray-900">Calendrier des Réservations</h1>
+        <p class="text-sm text-gray-500">Visualisez et gérez les réservations sur le calendrier</p>
     </div>
 
     <!-- Calendar Controls -->
-    <div class="bg-white rounded-lg shadow p-6 mb-6">
+    <div class="bg-white border border-gray-200 rounded-lg p-5">
         <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center gap-3">
                 <button onclick="previousMonth()" 
-                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
                     Précédent
                 </button>
-                <h2 id="currentMonth" class="text-lg font-semibold text-gray-900">Septembre 2025</h2>
+                <h2 id="currentMonth" class="text-base font-semibold text-gray-900 min-w-[180px] text-center">Octobre 2025</h2>
                 <button onclick="nextMonth()" 
-                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                     Suivant
-                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </button>
                 <button onclick="goToToday()" 
-                        class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200">
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
                     Aujourd'hui
                 </button>
             </div>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center gap-2">
                 <button onclick="setView('month')" 
                         id="monthBtn"
-                        class="px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded-md">Mois</button>
+                        class="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg">Mois</button>
                 <button onclick="setView('week')" 
                         id="weekBtn"
-                        class="px-3 py-1 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-md">Semaine</button>
+                        class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">Semaine</button>
                 <button onclick="setView('day')" 
                         id="dayBtn"
-                        class="px-3 py-1 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-md">Jour</button>
+                        class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">Jour</button>
             </div>
         </div>
     </div>
 
     <!-- Calendar Grid -->
-    <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-medium text-gray-900">Calendrier des Réservations</h3>
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h3 class="text-base font-semibold text-gray-900">Calendrier des Réservations</h3>
         </div>
         
         <!-- Month View -->
@@ -166,28 +158,28 @@
     </div>
 
     <!-- Legend -->
-    <div class="mt-6 bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">Légende</h3>
+    <div class="bg-white border border-gray-200 rounded-lg p-5">
+        <h3 class="text-sm font-semibold text-gray-900 mb-3">Légende</h3>
         <div class="flex flex-wrap gap-4">
-            <div class="flex items-center">
-                <div class="w-4 h-4 bg-green-100 rounded mr-2"></div>
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-green-100 rounded border border-green-200"></div>
                 <span class="text-sm text-gray-600">Locations actives</span>
             </div>
-            <div class="flex items-center">
-                <div class="w-4 h-4 bg-yellow-100 rounded mr-2"></div>
-                <span class="text-sm text-gray-600">Réservations en attente</span>
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-orange-100 rounded border border-orange-200"></div>
+                <span class="text-sm text-gray-600">En attente</span>
             </div>
-            <div class="flex items-center">
-                <div class="w-4 h-4 bg-blue-100 rounded mr-2"></div>
-                <span class="text-sm text-gray-600">Locations terminées</span>
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-blue-100 rounded border border-blue-200"></div>
+                <span class="text-sm text-gray-600">Terminées</span>
             </div>
-            <div class="flex items-center">
-                <div class="w-4 h-4 bg-red-100 rounded mr-2"></div>
-                <span class="text-sm text-gray-600">Réservations rejetées</span>
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-red-100 rounded border border-red-200"></div>
+                <span class="text-sm text-gray-600">Rejetées</span>
             </div>
-            <div class="flex items-center">
-                <div class="w-4 h-4 bg-gray-100 rounded mr-2"></div>
-                <span class="text-sm text-gray-600">Réservations annulées</span>
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-gray-100 rounded border border-gray-200"></div>
+                <span class="text-sm text-gray-600">Annulées</span>
             </div>
         </div>
     </div>
@@ -465,17 +457,17 @@ function isSameDay(date1, date2) {
 function getStatusColor(status) {
     switch(status) {
         case 'pending':
-            return 'bg-yellow-100 text-yellow-800';
+            return 'bg-orange-100 text-orange-700';
         case 'active':
-            return 'bg-green-100 text-green-800';
+            return 'bg-green-100 text-green-700';
         case 'completed':
-            return 'bg-blue-100 text-blue-800';
+            return 'bg-blue-100 text-blue-700';
         case 'rejected':
-            return 'bg-red-100 text-red-800';
+            return 'bg-red-100 text-red-700';
         case 'cancelled':
-            return 'bg-gray-100 text-gray-800';
+            return 'bg-gray-100 text-gray-700';
         default:
-            return 'bg-gray-100 text-gray-800';
+            return 'bg-gray-100 text-gray-700';
     }
 }
 
@@ -522,16 +514,16 @@ function setView(view) {
     
     // Update button styles
     document.getElementById('monthBtn').className = view === 'month' ? 
-        'px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded-md' : 
-        'px-3 py-1 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-md';
+        'px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg' : 
+        'px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors';
     
     document.getElementById('weekBtn').className = view === 'week' ? 
-        'px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded-md' : 
-        'px-3 py-1 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-md';
+        'px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg' : 
+        'px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors';
     
     document.getElementById('dayBtn').className = view === 'day' ? 
-        'px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded-md' : 
-        'px-3 py-1 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-md';
+        'px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg' : 
+        'px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors';
     
     // Render the selected view
     renderCalendar();
@@ -578,13 +570,21 @@ function showBookingDetails(bookingId) {
 }
 
 function closeModal() {
-    document.getElementById('bookingModal').classList.add('hidden');
+    const modal = document.getElementById('bookingModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
 }
 
 // Close modal when clicking outside
-document.getElementById('bookingModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeModal();
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('bookingModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
     }
 });
 </script>

@@ -29,7 +29,7 @@
                     <div class="ml-3">
                         <h3 class="text-lg font-medium text-red-800">Raison de la suspension</h3>
                         <div class="mt-2 text-sm text-red-700">
-                            <p>{{ auth()->user()->agency->suspension_reason ?? 'Trop d\'annulations de réservations' }}</p>
+                            <p>{{ auth()->user() && auth()->user()->agency ? auth()->user()->agency->suspension_reason : 'Trop d\'annulations de réservations' }}</p>
                         </div>
                     </div>
                 </div>
@@ -43,16 +43,16 @@
                         <div class="flex justify-between">
                             <span class="text-sm font-medium text-gray-500">Date de suspension:</span>
                             <span class="text-sm text-gray-900">
-                                {{ auth()->user()->agency->suspended_at ? auth()->user()->agency->suspended_at->format('d/m/Y à H:i') : 'N/A' }}
+                                {{ auth()->user() && auth()->user()->agency && auth()->user()->agency->suspended_at ? auth()->user()->agency->suspended_at->format('d/m/Y à H:i') : 'N/A' }}
                             </span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-sm font-medium text-gray-500">Nombre d'annulations:</span>
-                            <span class="text-sm text-gray-900">{{ auth()->user()->agency->cancellation_count ?? 0 }}</span>
+                            <span class="text-sm text-gray-900">{{ auth()->user() && auth()->user()->agency ? auth()->user()->agency->cancellation_count : 0 }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-sm font-medium text-gray-500">Limite autorisée:</span>
-                            <span class="text-sm text-gray-900">{{ auth()->user()->agency->max_cancellations ?? 3 }}</span>
+                            <span class="text-sm text-gray-900">{{ auth()->user() && auth()->user()->agency ? auth()->user()->agency->max_cancellations : 3 }}</span>
                         </div>
                     </div>
                 </div>
