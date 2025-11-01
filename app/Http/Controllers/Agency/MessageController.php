@@ -190,10 +190,13 @@ class MessageController extends Controller
             abort(403, 'Accès non autorisé à cette conversation.');
         }
 
-        // Récupérer les nouveaux messages
-        $messages = Message::where('rental_id', $rental->id)
-            ->where('id', '>', $lastMessageId)
-            ->with(['sender', 'receiver'])
+        // Si lastMessageId est 0, récupérer tous les messages
+        $query = Message::where('rental_id', $rental->id);
+        if ($lastMessageId > 0) {
+            $query->where('id', '>', $lastMessageId);
+        }
+        
+        $messages = $query->with(['sender', 'receiver'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -205,6 +208,7 @@ class MessageController extends Controller
         }
 
         return response()->json([
+            'success' => true,
             'messages' => $messages,
             'last_message_id' => $messages->max('id') ?? $lastMessageId,
         ]);

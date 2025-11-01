@@ -45,10 +45,11 @@
         <!-- Booking Statistics -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             @php
+                $agency = auth()->user()->agency;
                 $totalRentals = $rentals->total();
-                $pendingCount = \App\Models\Rental::where('rentals.agency_id', auth()->user()->agency->id)->where('status', 'pending')->count();
-                $activeCount = \App\Models\Rental::where('rentals.agency_id', auth()->user()->agency->id)->where('status', 'active')->count();
-                $monthlyRevenue = \App\Models\Rental::where('rentals.agency_id', auth()->user()->agency->id)
+                $pendingCount = \App\Models\Rental::forAgency($agency->id)->where('status', 'pending')->count();
+                $activeCount = \App\Models\Rental::forAgency($agency->id)->where('status', 'active')->count();
+                $monthlyRevenue = \App\Models\Rental::forAgency($agency->id)
                     ->where('status', 'completed')
                     ->whereMonth('created_at', now()->month)
                     ->whereYear('created_at', now()->year)
@@ -148,12 +149,11 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Période</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($rentals as $rental)
-                        <tr class="hover:bg-gray-50 cursor-pointer" onclick="handleRowClick(event, {{ $rental->id }})">
+                        <tr class="hover:bg-gray-50 cursor-pointer" data-row-url="{{ route('agence.rentals.show', $rental) }}" onclick="handleRowClick(event, this.dataset.rowUrl)">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-10 w-10">
@@ -172,7 +172,9 @@
                                         </div>
                                     </div>
                                     <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">Réservation #{{ str_pad($rental->id, 3, '0', STR_PAD_LEFT) }}</div>
+                                        <div class="text-sm font-medium text-gray-900">
+                                            <a href="{{ route('agence.rentals.show', $rental) }}" class="text-blue-700 hover:underline" onclick="event.stopPropagation()">Réservation #{{ str_pad($rental->id, 3, '0', STR_PAD_LEFT) }}</a>
+                                        </div>
                                         <div class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($rental->created_at)->format('d M Y') }}</div>
                                     </div>
                                 </div>
@@ -223,35 +225,7 @@
                                     {{ $label }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex justify-end space-x-2" onclick="event.stopPropagation()">
-                                    @if($rental->status === 'pending')
-                                        <form method="POST" action="{{ route('agence.rentals.approve', $rental) }}" class="inline">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md text-xs font-medium transition duration-200">
-                                                Approuver
-                                            </button>
-                                        </form>
-                                        <form method="POST" action="{{ route('agence.rentals.reject', $rental) }}" class="inline">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-xs font-medium transition duration-200">
-                                                Rejeter
-                                            </button>
-                                        </form>
-                                    @else
-                                        <a href="{{ route('agence.rentals.show', $rental) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-xs font-medium transition duration-200">
-                                            Voir
-                                        </a>
-                                        @if($rental->status === 'completed')
-                                            <a href="{{ route('agence.rentals.invoice', $rental) }}" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-md text-xs font-medium transition duration-200">
-                                                Facture
-                                            </a>
-                                        @endif
-                                    @endif
-                                </div>
-                            </td>
+                            
                         </tr>
                         @empty
                         <tr>
@@ -303,44 +277,111 @@
 
 @push('scripts')
 <script>
-function handleRowClick(event, rentalId) {
-    // Empêche le clic si l'utilisateur clique sur un bouton ou un lien
-    if (event.target.tagName === 'BUTTON' || event.target.tagName === 'A' || event.target.closest('button') || event.target.closest('a')) {
-        return;
+(function() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                     document.querySelector('input[name="_token"]')?.value;
+
+    function handleRowClick(event, rowUrl) {
+        // Empêche le clic si on est dans la zone d'actions ou sur un contrôle
+        if (
+            event.target.tagName === 'BUTTON' ||
+            event.target.tagName === 'A' ||
+            event.target.closest('button') ||
+            event.target.closest('a') ||
+            event.target.closest('form') ||
+            event.target.closest('[data-action-area]')
+        ) {
+            return;
+        }
+        
+        // Redirige vers la page de détails du client
+        if (rowUrl && rowUrl !== '#') {
+            window.location.href = rowUrl;
+        }
     }
     
-    // Redirige vers la page de détails de la réservation
-    window.location.href = `/agence/rentals/${rentalId}`;
-}
+    // Expose handleRowClick globally
+    window.handleRowClick = handleRowClick;
 
-// Améliorer l'expérience utilisateur avec des effets visuels
-document.addEventListener('DOMContentLoaded', function() {
-    // Ajouter un effet de survol plus prononcé
-    const rows = document.querySelectorAll('tbody tr');
-    rows.forEach(row => {
-        row.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateX(2px)';
-            this.style.transition = 'transform 0.2s ease';
-        });
-        
-        row.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateX(0)';
-        });
-    });
+    function initRentalButtons() {
+        // Expose helpers globalement pour être appelés en inline onclick
+        window.approveRental = function(e, id) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (!confirm('Êtes-vous sûr de vouloir approuver cette réservation ?')) return false;
+            const form = document.querySelector(`.approve-fallback-${id}`);
+            if (form) { form.submit(); return false; }
+            return false;
+        };
+        window.rejectRental = function(e, id) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (!confirm('Êtes-vous sûr de vouloir rejeter cette réservation ?')) return false;
+            const form = document.querySelector(`.reject-fallback-${id}`);
+            if (form) { form.submit(); return false; }
+            return false;
+        };
+    }
     
-    // Ajouter des animations aux boutons
-    const buttons = document.querySelectorAll('button, .bg-blue-600, .bg-green-600, .bg-red-600, .bg-gray-600');
-    buttons.forEach(button => {
-        button.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.05)';
-            this.style.transition = 'transform 0.2s ease';
+    // Attendre que le DOM soit prêt
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initRentalButtons();
+            
+            // Améliorer l'expérience utilisateur avec des effets visuels
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(2px)';
+                    this.style.transition = 'transform 0.2s ease';
+                });
+                
+                row.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+            
+            // Ajouter des animations aux boutons
+            const buttons = document.querySelectorAll('button, .bg-blue-600, .bg-green-600, .bg-red-600, .bg-gray-600');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.05)';
+                    this.style.transition = 'transform 0.2s ease';
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        });
+    } else {
+        initRentalButtons();
+        
+        // Améliorer l'expérience utilisateur avec des effets visuels
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(2px)';
+                this.style.transition = 'transform 0.2s ease';
+            });
+            
+            row.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
+            });
         });
         
-        button.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1)';
+        // Ajouter des animations aux boutons
+        const buttons = document.querySelectorAll('button, .bg-blue-600, .bg-green-600, .bg-red-600, .bg-gray-600');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.05)';
+                this.style.transition = 'transform 0.2s ease';
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
         });
-    });
-});
+    }
+})();
 </script>
 @endpush
 

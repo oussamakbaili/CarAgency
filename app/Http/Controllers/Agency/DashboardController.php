@@ -72,20 +72,20 @@ class DashboardController extends Controller
                 ->count();
         
         // Rental Statistics
-        $activeRentals = Rental::where('rentals.agency_id', $agency->id)
+        $activeRentals = Rental::forAgency($agency->id)
             ->where('rentals.status', 'active')
             ->count();
-        $pendingBookings = Rental::where('rentals.agency_id', $agency->id)
+        $pendingBookings = Rental::forAgency($agency->id)
             ->where('rentals.status', 'pending')
             ->count();
         
         // Revenue Statistics
-        $monthlyRevenue = Rental::where('rentals.agency_id', $agency->id)
+        $monthlyRevenue = Rental::forAgency($agency->id)
             ->whereIn('rentals.status', ['active', 'completed'])
             ->whereMonth('rentals.created_at', Carbon::now()->month)
             ->sum('rentals.total_price');
         
-        $previousMonthRevenue = Rental::where('rentals.agency_id', $agency->id)
+        $previousMonthRevenue = Rental::forAgency($agency->id)
             ->whereIn('rentals.status', ['active', 'completed'])
             ->whereMonth('rentals.created_at', Carbon::now()->subMonth()->month)
             ->sum('rentals.total_price');
@@ -95,8 +95,8 @@ class DashboardController extends Controller
             : 0;
         
         // Performance Metrics
-        $totalBookings = Rental::where('rentals.agency_id', $agency->id)->count();
-        $completedBookings = Rental::where('rentals.agency_id', $agency->id)
+        $totalBookings = Rental::forAgency($agency->id)->count();
+        $completedBookings = Rental::forAgency($agency->id)
             ->where('rentals.status', 'completed')
             ->count();
         $conversionRate = $totalBookings > 0 ? ($completedBookings / $totalBookings) * 100 : 0;
@@ -129,7 +129,7 @@ class DashboardController extends Controller
         $activities = collect();
         
         // Recent bookings - Optimized with eager loading
-        $recentBookings = Rental::where('rentals.agency_id', $agency->id)
+        $recentBookings = Rental::forAgency($agency->id)
             ->with(['car:id,brand,model', 'client:id,user_id', 'user:id,name'])
             ->select('id', 'car_id', 'user_id', 'agency_id', 'status', 'created_at')
             ->latest()
@@ -190,7 +190,7 @@ class DashboardController extends Controller
     private function getPerformanceCharts($agency)
     {
         // Revenue trends (last 12 months)
-        $revenueTrends = Rental::where('rentals.agency_id', $agency->id)
+        $revenueTrends = Rental::forAgency($agency->id)
             ->whereIn('rentals.status', ['active', 'completed'])
             ->select(
                 DB::raw('MONTH(rentals.created_at) as month'),
@@ -204,7 +204,7 @@ class DashboardController extends Controller
             ->get();
         
         // Booking patterns by car type
-        $bookingPatterns = Rental::where('rentals.agency_id', $agency->id)
+        $bookingPatterns = Rental::forAgency($agency->id)
             ->join('cars', 'rentals.car_id', '=', 'cars.id')
             ->select(
                 'cars.brand',
@@ -233,9 +233,10 @@ class DashboardController extends Controller
     private function getDataTables($agency)
     {
         // Recent bookings - Optimized with select
-        $recentBookings = Rental::where('rentals.agency_id', $agency->id)
+        // Use combined query to catch all rentals (via agency_id and car relation)
+        $recentBookings = Rental::forAgency($agency->id)
             ->with([
-                'car:id,brand,model,registration_number',
+                'car:id,brand,model,registration_number,agency_id',
                 'client:id,phone,user_id',
                 'user:id,name,email'
             ])
@@ -274,7 +275,7 @@ class DashboardController extends Controller
     private function getQuickActionsData($agency)
     {
         return [
-            'pendingBookingsCount' => Rental::where('rentals.agency_id', $agency->id)
+            'pendingBookingsCount' => Rental::forAgency($agency->id)
                 ->where('rentals.status', 'pending')
                 ->count(),
             'availableCarsCount' => Car::where('cars.agency_id', $agency->id)

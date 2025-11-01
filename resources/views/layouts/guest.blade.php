@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'RentCar Platform') }}</title>
+        <title>{{ config('app.name', 'ToubCar') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -49,7 +49,7 @@
             }
             
             .btn-primary {
-                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                background: linear-gradient(135deg, #C2410C, #9A3412);
                 transition: all 0.3s ease;
                 position: relative;
                 overflow: hidden;
@@ -57,7 +57,8 @@
             
             .btn-primary:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+                box-shadow: 0 10px 25px rgba(194, 65, 12, 0.4);
+                background: linear-gradient(135deg, #9A3412, #7c2d12);
             }
             
             .btn-secondary {
@@ -103,13 +104,11 @@
         <!-- Navigation -->
         <nav class="bg-white shadow-lg">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
+                <div class="flex justify-between items-center h-20">
                     <div class="flex items-center">
                         <a href="/" class="flex items-center">
-                            <svg class="h-8 w-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                            </svg>
-                            <span class="ml-2 text-xl font-bold text-gray-900">RentCar Platform</span>
+                            <img src="{{ asset('images/toubcar-logo.png') }}" alt="ToubCar" class="h-24 w-auto">
+                            <span class="ml-3 text-xl font-bold text-gray-900">ToubCar</span>
                         </a>
                     </div>
                     <div class="flex items-center space-x-4">
@@ -131,18 +130,7 @@
 
         <!-- Main Content -->
         <div class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-            <div class="sm:mx-auto sm:w-full sm:max-w-md">
-                <div class="text-center mb-8">
-                    <a href="/" class="inline-flex items-center">
-                        <svg class="h-12 w-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                        </svg>
-                        <span class="ml-2 text-2xl font-bold text-gray-900">RentCar Platform</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="sm:mx-auto sm:w-full sm:max-w-md">
+            <div class="sm:mx-auto sm:w-full">
                 <div class="bg-white py-8 px-4 shadow-xl sm:rounded-2xl sm:px-10 fade-in">
                     {{ $slot ?? '' }}
                 </div>

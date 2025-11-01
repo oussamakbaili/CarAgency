@@ -265,6 +265,15 @@ Route::middleware(['auth', 'role:agence'])->prefix('agence')->name('agence.')->g
     Route::get('/rejected', [AgencyController::class, 'showRejected'])->name('rejected');
     Route::get('/suspended', [AgencyController::class, 'showSuspended'])->name('suspended');
     Route::put('/update', [AgencyController::class, 'update'])->name('update');
+    
+    // Support routes accessible to all agencies (including pending)
+    Route::prefix('support')->name('support.')->group(function () {
+        Route::get('/create', [App\Http\Controllers\Agency\SupportController::class, 'create'])->name('create');
+        Route::post('/store', [App\Http\Controllers\Agency\SupportController::class, 'store'])->name('store');
+        Route::get('/', [App\Http\Controllers\Agency\SupportController::class, 'index'])->name('index');
+        Route::get('/tickets/{ticket}', [App\Http\Controllers\Agency\SupportController::class, 'show'])->name('show');
+        Route::post('/tickets/{ticket}/reply', [App\Http\Controllers\Agency\SupportController::class, 'reply'])->name('reply');
+    });
 
     // Routes only accessible to approved agencies
     Route::middleware('approved.agency')->group(function () {

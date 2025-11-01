@@ -107,4 +107,18 @@ class Rental extends Model
     {
         return $query->where('status', 'completed');
     }
+
+    /**
+     * Scope pour filtrer les réservations par agence
+     * Utilise agency_id ET la relation car pour capturer toutes les réservations
+     */
+    public function scopeForAgency($query, $agencyId)
+    {
+        return $query->where(function($q) use ($agencyId) {
+            $q->where('rentals.agency_id', $agencyId)
+              ->orWhereHas('car', function($carQuery) use ($agencyId) {
+                  $carQuery->where('agency_id', $agencyId);
+              });
+        });
+    }
 } 

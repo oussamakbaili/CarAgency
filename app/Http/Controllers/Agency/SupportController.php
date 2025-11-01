@@ -17,12 +17,17 @@ class SupportController extends Controller
     {
         $agency = auth()->user()->agency;
         
+        if (!$agency) {
+            return redirect()->route('agence.pending')
+                ->with('error', 'Votre compte agence n\'est pas encore configuré.');
+        }
+        
         $tickets = SupportTicket::where('agency_id', $agency->id)
             ->whereNull('client_id') // S'assurer que c'est un ticket créé par l'agence, pas par un client
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        return view('agence.support.index', compact('tickets'));
+        return view('agence.support.index', compact('tickets', 'agency'));
     }
 
     /**
@@ -32,16 +37,24 @@ class SupportController extends Controller
     {
         $agency = auth()->user()->agency;
         
-        // Get agency's recent rentals with valid start dates
-        $rentals = Rental::whereHas('car', function($q) use ($agency) {
-                $q->where('agency_id', $agency->id);
-            })
-            ->where('status', '!=', 'rejected')
-            ->whereNotNull('start_date')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        if (!$agency) {
+            return redirect()->route('agence.pending')
+                ->with('error', 'Votre compte agence n\'est pas encore configuré.');
+        }
+        
+        // Get agency's recent rentals with valid start dates (only if agency is approved)
+        $rentals = collect([]);
+        if ($agency->status === 'approved') {
+            $rentals = Rental::whereHas('car', function($q) use ($agency) {
+                    $q->where('agency_id', $agency->id);
+                })
+                ->where('status', '!=', 'rejected')
+                ->whereNotNull('start_date')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
 
-        return view('agence.support.create', compact('rentals'));
+        return view('agence.support.create', compact('rentals', 'agency'));
     }
 
     /**
@@ -59,8 +72,13 @@ class SupportController extends Controller
 
         $agency = auth()->user()->agency;
 
-        // Verify rental belongs to agency if provided
-        if ($request->rental_id) {
+        if (!$agency) {
+            return redirect()->route('agence.pending')
+                ->with('error', 'Votre compte agence n\'est pas encore configuré.');
+        }
+
+        // Verify rental belongs to agency if provided (only for approved agencies)
+        if ($request->rental_id && $agency->status === 'approved') {
             $rental = Rental::whereHas('car', function($q) use ($agency) {
                     $q->where('agency_id', $agency->id);
                 })
@@ -72,6 +90,9 @@ class SupportController extends Controller
                     ->with('error', 'Location invalide.')
                     ->withInput();
             }
+        } else {
+            // For pending agencies, ignore rental_id
+            $request->merge(['rental_id' => null]);
         }
 
         $ticket = SupportTicket::create([
@@ -86,7 +107,12 @@ class SupportController extends Controller
             'status' => 'open',
         ]);
 
-        return redirect()->route('agence.support.index')
+        // Redirect based on agency status
+        $redirectRoute = $agency->status === 'approved' 
+            ? route('agence.support.index') 
+            : route('agence.pending');
+
+        return redirect($redirectRoute)
             ->with('success', 'Votre ticket de support a été envoyé avec succès ! Notre équipe vous répondra dans les plus brefs délais.');
     }
 
@@ -115,6 +141,11 @@ class SupportController extends Controller
         ]);
 
         $agency = auth()->user()->agency;
+        
+        if (!$agency) {
+            return redirect()->route('agence.pending')
+                ->with('error', 'Votre compte agence n\'est pas encore configuré.');
+        }
         
         $ticket = SupportTicket::where('id', $id)
             ->where('agency_id', $agency->id)
