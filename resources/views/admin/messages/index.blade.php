@@ -51,7 +51,7 @@
                          data-status="{{ $conversation->type === 'support' ? ($conversation->status ?? 'unknown') : 'all' }}"
                          data-conversation-id="{{ $conversation->type }}_{{ $conversation->id }}"
                          data-conversation-data="{{ htmlspecialchars(json_encode($conversation), ENT_QUOTES, 'UTF-8') }}"
-                         onclick="selectConversation('{{ $conversation->type }}', '{{ $conversation->id }}', this.dataset.conversationData)">
+                         onclick="selectConversation('{{ $conversation->type }}', '{{ $conversation->id }}', this.getAttribute('data-conversation-data'))">
                         <div class="p-4">
                             <div class="flex items-center space-x-3">
                                 <!-- Avatar -->
@@ -264,28 +264,64 @@ let selectedConversationData = null;
 function selectConversation(type, id, conversationData) {
     console.log('Selecting conversation:', type, id, conversationData);
     
-    selectedConversationId = `${type}_${id}`;
-    selectedConversationData = JSON.parse(conversationData);
-    
-    console.log('Parsed conversation data:', selectedConversationData);
-    
-    // Update UI to show selected conversation
-    document.querySelectorAll('.bg-orange-50').forEach(el => {
-        el.classList.remove('bg-orange-50', 'border-r-orange-500');
-    });
-    
-    // Find and highlight the clicked conversation item
-    const conversationElement = document.querySelector(`[data-conversation-id="${type}_${id}"]`);
-    if (conversationElement) {
-        conversationElement.classList.add('bg-orange-50', 'border-r-orange-500');
+    try {
+        selectedConversationId = `${type}_${id}`;
+        
+        // Parse conversation data safely
+        if (typeof conversationData === 'string') {
+            // Decode HTML entities first
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = conversationData;
+            const decoded = tempDiv.textContent || tempDiv.innerText || conversationData;
+            
+            // Try to parse as JSON
+            try {
+                selectedConversationData = JSON.parse(decoded);
+            } catch (e) {
+                // If parsing still fails, try with manual unescaping
+                try {
+                    const unescaped = decoded.replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+                    selectedConversationData = JSON.parse(unescaped);
+                } catch (e2) {
+                    console.error('Error parsing conversation data:', e2);
+                    console.error('Raw data:', conversationData);
+                    console.error('Decoded data:', decoded);
+                    alert('Erreur lors de l\'ouverture de la conversation: Données invalides.');
+                    return;
+                }
+            }
+        } else if (typeof conversationData === 'object') {
+            // Already an object
+            selectedConversationData = conversationData;
+        } else {
+            console.error('Invalid conversation data type:', typeof conversationData);
+            alert('Erreur lors de l\'ouverture de la conversation: Format de données invalide.');
+            return;
+        }
+        
+        console.log('Parsed conversation data:', selectedConversationData);
+        
+        // Update UI to show selected conversation
+        document.querySelectorAll('.bg-orange-50').forEach(el => {
+            el.classList.remove('bg-orange-50', 'border-r-orange-500');
+        });
+        
+        // Find and highlight the clicked conversation item
+        const conversationElement = document.querySelector(`[data-conversation-id="${type}_${id}"]`);
+        if (conversationElement) {
+            conversationElement.classList.add('bg-orange-50', 'border-r-orange-500');
+        }
+        
+        // Show chat interface and hide welcome screen
+        document.getElementById('welcome-screen').classList.add('hidden');
+        document.getElementById('chat-interface').classList.remove('hidden');
+        
+        // Load conversation data
+        loadConversationData(selectedConversationData, type);
+    } catch (error) {
+        console.error('Error in selectConversation:', error);
+        alert('Erreur lors de l\'ouverture de la conversation: ' + error.message);
     }
-    
-    // Show chat interface and hide welcome screen
-    document.getElementById('welcome-screen').classList.add('hidden');
-    document.getElementById('chat-interface').classList.remove('hidden');
-    
-    // Load conversation data
-    loadConversationData(selectedConversationData, type);
 }
 
 function loadConversationData(conversation, type) {
@@ -325,32 +361,38 @@ function loadConversationData(conversation, type) {
     }
 }
 
-function loadMessages(conversation) {
+// Load rental messages for rental conversations
+async function loadMessages(conversation) {
     const messagesContainer = document.getElementById('messages-container');
     
     // Show loading state
     messagesContainer.innerHTML = '<div class="text-center text-gray-500 mt-8"><p>Chargement des messages...</p></div>';
     
-    // Simulate loading messages (in real app, this would be an AJAX call)
-    setTimeout(() => {
-        if (conversation.last_message) {
-            // Determine if the message is from the user or from support/agency
-            const isFromAdmin = conversation.last_message.sender_type === 'App\\Models\\User';
-            
-            const messageAlignment = isFromAdmin ? 'justify-end' : 'justify-start';
-            const messageBgColor = isFromAdmin ? 'bg-orange-600 text-white' : 'bg-white border border-gray-200 text-gray-900';
-            const senderLabel = isFromAdmin ? 'Admin' : 'Agence';
-            
+    try {
+        // Extract rental ID from conversation data
+        const rentalId = conversation.id || conversation.original?.id;
+        
+        if (!rentalId) {
             messagesContainer.innerHTML = `
-                <div class="space-y-4">
-                    <div class="flex ${messageAlignment}">
-                        <div class="${messageBgColor} px-4 py-2 rounded-lg max-w-xs">
-                            <p class="text-sm">${conversation.last_message.message}</p>
-                            <p class="text-xs opacity-75 mt-1">${senderLabel} • ${conversation.last_message.created_at}</p>
-                        </div>
-                    </div>
+                <div class="text-center text-gray-500 mt-8">
+                    <p>Impossible de charger les messages. ID de réservation manquant.</p>
                 </div>
             `;
+            return;
+        }
+        
+        // Fetch all messages from rental (using lastMessageId=0 to get all messages)
+        const response = await fetch(`/admin/messages/${rentalId}/new?last_message_id=0`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.messages && data.messages.length > 0) {
+            displayRentalMessages(data.messages);
         } else {
             messagesContainer.innerHTML = `
                 <div class="text-center text-gray-500 mt-8">
@@ -358,7 +400,60 @@ function loadMessages(conversation) {
                 </div>
             `;
         }
-    }, 500);
+    } catch (error) {
+        console.error('Error loading rental messages:', error);
+        messagesContainer.innerHTML = `
+            <div class="text-center text-red-500 mt-8">
+                <p>Erreur lors du chargement des messages</p>
+            </div>
+        `;
+    }
+}
+
+// Display rental messages
+function displayRentalMessages(messages) {
+    const messagesContainer = document.getElementById('messages-container');
+    messagesContainer.innerHTML = '';
+    
+    if (messages.length === 0) {
+        messagesContainer.innerHTML = `
+            <div class="text-center text-gray-500 mt-8">
+                <p>Aucun message dans cette conversation</p>
+            </div>
+        `;
+        return;
+    }
+    
+    messages.forEach(message => {
+        const isFromAdmin = message.sender_type === 'App\\Models\\User';
+        const messageAlignment = isFromAdmin ? 'justify-end' : 'justify-start';
+        const messageBgColor = isFromAdmin ? 'bg-orange-600 text-white' : 'bg-white border border-gray-200 text-gray-900';
+        const senderLabel = isFromAdmin ? 'Admin' : (message.sender_type === 'agency' ? 'Agence' : 'Client');
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex ${messageAlignment} mb-4`;
+        messageDiv.innerHTML = `
+            <div class="${messageBgColor} px-4 py-2 rounded-lg max-w-xs">
+                <div class="flex items-center mb-1">
+                    <span class="text-xs font-medium ${isFromAdmin ? 'text-orange-100' : 'text-gray-600'}">${senderLabel}</span>
+                    <span class="ml-2 text-xs ${isFromAdmin ? 'text-orange-200' : 'text-gray-500'}">${new Date(message.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
+                </div>
+                <p class="text-sm whitespace-pre-wrap">${escapeHtml(message.message)}</p>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(messageDiv);
+    });
+    
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Load support messages for support conversations

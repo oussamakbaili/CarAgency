@@ -7,14 +7,39 @@
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-8">
-            <a href="{{ route('agence.support.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800 mb-2 inline-flex items-center">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-                Retour à mes tickets
-            </a>
+            @if($agency->status === 'approved')
+                <a href="{{ route('agence.support.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800 mb-2 inline-flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Retour à mes tickets
+                </a>
+            @else
+                <a href="{{ route('agence.pending') }}" class="text-sm text-indigo-600 hover:text-indigo-800 mb-2 inline-flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Retour à la page d'attente
+                </a>
+            @endif
             <h1 class="text-3xl font-bold text-gray-900">Contacter l'Administration</h1>
             <p class="mt-2 text-sm text-gray-600">Créez un ticket de support pour obtenir de l'aide</p>
+            @if($agency->status !== 'approved')
+                <div class="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-orange-800">
+                                <strong>Votre compte est en attente d'approbation.</strong> Vous pouvez utiliser ce formulaire pour poser des questions sur votre dossier, fournir des documents supplémentaires, ou demander de l'aide.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <!-- Form Card -->
@@ -37,7 +62,11 @@
                         <option value="technical" {{ old('category') == 'technical' ? 'selected' : '' }}>Problème Technique</option>
                         <option value="billing" {{ old('category') == 'billing' ? 'selected' : '' }}>Facturation / Paiements</option>
                         <option value="booking" {{ old('category') == 'booking' ? 'selected' : '' }}>Gestion des Réservations</option>
-                        <option value="account" {{ old('category') == 'account' ? 'selected' : '' }}>Mon Compte Agence</option>
+                        @if($agency->status !== 'approved')
+                            <option value="account" {{ old('category') == 'account' || !old('category') ? 'selected' : '' }}>Mon Compte / Statut d'Approbation</option>
+                        @else
+                            <option value="account" {{ old('category') == 'account' ? 'selected' : '' }}>Mon Compte Agence</option>
+                        @endif
                         <option value="complaint" {{ old('category') == 'complaint' ? 'selected' : '' }}>Plainte / Réclamation</option>
                         <option value="general" {{ old('category') == 'general' ? 'selected' : '' }}>Question Générale</option>
                     </select>
@@ -156,9 +185,15 @@
 
                 <!-- Form Actions -->
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-                    <a href="{{ route('agence.support.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Annuler
-                    </a>
+                    @if($agency->status === 'approved')
+                        <a href="{{ route('agence.support.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Annuler
+                        </a>
+                    @else
+                        <a href="{{ route('agence.pending') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Annuler
+                        </a>
+                    @endif
                     <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Créer le ticket
                     </button>

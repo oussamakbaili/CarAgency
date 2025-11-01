@@ -290,18 +290,6 @@
                                         Contacter
                                     </a>
                                 @endif
-                                
-                                @if($rental->status === 'pending')
-                                    <button onclick="cancelRental({{ $rental->id }})" 
-                                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
-                                        Annuler
-                                    </button>
-                                @elseif($rental->status === 'active' && $rental->start_date > now())
-                                    <button onclick="cancelRental({{ $rental->id }})" 
-                                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
-                                        Annuler
-                                    </button>
-                                @endif
                             </div>
                         </div>
                     </div>
@@ -358,13 +346,6 @@ function clearFilters() {
     
     // Submit the specific filters form
     document.getElementById('rentalsFiltersForm').submit();
-}
-
-function cancelRental(rentalId) {
-    if (confirm('Êtes-vous sûr de vouloir annuler cette location ?')) {
-        // You can implement AJAX cancellation here
-        alert('Fonctionnalité d\'annulation bientôt disponible !');
-    }
 }
 
 // Auto-submit form on filter change

@@ -18,12 +18,21 @@
                     </svg>
                     Retour
                 </a>
-                <a href="{{ route('client.rentals.create', $car) }}" class="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    Louer
-                </a>
+                @if($car->is_available)
+                    <a href="{{ route('client.rentals.create', $car) }}" class="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Louer
+                    </a>
+                @else
+                    <button disabled class="px-6 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed font-medium flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Indisponible
+                    </button>
+                @endif
             </div>
         </div>
     </div>
@@ -127,15 +136,15 @@
                     <div class="flex justify-between">
                         <span class="text-gray-600">Statut:</span>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                            @if($car->status === 'available') bg-green-100 text-green-800
+                            @if($car->is_available) bg-green-100 text-green-800
                             @elseif($car->status === 'rented') bg-blue-100 text-blue-800
                             @elseif($car->status === 'maintenance') bg-yellow-100 text-yellow-800
-                            @else bg-gray-100 text-gray-800
+                            @else bg-red-100 text-red-800
                             @endif">
-                            @if($car->status === 'available') Disponible
+                            @if($car->is_available) Disponible
                             @elseif($car->status === 'rented') En location
                             @elseif($car->status === 'maintenance') Maintenance
-                            @else {{ ucfirst($car->status) }}
+                            @else Indisponible
                             @endif
                         </span>
                     </div>

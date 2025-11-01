@@ -50,7 +50,7 @@
                          data-type="{{ $conversation->type }}"
                          data-conversation-id="{{ $conversation->type }}_{{ $conversation->id }}"
                          data-conversation-data="{{ htmlspecialchars(json_encode($conversation), ENT_QUOTES, 'UTF-8') }}"
-                         onclick="selectConversation('{{ $conversation->type }}', '{{ $conversation->id }}', this.dataset.conversationData)">
+                         onclick="selectConversation('{{ $conversation->type }}', '{{ $conversation->id }}', this.getAttribute('data-conversation-data'))">
                         <div class="p-4">
                             <div class="flex items-center space-x-3">
                                 <!-- Avatar -->
@@ -265,7 +265,38 @@ function selectConversation(type, id, conversationData) {
     
     try {
         selectedConversationId = `${type}_${id}`;
-        selectedConversationData = JSON.parse(conversationData);
+        
+        // Parse conversation data safely
+        if (typeof conversationData === 'string') {
+            // Decode HTML entities first
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = conversationData;
+            const decoded = tempDiv.textContent || tempDiv.innerText || conversationData;
+            
+            // Try to parse as JSON
+            try {
+                selectedConversationData = JSON.parse(decoded);
+            } catch (e) {
+                // If parsing still fails, try with manual unescaping
+                try {
+                    const unescaped = decoded.replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+                    selectedConversationData = JSON.parse(unescaped);
+                } catch (e2) {
+                    console.error('Error parsing conversation data:', e2);
+                    console.error('Raw data:', conversationData);
+                    console.error('Decoded data:', decoded);
+                    alert('Erreur lors de l\'ouverture de la conversation: Données invalides.');
+                    return;
+                }
+            }
+        } else if (typeof conversationData === 'object') {
+            // Already an object
+            selectedConversationData = conversationData;
+        } else {
+            console.error('Invalid conversation data type:', typeof conversationData);
+            alert('Erreur lors de l\'ouverture de la conversation: Format de données invalide.');
+            return;
+        }
         
         console.log('✅ Parsed conversation data:', selectedConversationData);
         
@@ -347,36 +378,43 @@ function loadConversationData(conversation, type) {
     }
 }
 
-function loadMessages(conversation) {
+// Load rental messages for rental conversations
+async function loadMessages(conversation) {
     const messagesContainer = document.getElementById('messages-container');
     
     // Show loading state
     messagesContainer.innerHTML = '<div class="text-center text-gray-500 mt-8"><p>Chargement des messages...</p></div>';
     
-    // Simulate loading messages (in real app, this would be an AJAX call)
-    setTimeout(() => {
-        if (conversation.last_message) {
-            // Determine if the message is from the user or from support/agency
-            const isFromUser = conversation.type === 'rental' 
-                ? conversation.last_message.sender_type === 'client'
-                : conversation.last_message.sender_type === 'App\\Models\\Client';
-            
-            const messageAlignment = isFromUser ? 'justify-end' : 'justify-start';
-            const messageBgColor = isFromUser ? 'bg-orange-600 text-white' : 'bg-white border border-gray-200 text-gray-900';
-            const senderLabel = conversation.type === 'rental' 
-                ? (isFromUser ? 'Vous' : 'Agence')
-                : (isFromUser ? 'Vous' : 'Support');
-            
+    try {
+        // Extract rental ID from conversation data (handle both 'rental_123' and just '123' formats)
+        let rentalId = conversation.id || conversation.original?.id;
+        
+        // If ID is in format 'rental_123', extract just the number
+        if (typeof rentalId === 'string' && rentalId.startsWith('rental_')) {
+            rentalId = rentalId.replace('rental_', '');
+        }
+        
+        if (!rentalId) {
             messagesContainer.innerHTML = `
-                <div class="space-y-4">
-                    <div class="flex ${messageAlignment}">
-                        <div class="${messageBgColor} px-4 py-2 rounded-lg max-w-xs">
-                            <p class="text-sm">${conversation.last_message.message}</p>
-                            <p class="text-xs opacity-75 mt-1">${senderLabel} • ${conversation.last_message.created_at}</p>
-                        </div>
-                    </div>
+                <div class="text-center text-gray-500 mt-8">
+                    <p>Impossible de charger les messages. ID de réservation manquant.</p>
                 </div>
             `;
+            return;
+        }
+        
+        // Fetch all messages from rental (using lastMessageId=0 to get all messages)
+        const response = await fetch(`/client/messages/${rentalId}/new?last_message_id=0`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.messages && data.messages.length > 0) {
+            displayRentalMessages(data.messages);
         } else {
             messagesContainer.innerHTML = `
                 <div class="text-center text-gray-500 mt-8">
@@ -384,7 +422,60 @@ function loadMessages(conversation) {
                 </div>
             `;
         }
-    }, 500);
+    } catch (error) {
+        console.error('Error loading rental messages:', error);
+        messagesContainer.innerHTML = `
+            <div class="text-center text-red-500 mt-8">
+                <p>Erreur lors du chargement des messages</p>
+            </div>
+        `;
+    }
+}
+
+// Display rental messages
+function displayRentalMessages(messages) {
+    const messagesContainer = document.getElementById('messages-container');
+    messagesContainer.innerHTML = '';
+    
+    if (messages.length === 0) {
+        messagesContainer.innerHTML = `
+            <div class="text-center text-gray-500 mt-8">
+                <p>Aucun message dans cette conversation</p>
+            </div>
+        `;
+        return;
+    }
+    
+    messages.forEach(message => {
+        const isFromClient = message.sender_type === 'client';
+        const messageAlignment = isFromClient ? 'justify-end' : 'justify-start';
+        const messageBgColor = isFromClient ? 'bg-orange-600 text-white' : 'bg-white border border-gray-200 text-gray-900';
+        const senderLabel = isFromClient ? 'Vous' : 'Agence';
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex ${messageAlignment} mb-4`;
+        messageDiv.innerHTML = `
+            <div class="${messageBgColor} px-4 py-2 rounded-lg max-w-xs">
+                <div class="flex items-center mb-1">
+                    <span class="text-xs font-medium ${isFromClient ? 'text-orange-100' : 'text-gray-600'}">${senderLabel}</span>
+                    <span class="ml-2 text-xs ${isFromClient ? 'text-orange-200' : 'text-gray-500'}">${new Date(message.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
+                </div>
+                <p class="text-sm whitespace-pre-wrap">${escapeHtml(message.message)}</p>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(messageDiv);
+    });
+    
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Load support messages for support conversations
@@ -520,23 +611,42 @@ async function sendSupportMessage(message) {
 
 // Send message to rental conversation
 async function sendRentalMessage(message) {
-    // Add message to UI immediately
-    const messagesContainer = document.getElementById('messages-container');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'flex justify-end mb-4';
-    messageDiv.innerHTML = `
-        <div class="bg-orange-600 text-white px-4 py-2 rounded-lg max-w-xs">
-            <p class="text-sm">${message}</p>
-            <p class="text-xs opacity-75 mt-1">Maintenant</p>
-        </div>
-    `;
-    messagesContainer.appendChild(messageDiv);
-    
-    // Scroll to bottom
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    
-    // In real app, send message via AJAX
-    console.log('Sending rental message:', message, 'to conversation:', selectedConversationData.id);
+    try {
+        let rentalId = selectedConversationData.id || selectedConversationData.original?.id;
+        
+        // If ID is in format 'rental_123', extract just the number
+        if (typeof rentalId === 'string' && rentalId.startsWith('rental_')) {
+            rentalId = rentalId.replace('rental_', '');
+        }
+        
+        if (!rentalId) {
+            alert('Impossible d\'envoyer le message. ID de réservation manquant.');
+            return;
+        }
+        
+        const response = await fetch(`/client/messages/${rentalId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                message: message
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Reload messages to show the new one
+            await loadMessages(selectedConversationData);
+        } else {
+            alert('Erreur lors de l\'envoi du message');
+        }
+    } catch (error) {
+        console.error('Error sending rental message:', error);
+        alert('Erreur lors de l\'envoi du message');
+    }
 }
 
 // Function to exit conversation (like WhatsApp)

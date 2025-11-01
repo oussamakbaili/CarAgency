@@ -9,10 +9,10 @@
 
     <!-- History Statistics -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div class="flex items-center">
-                <div class="p-2 bg-green-100 rounded-lg">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-2 bg-emerald-100 rounded-lg">
+                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
@@ -23,7 +23,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div class="flex items-center">
                 <div class="p-2 bg-red-100 rounded-lg">
                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,7 +37,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div class="flex items-center">
                 <div class="p-2 bg-yellow-100 rounded-lg">
                     <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,10 +51,10 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div class="flex items-center">
-                <div class="p-2 bg-blue-100 rounded-lg">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-2 bg-[#C2410C]/10 rounded-lg">
+                    <svg class="w-6 h-6 text-[#C2410C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                     </svg>
                 </div>
@@ -67,12 +67,12 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-lg shadow p-6 mb-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
         <form method="GET" action="{{ route('agence.bookings.history') }}" class="space-y-4">
             <div class="flex flex-wrap items-end gap-4">
                 <div class="flex-1 min-w-48">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-                    <select name="status" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <select name="status" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#C2410C] focus:border-[#C2410C]">
                         <option value="">Tous les statuts</option>
                         <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Terminées</option>
                         <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Annulées</option>
@@ -82,7 +82,7 @@
                 
                 <div class="flex-1 min-w-48">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Période</label>
-                    <select name="period" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <select name="period" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#C2410C] focus:border-[#C2410C]">
                         <option value="">Toutes les périodes</option>
                         <option value="today" {{ request('period') == 'today' ? 'selected' : '' }}>Aujourd'hui</option>
                         <option value="week" {{ request('period') == 'week' ? 'selected' : '' }}>Cette semaine</option>
@@ -97,7 +97,7 @@
                            name="client" 
                            value="{{ request('client') }}"
                            placeholder="Rechercher un client..." 
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#C2410C] focus:border-[#C2410C]">
                 </div>
                 
                 <div class="flex-1 min-w-48">
@@ -105,7 +105,7 @@
                     <input type="date" 
                            name="start_date" 
                            value="{{ request('start_date') }}"
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#C2410C] focus:border-[#C2410C]">
                 </div>
                 
                 <div class="flex-1 min-w-48">
@@ -113,11 +113,11 @@
                     <input type="date" 
                            name="end_date" 
                            value="{{ request('end_date') }}"
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#C2410C] focus:border-[#C2410C]">
                 </div>
                 
                 <div class="flex items-end space-x-2">
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition-colors duration-200">
+                    <button type="submit" class="px-4 py-2 bg-[#C2410C] text-white rounded-md hover:bg-[#9A3412] text-sm transition-colors duration-200">
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"/>
                         </svg>
@@ -125,7 +125,7 @@
                     </button>
                     
                     <a href="{{ route('agence.bookings.history') }}" 
-                       class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 text-sm transition-colors duration-200">
+                       class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm transition-colors duration-200">
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -137,11 +137,11 @@
     </div>
 
     <!-- History Table -->
-    <div class="bg-white rounded-lg shadow">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h3 class="text-lg font-medium text-gray-900">Historique des Locations</h3>
             <a href="{{ route('agence.bookings.history', array_merge(request()->all(), ['export' => 'csv'])) }}" 
-               class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm transition-colors duration-200">
+               class="inline-flex items-center px-4 py-2 bg-[#C2410C] text-white rounded-md hover:bg-[#9A3412] text-sm transition-colors duration-200">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>

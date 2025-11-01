@@ -168,11 +168,17 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Cette voiture n\'est plus disponible pour les dates sélectionnées.');
         }
 
+        // S'assurer que l'agency_id est défini
+        $agencyId = $car->agency_id;
+        if (!$agencyId) {
+            return redirect()->back()->with('error', 'La voiture n\'est associée à aucune agence.');
+        }
+
         // Créer la réservation
         $rental = Rental::create([
             'user_id' => Auth::id(),
             'car_id' => $bookingData['car_id'],
-            'agency_id' => $car->agency_id,
+            'agency_id' => $agencyId,
             'start_date' => $startDate,
             'end_date' => $endDate,
             'total_price' => $bookingData['total_with_fees'],
@@ -180,7 +186,16 @@ class BookingController extends Controller
         ]);
 
         // Créer une notification pour l'agence
-        NotificationHelper::notifyNewBooking($car->agency_id, $rental, $car, Auth::user());
+        try {
+            NotificationHelper::notifyNewBooking($agencyId, $rental, $car, Auth::user());
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne bloque pas la création de la réservation
+            \Log::error('Failed to create booking notification: ' . $e->getMessage(), [
+                'rental_id' => $rental->id,
+                'agency_id' => $agencyId,
+                'error' => $e->getTraceAsString()
+            ]);
+        }
 
         // Stocker l'ID de réservation pour l'étape de confirmation
         session(['booking_data.rental_id' => $rental->id]);

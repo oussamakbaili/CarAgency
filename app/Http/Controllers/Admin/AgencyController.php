@@ -169,9 +169,10 @@ class AgencyController extends Controller
         }
 
         // If the request expects JSON (AJAX), return the updated row data
-        if ($request->wantsJson()) {
+        if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
+                'message' => 'Agence approuvée avec succès!',
                 'status' => $agency->status,
                 'badge_class' => 'bg-green-100 text-green-800',
                 'status_label' => 'Approved'
@@ -183,9 +184,20 @@ class AgencyController extends Controller
 
     public function reject(Request $request, Agency $agency)
     {
-        $request->validate([
-            'rejection_reason' => 'required|string|min:10',
-        ]);
+        try {
+            $request->validate([
+                'rejection_reason' => 'required|string|min:10',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La raison du rejet est requise (minimum 10 caractères).',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        }
 
         // Increment tries count
         $agency->increment('tries_count');
@@ -232,9 +244,10 @@ class AgencyController extends Controller
             \Log::error('Failed to send rejection email: ' . $e->getMessage());
         }
 
-        if ($request->wantsJson()) {
+        if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
+                'message' => 'L\'agence a été rejetée avec succès.',
                 'status' => $agency->status,
                 'badge_class' => 'bg-red-100 text-red-800',
                 'status_label' => 'Rejected'

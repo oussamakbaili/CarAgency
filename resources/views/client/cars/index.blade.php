@@ -134,9 +134,15 @@
             
             <!-- Status Badge -->
             <div class="absolute top-3 right-3">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Disponible
-                </span>
+                @if($car->is_available)
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Disponible
+                    </span>
+                @else
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        Indisponible
+                    </span>
+                @endif
             </div>
 
             <!-- Quick Actions Overlay -->
@@ -146,10 +152,16 @@
                        class="px-4 py-2 bg-white text-gray-900 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium">
                         Voir détails
                     </a>
-                    <a href="{{ route('client.rentals.create', $car) }}" 
-                       class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium">
-                        Louer maintenant
-                    </a>
+                    @if($car->is_available)
+                        <a href="{{ route('client.rentals.create', $car) }}" 
+                           class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium">
+                            Louer maintenant
+                        </a>
+                    @else
+                        <span class="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed text-sm font-medium">
+                            Indisponible
+                        </span>
+                    @endif
                 </div>
             </div>
         </div>
@@ -199,10 +211,17 @@
                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center text-sm font-medium">
                     Détails
                 </a>
-                <a href="{{ route('client.rentals.create', $car) }}" 
-                   class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-center text-sm font-medium">
-                    Louer
-                </a>
+                @if($car->is_available)
+                    <a href="{{ route('client.rentals.create', $car) }}" 
+                       class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-center text-sm font-medium">
+                        Louer
+                    </a>
+                @else
+                    <button disabled
+                            class="flex-1 px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed text-center text-sm font-medium">
+                        Indisponible
+                    </button>
+                @endif
             </div>
         </div>
     </div>

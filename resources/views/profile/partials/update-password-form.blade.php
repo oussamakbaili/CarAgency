@@ -14,7 +14,6 @@
                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
             @enderror
         </div>
-
         <div>
             <label for="update_password_password" class="block text-sm font-medium text-gray-700 mb-2">
                 {{ __('Nouveau Mot de Passe') }}

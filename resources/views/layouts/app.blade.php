@@ -6,7 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta http-equiv="refresh" content="30">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>ToubCar - {{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

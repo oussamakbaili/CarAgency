@@ -21,7 +21,8 @@ class RentalController extends Controller
     {
         $agency = auth()->user()->agency;
         
-        $query = Rental::where('rentals.agency_id', $agency->id)
+        // Utiliser le scope ForAgency pour capturer toutes les réservations
+        $query = Rental::forAgency($agency->id)
             ->with(['car', 'user', 'agency']);
         
         // Filter by status if provided
@@ -52,7 +53,7 @@ class RentalController extends Controller
     {
         $agency = auth()->user()->agency;
         
-        $pendingRentals = Rental::where('rentals.agency_id', $agency->id)
+        $pendingRentals = Rental::forAgency($agency->id)
             ->where('status', 'pending')
             ->with(['car', 'user', 'agency'])
             ->latest()
@@ -65,7 +66,7 @@ class RentalController extends Controller
     {
         $agency = auth()->user()->agency;
         
-        $activeRentals = Rental::where('rentals.agency_id', $agency->id)
+        $activeRentals = Rental::forAgency($agency->id)
             ->where('status', 'active')
             ->with(['car', 'user', 'agency'])
             ->latest()
@@ -106,7 +107,7 @@ class RentalController extends Controller
         }
         
         // Get rentals for the requested period
-        $rentals = Rental::where('rentals.agency_id', $agency->id)
+        $rentals = Rental::forAgency($agency->id)
             ->where(function($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
                       ->orWhereBetween('end_date', [$startDate, $endDate])
@@ -298,7 +299,7 @@ class RentalController extends Controller
     {
         $agency = auth()->user()->agency;
         
-        $query = Rental::where('rentals.agency_id', $agency->id)
+        $query = Rental::forAgency($agency->id)
             ->whereIn('status', ['completed', 'cancelled', 'rejected'])
             ->with(['car', 'user', 'agency']);
         
@@ -363,13 +364,19 @@ class RentalController extends Controller
         return view('agence.bookings.show', compact('rental'));
     }
 
-    public function approve(Rental $rental)
+    public function approve(Request $request, Rental $rental)
     {
         $this->authorize('update', $rental);
 
         try {
             // Check if rental belongs to agency
             if ($rental->agency_id !== auth()->user()->agency->id) {
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Vous n\'êtes pas autorisé à modifier cette réservation.'
+                    ], 403);
+                }
                 return back()->with('error', 'Vous n\'êtes pas autorisé à modifier cette réservation.');
             }
 
@@ -391,6 +398,17 @@ class RentalController extends Controller
                 'data' => ['rental_id' => $rental->id, 'user_id' => $rental->user_id]
             ]);
             
+            // If the request expects JSON (AJAX), return the updated row data
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'La demande de location a été approuvée avec succès.',
+                    'status' => $rental->status,
+                    'badge_class' => 'bg-green-100 text-green-800',
+                    'status_label' => 'Active'
+                ]);
+            }
+            
             return back()->with('success', 'La demande de location a été approuvée avec succès.');
             
         } catch (\Exception $e) {
@@ -398,11 +416,19 @@ class RentalController extends Controller
                 'rental_id' => $rental->id,
                 'trace' => $e->getTraceAsString()
             ]);
+            
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur lors de l\'approbation: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return back()->with('error', 'Erreur lors de l\'approbation: ' . $e->getMessage());
         }
     }
 
-    public function reject(Rental $rental)
+    public function reject(Request $request, Rental $rental)
     {
         $this->authorize('update', $rental);
 
@@ -411,13 +437,30 @@ class RentalController extends Controller
             
             // Check if rental belongs to agency
             if ($rental->agency_id !== $agency->id) {
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Vous n\'êtes pas autorisé à modifier cette réservation.'
+                    ], 403);
+                }
                 return back()->with('error', 'Vous n\'êtes pas autorisé à modifier cette réservation.');
             }
 
             // Check if agency can reject (not suspended and under cancellation limit)
             if (!$agency->canCancelBooking()) {
-                return back()->with('error', 'Vous ne pouvez pas rejeter cette réservation. Votre compte est suspendu pour trop d\'annulations.')
-                    ->with('warning', $agency->getCancellationWarningMessage());
+                $errorMessage = 'Vous ne pouvez pas rejeter cette réservation. Votre compte est suspendu pour trop d\'annulations.';
+                $warningMessage = $agency->getCancellationWarningMessage();
+                
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $errorMessage,
+                        'warning' => $warningMessage
+                    ], 403);
+                }
+                
+                return back()->with('error', $errorMessage)
+                    ->with('warning', $warningMessage);
             }
 
             // Get warning message before processing
@@ -432,6 +475,14 @@ class RentalController extends Controller
             );
 
             if (!$result['success']) {
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $result['message'],
+                        'warning' => $result['warning'] ?? null
+                    ], 400);
+                }
+                
                 return back()->with('error', $result['message'])
                     ->with('warning', $result['warning'] ?? null);
             }
@@ -451,6 +502,24 @@ class RentalController extends Controller
                 'data' => ['rental_id' => $rental->id, 'user_id' => $rental->user_id]
             ]);
             
+            // If the request expects JSON (AJAX), return the updated row data
+            if ($request->wantsJson() || $request->ajax()) {
+                $response = [
+                    'success' => true,
+                    'message' => 'La demande de location a été rejetée.',
+                    'status' => $rental->status,
+                    'badge_class' => 'bg-gray-100 text-gray-800',
+                    'status_label' => 'Rejetée'
+                ];
+                
+                // Add warning message if present
+                if ($result['warning']) {
+                    $response['warning'] = $result['warning'];
+                }
+                
+                return response()->json($response);
+            }
+            
             $response = back()->with('success', 'La demande de location a été rejetée.');
             
             // Add warning message if present
@@ -465,6 +534,14 @@ class RentalController extends Controller
                 'rental_id' => $rental->id,
                 'trace' => $e->getTraceAsString()
             ]);
+            
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur lors du rejet: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return back()->with('error', 'Erreur lors du rejet: ' . $e->getMessage());
         }
     }

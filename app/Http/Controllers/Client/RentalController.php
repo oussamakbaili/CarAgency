@@ -70,10 +70,16 @@ class RentalController extends Controller
 
         $totalPrice = $days * $car->price_per_day;
 
+        // S'assurer que l'agency_id est défini
+        $agencyId = $car->agency_id;
+        if (!$agencyId) {
+            return redirect()->back()->with('error', 'La voiture n\'est associée à aucune agence.');
+        }
+
         $rental = Rental::create([
             'user_id' => auth()->id(),
             'car_id' => $car->id,
-            'agency_id' => $car->agency_id,
+            'agency_id' => $agencyId,
             'start_date' => $startDate,
             'end_date' => $endDate,
             'total_price' => $totalPrice,
@@ -81,7 +87,16 @@ class RentalController extends Controller
         ]);
 
         // Créer une notification pour l'agence
-        NotificationHelper::notifyNewBooking($car->agency_id, $rental, $car, auth()->user());
+        try {
+            NotificationHelper::notifyNewBooking($agencyId, $rental, $car, auth()->user());
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne bloque pas la création de la réservation
+            \Log::error('Failed to create booking notification: ' . $e->getMessage(), [
+                'rental_id' => $rental->id,
+                'agency_id' => $agencyId,
+                'error' => $e->getTraceAsString()
+            ]);
+        }
 
         return redirect()->route('client.rentals.index')
             ->with('success', 'Rental request submitted successfully! The agency will review your request.');
