@@ -4,32 +4,32 @@
 
 @section('content')
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+    <div class="car-detail-mobile max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12 reveal-section">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-12">
             <!-- Left Column - Car Images and Details -->
-            <div class="lg:col-span-2 space-y-8">
+            <div class="lg:col-span-2 space-y-6 sm:space-y-8">
                 <!-- Car Image Gallery -->
                 <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                     <div class="relative">
                         @if($car->image_url)
                             <img src="{{ $car->image_url }}" 
                                  alt="{{ $car->brand }} {{ $car->model }}" 
-                                 class="w-full h-96 md:h-[500px] object-cover">
+                                 class="w-full h-64 sm:h-96 md:h-[500px] object-cover">
                         @else
-                            <div class="w-full h-96 md:h-[500px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                            <div class="w-full h-64 sm:h-96 md:h-[500px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                                 <div class="text-center">
-                                    <svg class="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-16 h-16 sm:w-24 sm:h-24 text-gray-400 mx-auto mb-3 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
                                     </svg>
-                                    <p class="text-gray-500 font-medium">Photo du véhicule</p>
+                                    <p class="text-sm sm:text-base text-gray-500 font-medium">Photo du véhicule</p>
                                 </div>
                             </div>
                         @endif
                         
                         <!-- Rating Badge -->
-                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 flex items-center gap-2 shadow-lg">
-                            <x-star-rating :rating="$car->getAverageRating()" size="w-5 h-5" />
-                            <span class="font-semibold text-gray-900">{{ number_format($car->getAverageRating(), 1) }}</span>
+                        <div class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-white/90 backdrop-blur-sm rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 flex items-center gap-1.5 sm:gap-2 shadow-lg">
+                            <x-star-rating :rating="$car->getAverageRating()" size="w-4 h-4 sm:w-5 sm:h-5" />
+                            <span class="text-sm sm:text-base font-semibold text-gray-900">{{ number_format($car->getAverageRating(), 1) }}</span>
                             <span class="text-xs text-gray-500">({{ $car->getReviewsCount() }})</span>
                         </div>
                     </div>
@@ -37,45 +37,45 @@
 
                 <!-- Car Specifications -->
                 <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-                    <div class="px-8 py-6 border-b border-gray-200 bg-gray-50">
-                        <h2 class="text-2xl font-bold text-gray-900">Spécifications</h2>
+                    <div class="px-4 sm:px-6 md:px-8 py-4 sm:py-6 border-b border-gray-200 bg-gray-50">
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Spécifications</h2>
                     </div>
-                    <div class="p-8">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-4 sm:p-6 md:p-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div class="space-y-4">
                                 <div class="flex justify-between py-3 border-b border-gray-100">
-                                    <span class="text-sm font-semibold text-gray-700">Marque</span>
-                                    <span class="text-sm font-bold text-gray-900">{{ $car->brand }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold text-gray-700">Marque</span>
+                                    <span class="text-xs sm:text-sm font-bold text-gray-900">{{ $car->brand }}</span>
                                 </div>
                                 <div class="flex justify-between py-3 border-b border-gray-100">
-                                    <span class="text-sm font-semibold text-gray-700">Modèle</span>
-                                    <span class="text-sm font-bold text-gray-900">{{ $car->model }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold text-gray-700">Modèle</span>
+                                    <span class="text-xs sm:text-sm font-bold text-gray-900">{{ $car->model }}</span>
                                 </div>
                                 <div class="flex justify-between py-3 border-b border-gray-100">
-                                    <span class="text-sm font-semibold text-gray-700">Année</span>
-                                    <span class="text-sm font-bold text-gray-900">{{ $car->year }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold text-gray-700">Année</span>
+                                    <span class="text-xs sm:text-sm font-bold text-gray-900">{{ $car->year }}</span>
                                 </div>
                                 <div class="flex justify-between py-3">
-                                    <span class="text-sm font-semibold text-gray-700">Carburant</span>
-                                    <span class="text-sm font-bold text-gray-900">{{ $car->fuel_type }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold text-gray-700">Carburant</span>
+                                    <span class="text-xs sm:text-sm font-bold text-gray-900">{{ $car->fuel_type }}</span>
                                 </div>
                             </div>
                             <div class="space-y-4">
                                 <div class="flex justify-between py-3 border-b border-gray-100">
-                                    <span class="text-sm font-semibold text-gray-700">Transmission</span>
-                                    <span class="text-sm font-bold text-gray-900">{{ $car->transmission }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold text-gray-700">Transmission</span>
+                                    <span class="text-xs sm:text-sm font-bold text-gray-900">{{ $car->transmission }}</span>
                                 </div>
                                 <div class="flex justify-between py-3 border-b border-gray-100">
-                                    <span class="text-sm font-semibold text-gray-700">Places</span>
-                                    <span class="text-sm font-bold text-gray-900">{{ $car->seats }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold text-gray-700">Places</span>
+                                    <span class="text-xs sm:text-sm font-bold text-gray-900">{{ $car->seats }}</span>
                                 </div>
                                 <div class="flex justify-between py-3 border-b border-gray-100">
-                                    <span class="text-sm font-semibold text-gray-700">Portes</span>
-                                    <span class="text-sm font-bold text-gray-900">{{ $car->doors }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold text-gray-700">Portes</span>
+                                    <span class="text-xs sm:text-sm font-bold text-gray-900">{{ $car->doors }}</span>
                                 </div>
                                 <div class="flex justify-between py-3">
-                                    <span class="text-sm font-semibold text-gray-700">Couleur</span>
-                                    <span class="text-sm font-bold text-gray-900">{{ $car->color ?? 'Non spécifiée' }}</span>
+                                    <span class="text-xs sm:text-sm font-semibold text-gray-700">Couleur</span>
+                                    <span class="text-xs sm:text-sm font-bold text-gray-900">{{ $car->color ?? 'Non spécifiée' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -86,7 +86,7 @@
                 @if($car->features && is_array($car->features) && count($car->features) > 0)
                     <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                         <div class="px-8 py-6 border-b border-gray-200 bg-gray-50">
-                            <h2 class="text-2xl font-bold text-gray-900">Équipements</h2>
+                            <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Équipements</h2>
                         </div>
                         <div class="p-8">
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -95,7 +95,7 @@
                                         <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                         </svg>
-                                        <span class="text-sm font-semibold text-blue-800">{{ $feature }}</span>
+                                        <span class="text-xs sm:text-sm font-semibold text-blue-800">{{ $feature }}</span>
                                     </div>
                                 @endforeach
                             </div>
@@ -107,10 +107,10 @@
                 @if($car->description)
                     <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                         <div class="px-8 py-6 border-b border-gray-200 bg-gray-50">
-                            <h2 class="text-2xl font-bold text-gray-900">Description</h2>
+                            <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Description</h2>
                         </div>
                         <div class="p-8">
-                            <p class="text-gray-700 leading-relaxed text-lg">{{ $car->description }}</p>
+                            <p class="text-gray-700 leading-relaxed text-sm sm:text-base">{{ $car->description }}</p>
                         </div>
                     </div>
                 @endif
@@ -122,10 +122,10 @@
                 <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                     <div class="p-8">
                         <div class="text-center mb-8">
-                            <div class="text-4xl font-bold text-orange-600 mb-2">
-                                {{ number_format($car->price_per_day, 0) }} MAD
+                            <div class="text-2xl sm:text-4xl font-bold text-orange-600 mb-2">
+                                {{ number_format($car->client_price_per_day, 0) }} MAD
                             </div>
-                            <div class="text-lg text-gray-500">par jour</div>
+                            <div class="text-sm sm:text-lg text-gray-500">par jour</div>
                         </div>
 
                         <!-- Agency Info -->
@@ -137,12 +137,12 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-gray-900">{{ $agency->agency_name }}</h3>
+                                    <h3 class="text-sm sm:text-base font-bold text-gray-900">{{ $agency->agency_name }}</h3>
                                     <div class="flex items-center gap-1">
                                         <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                         </svg>
-                                        <span class="text-sm font-semibold text-gray-700">4.8</span>
+                                        <span class="text-xs sm:text-sm font-semibold text-gray-700">4.8</span>
                                     </div>
                                 </div>
                             </div>
@@ -150,7 +150,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                                <span class="text-sm font-semibold">Disponible</span>
+                                <span class="text-xs sm:text-sm font-semibold">Disponible</span>
                             </div>
                         </div>
 
@@ -159,31 +159,31 @@
                             @auth
                                 @if(auth()->user() && auth()->user()->role === 'client')
                                     <a href="{{ route('client.rentals.create', $car) }}" 
-                                       class="w-full bg-orange-600 hover:bg-orange-700 text-white px-6 py-4 rounded-xl font-bold text-center block transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                       class="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold text-center block transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                                         Réserver maintenant
                                     </a>
                                 @else
                                     <a href="{{ route('public.require-login') }}" 
-                                       class="w-full bg-orange-600 hover:bg-orange-700 text-white px-6 py-4 rounded-xl font-bold text-center block transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                       class="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold text-center block transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                                         Réserver maintenant
                                     </a>
                                 @endif
                             @else
                                 <a href="{{ route('public.require-login') }}" 
-                                   class="w-full bg-orange-600 hover:bg-orange-700 text-white px-6 py-4 rounded-xl font-bold text-center block transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                   class="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold text-center block transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                                     Réserver maintenant
                                 </a>
                             @endauth
                             
                             <a href="{{ route('public.agency.show', $agency) }}" 
-                               class="w-full bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-300 hover:border-gray-400 px-6 py-4 rounded-xl font-bold text-center block transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                               class="w-full bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-300 hover:border-gray-400 px-4 sm:px-6 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold text-center block transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                                 Voir l'agence
                             </a>
                         </div>
 
                         @guest
                         <div class="mt-6 text-center">
-                            <p class="text-sm text-gray-500">
+                            <p class="text-xs sm:text-sm text-gray-500">
                                 Vous devez être connecté pour effectuer une réservation
                             </p>
                         </div>
@@ -194,7 +194,7 @@
                 <!-- Agency Contact -->
                 <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                     <div class="px-8 py-6 border-b border-gray-200 bg-gray-50">
-                        <h3 class="text-xl font-bold text-gray-900">Contact de l'agence</h3>
+                        <h3 class="text-lg sm:text-xl font-bold text-gray-900">Contact de l'agence</h3>
                     </div>
                     <div class="p-8 space-y-6">
                         <div class="flex items-center gap-4">
@@ -204,8 +204,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500">Téléphone</p>
-                                <p class="font-semibold text-gray-900">{{ $agency->phone }}</p>
+                                <p class="text-xs sm:text-sm text-gray-500">Téléphone</p>
+                                <p class="text-sm sm:text-base font-semibold text-gray-900">{{ $agency->phone }}</p>
                             </div>
                         </div>
                         
@@ -216,8 +216,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500">Email</p>
-                                <p class="font-semibold text-gray-900">{{ $agency->email }}</p>
+                                <p class="text-xs sm:text-sm text-gray-500">Email</p>
+                                <p class="text-sm sm:text-base font-semibold text-gray-900">{{ $agency->email }}</p>
                             </div>
                         </div>
                         
@@ -229,8 +229,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500">Adresse</p>
-                                <p class="font-semibold text-gray-900">{{ $agency->address }}, {{ $agency->city }}</p>
+                                <p class="text-xs sm:text-sm text-gray-500">Adresse</p>
+                                <p class="text-sm sm:text-base font-semibold text-gray-900">{{ $agency->address }}, {{ $agency->city }}</p>
                             </div>
                         </div>
                     </div>
@@ -243,8 +243,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
             <div class="px-8 py-6 border-b border-gray-200 bg-gray-50">
-                <h2 class="text-2xl font-bold text-gray-900">Avis Clients</h2>
-                <p class="text-gray-600 mt-2">Découvrez ce que pensent les autres clients de ce véhicule</p>
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Avis Clients</h2>
+                <p class="text-sm sm:text-base text-gray-600 mt-2">Découvrez ce que pensent les autres clients de ce véhicule</p>
             </div>
             
             <div class="p-8">
@@ -252,9 +252,9 @@
                 <div class="flex items-center justify-between mb-8">
                     <div class="flex items-center space-x-4">
                         <div class="text-center">
-                            <div class="text-4xl font-bold text-gray-900">{{ number_format($car->getAverageRating(), 1) }}</div>
+                            <div class="text-2xl sm:text-4xl font-bold text-gray-900">{{ number_format($car->getAverageRating(), 1) }}</div>
                             <x-star-rating :rating="$car->getAverageRating()" size="w-6 h-6" />
-                            <div class="text-sm text-gray-500 mt-1">{{ $car->getReviewsCount() }} avis</div>
+                            <div class="text-xs sm:text-sm text-gray-500 mt-1">{{ $car->getReviewsCount() }} avis</div>
                         </div>
                     </div>
                     
@@ -267,7 +267,7 @@
                                 <input type="hidden" name="car_id" value="{{ $car->id }}">
                                 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Votre note</label>
+                                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Votre note</label>
                                     <div x-data="{ rating: 0 }" @rating-changed.window="rating = $event.detail">
                                         <x-star-rating :rating="0" size="w-6 h-6" :interactive="true" />
                                     </div>
@@ -275,7 +275,7 @@
                                 </div>
                                 
                                 <div>
-                                    <label for="comment" class="block text-sm font-medium text-gray-700 mb-2">Votre commentaire (optionnel)</label>
+                                    <label for="comment" class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Votre commentaire (optionnel)</label>
                                     <textarea 
                                         id="comment" 
                                         name="comment" 
@@ -287,7 +287,7 @@
                                 
                                 <button 
                                     type="submit" 
-                                    class="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors font-medium"
+                                    class="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors text-sm sm:text-base font-medium"
                                 >
                                     Publier mon avis
                                 </button>
@@ -295,8 +295,8 @@
                         </div>
                     @else
                         <div class="text-center">
-                            <p class="text-gray-600 mb-4">Connectez-vous pour laisser un avis</p>
-                            <a href="{{ route('login') }}" class="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors">
+                            <p class="text-sm sm:text-base text-gray-600 mb-4">Connectez-vous pour laisser un avis</p>
+                            <a href="{{ route('login') }}" class="bg-orange-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-orange-700 transition-colors text-sm sm:text-base">
                                 Se connecter
                             </a>
                         </div>
@@ -315,17 +315,17 @@
                                         </span>
                                     </div>
                                     <div>
-                                        <h4 class="font-semibold text-gray-900">{{ $review->user->name }}</h4>
+                                        <h4 class="text-sm sm:text-base font-semibold text-gray-900">{{ $review->user->name }}</h4>
                                         <div class="flex items-center space-x-2">
                                             <x-star-rating :rating="$review->rating" size="w-4 h-4" />
-                                            <span class="text-sm text-gray-500">{{ $review->created_at->format('d/m/Y') }}</span>
+                                            <span class="text-xs sm:text-sm text-gray-500">{{ $review->created_at->format('d/m/Y') }}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
                             @if($review->comment)
-                                <p class="text-gray-700 leading-relaxed">{{ $review->comment }}</p>
+                                <p class="text-sm sm:text-base text-gray-700 leading-relaxed">{{ $review->comment }}</p>
                             @endif
                         </div>
                     @empty
@@ -333,15 +333,15 @@
                             <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                             </svg>
-                            <p class="text-gray-500">Aucun avis pour le moment</p>
-                            <p class="text-sm text-gray-400 mt-1">Soyez le premier à laisser un avis !</p>
+                            <p class="text-sm sm:text-base text-gray-500">Aucun avis pour le moment</p>
+                            <p class="text-xs sm:text-sm text-gray-400 mt-1">Soyez le premier à laisser un avis !</p>
                         </div>
                     @endforelse
                 </div>
 
                 @if($car->getReviewsCount() > 5)
                     <div class="text-center mt-6">
-                        <button class="text-orange-600 hover:text-orange-700 font-medium">
+                        <button class="text-sm sm:text-base text-orange-600 hover:text-orange-700 font-medium">
                             Voir tous les avis ({{ $car->getReviewsCount() }})
                         </button>
                     </div>
@@ -354,8 +354,8 @@
     <div class="bg-gray-50 py-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Véhicules Similaires</h2>
-                <p class="text-lg text-gray-600">Découvrez d'autres véhicules avec la même transmission et type</p>
+                <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-4">Véhicules Similaires</h2>
+                <p class="text-sm sm:text-base text-gray-600">Découvrez d'autres véhicules avec la même transmission et type</p>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -386,12 +386,12 @@
                         <!-- Car Details -->
                         <div class="p-5">
                             <div class="mb-4">
-                                <h3 class="text-lg font-bold text-gray-900">{{ $similarCar->brand }}</h3>
-                                <p class="text-sm text-gray-600">{{ $similarCar->model }}</p>
+                                <h3 class="text-base sm:text-lg font-bold text-gray-900">{{ $similarCar->brand }}</h3>
+                                <p class="text-xs sm:text-sm text-gray-600">{{ $similarCar->model }}</p>
                             </div>
                             
                             <!-- Features -->
-                            <div class="flex items-center gap-4 mb-4 text-sm text-gray-600">
+                            <div class="flex items-center gap-4 mb-4 text-xs sm:text-sm text-gray-600">
                                 <div class="flex items-center gap-1">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
@@ -409,10 +409,10 @@
                             <!-- Price & CTA -->
                             <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                                 <div>
-                                    <div class="text-2xl font-bold text-gray-900">{{ number_format($similarCar->price_per_day, 0) }} MAD</div>
-                                    <div class="text-sm text-gray-500">par jour</div>
+                                    <div class="text-lg sm:text-2xl font-bold text-gray-900">{{ number_format($similarCar->client_price_per_day, 0) }} MAD</div>
+                                    <div class="text-xs sm:text-sm text-gray-500">par jour</div>
                                 </div>
-                                <div class="text-orange-600 font-semibold text-sm">
+                                <div class="text-orange-600 font-semibold text-xs sm:text-sm">
                                     Voir détails →
                                 </div>
                             </div>
@@ -420,7 +420,7 @@
                     </div>
                 @empty
                     <div class="col-span-full text-center py-12">
-                        <p class="text-gray-500">Aucun autre véhicule disponible pour le moment</p>
+                        <p class="text-sm sm:text-base text-gray-500">Aucun autre véhicule disponible pour le moment</p>
                     </div>
                 @endforelse
             </div>

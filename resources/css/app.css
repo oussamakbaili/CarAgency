@@ -1,3 +1,54 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Global mobile safety to prevent horizontal scroll and oversized media */
+html, body { overflow-x: hidden; }
+img, video, canvas, svg { max-width: 100%; height: auto; }
+/* Make tables scroll instead of overflowing on small screens */
+.responsive-table-wrapper { width: 100%; overflow-x: auto; }
+
+/* Hide scrollbar for horizontal carousels (Airbnb style) */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* Home page - mobile-only scaling inspired by Airbnb */
+@media (max-width: 640px) {
+  /* Scope to homepage only */
+  .home-mobile { 
+    font-size: 0.94rem; 
+    padding-bottom: 4.5rem; /* Space for bottom navigation bar */
+  }
+  .home-mobile h1 { font-size: 1.5rem; }
+  .home-mobile h2 { font-size: 1.25rem; }
+  .home-mobile p, .home-mobile .text-base { font-size: 0.95rem; }
+
+  /* Card sizing */
+  .home-mobile .car-card { width: 240px; }
+  .home-mobile #topCarsScroll .car-card { width: 240px; }
+  .home-mobile #discoverCarsScroll .car-card { width: 240px; }
+  .home-mobile .car-card-image { height: 200px; }
+
+  /* UI elements smaller */
+  .home-mobile .car-card .text-lg { font-size: 1rem; }
+  .home-mobile .car-card .text-sm { font-size: 0.8rem; }
+  .home-mobile .car-card .px-3 { padding-left: 0.6rem; padding-right: 0.6rem; }
+  .home-mobile .car-card .py-1\.5 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+}
+
+/* Car detail page - mobile-only scaling similar to homepage */
+@media (max-width: 640px) {
+  .car-detail-mobile { 
+    font-size: 0.94rem; 
+  }
+  .car-detail-mobile h2 { font-size: 1.25rem; }
+  .car-detail-mobile h3 { font-size: 1.1rem; }
+  .car-detail-mobile p, .car-detail-mobile .text-base { font-size: 0.95rem; }
+  .car-detail-mobile .text-sm { font-size: 0.85rem; }
+  .car-detail-mobile .text-xs { font-size: 0.75rem; }
+}

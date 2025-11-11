@@ -12,6 +12,11 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        'stripe/webhook',
+        'cmi/callback',
+        'cmi/success',
+        'cmi/failure',
+        'paypal/success',
+        'paypal/cancel',
     ];
 }

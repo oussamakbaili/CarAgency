@@ -241,7 +241,7 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Prix par jour</dt>
-                            <dd class="text-gray-900">{{ number_format($rental->car->price_per_day, 0) }} MAD</dd>
+                            <dd class="text-gray-900">{{ number_format($rental->car->client_price_per_day, 0) }} MAD</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Prix total</dt>

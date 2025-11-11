@@ -13,14 +13,16 @@ class PaymentNotificationService
      */
     public static function notifyPaymentReceived($transaction)
     {
-        $admin = User::where('role', 'admin')->first();
-        if (!$admin) return;
+        $admins = User::where('role', 'admin')->get();
+        if ($admins->isEmpty()) return;
 
-        return Notification::createPaymentNotification(
-            $admin->id,
-            $transaction,
-            'received'
-        );
+        foreach ($admins as $admin) {
+            Notification::createPaymentNotification(
+                $admin->id,
+                $transaction,
+                'received'
+            );
+        }
     }
 
     /**
@@ -28,14 +30,16 @@ class PaymentNotificationService
      */
     public static function notifyPaymentFailed($transaction)
     {
-        $admin = User::where('role', 'admin')->first();
-        if (!$admin) return;
+        $admins = User::where('role', 'admin')->get();
+        if ($admins->isEmpty()) return;
 
-        return Notification::createPaymentNotification(
-            $admin->id,
-            $transaction,
-            'failed'
-        );
+        foreach ($admins as $admin) {
+            Notification::createPaymentNotification(
+                $admin->id,
+                $transaction,
+                'failed'
+            );
+        }
     }
 
     /**
@@ -43,14 +47,16 @@ class PaymentNotificationService
      */
     public static function notifyRefundProcessed($transaction)
     {
-        $admin = User::where('role', 'admin')->first();
-        if (!$admin) return;
+        $admins = User::where('role', 'admin')->get();
+        if ($admins->isEmpty()) return;
 
-        return Notification::createPaymentNotification(
-            $admin->id,
-            $transaction,
-            'refunded'
-        );
+        foreach ($admins as $admin) {
+            Notification::createPaymentNotification(
+                $admin->id,
+                $transaction,
+                'refunded'
+            );
+        }
     }
 
     /**
@@ -230,5 +236,40 @@ class PaymentNotificationService
                 'client_name' => $transaction->client->user->name,
             ],
         ]);
+    }
+
+    /**
+     * Notify admins when an agency submits a payout request.
+     */
+    public static function notifyAdminPayoutRequested(Transaction $transaction)
+    {
+        $admins = User::where('role', 'admin')->get();
+        foreach ($admins as $admin) {
+            Notification::createPayoutRequestNotification($admin->id, $transaction);
+        }
+    }
+
+    /**
+     * Notify agency once payout has been processed.
+     */
+    public static function notifyAgencyPayoutProcessed(Transaction $transaction)
+    {
+        if (!$transaction->agency_id || !$transaction->agency) {
+            return;
+        }
+
+        Notification::createAgencyPayoutProcessedNotification($transaction->agency, $transaction);
+    }
+
+    /**
+     * Notify agency if payout request has been rejected.
+     */
+    public static function notifyAgencyPayoutRejected(Transaction $transaction)
+    {
+        if (!$transaction->agency_id || !$transaction->agency) {
+            return;
+        }
+
+        Notification::createAgencyPayoutRejectedNotification($transaction->agency, $transaction);
     }
 }

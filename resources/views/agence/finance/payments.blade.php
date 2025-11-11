@@ -18,7 +18,11 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600">Paiements Reçus</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($payments->where('status', 'completed')->sum('amount'), 0, ',', ' ') }} MAD</p>
+                    @php
+                        $paymentsCollection = method_exists($payments, 'items') ? collect($payments->items()) : (is_iterable($payments) ? collect($payments) : collect([]));
+                        $completedTotal = $paymentsCollection->where('status', 'completed')->sum('amount') ?? 0;
+                    @endphp
+                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($completedTotal, 0, ',', ' ') }} MAD</p>
                 </div>
             </div>
         </div>
@@ -32,7 +36,11 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600">En Attente</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($payments->where('status', 'pending')->sum('amount'), 0, ',', ' ') }} MAD</p>
+                    @php
+                        $paymentsCollection = method_exists($payments, 'items') ? collect($payments->items()) : (is_iterable($payments) ? collect($payments) : collect([]));
+                        $pendingTotal = $paymentsCollection->where('status', 'pending')->sum('amount') ?? 0;
+                    @endphp
+                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($pendingTotal, 0, ',', ' ') }} MAD</p>
                 </div>
             </div>
         </div>
@@ -46,7 +54,11 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600">Échecs</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($payments->where('status', 'failed')->sum('amount'), 0, ',', ' ') }} MAD</p>
+                    @php
+                        $paymentsCollection = method_exists($payments, 'items') ? collect($payments->items()) : (is_iterable($payments) ? collect($payments) : collect([]));
+                        $failedTotal = $paymentsCollection->where('status', 'failed')->sum('amount') ?? 0;
+                    @endphp
+                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($failedTotal, 0, ',', ' ') }} MAD</p>
                 </div>
             </div>
         </div>

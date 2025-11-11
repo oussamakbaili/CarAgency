@@ -152,17 +152,17 @@
                         <h4 class="font-semibold text-gray-900 mb-4">Détails des prix</h4>
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <span class="text-gray-600" id="price-breakdown">17 jours × {{ number_format($car->price_per_day, 0) }} MAD</span>
-                                <span class="text-gray-900" id="subtotal-price">{{ number_format(17 * $car->price_per_day, 0) }} MAD</span>
+                                <span class="text-gray-600" id="price-breakdown">17 jours × {{ number_format($car->client_price_per_day, 0) }} MAD</span>
+                                <span class="text-gray-900" id="subtotal-price">{{ number_format(17 * $car->client_price_per_day, 0) }} MAD</span>
                             </div>
                             <div class="flex justify-between text-green-600">
                                 <span>Remise séjour longue durée</span>
-                                <span id="discount-price">-{{ number_format(17 * $car->price_per_day * 0.1, 0) }} MAD</span>
+                                <span id="discount-price">-{{ number_format(17 * $car->client_price_per_day * 0.1, 0) }} MAD</span>
                             </div>
                             <div class="border-t border-gray-200 pt-2 mt-2">
                                 <div class="flex justify-between font-semibold">
                                     <span class="text-gray-900">Total MAD</span>
-                                    <span class="text-gray-900" id="total-price">{{ number_format(17 * $car->price_per_day * 0.9, 0) }} MAD</span>
+                                    <span class="text-gray-900" id="total-price">{{ number_format(17 * $car->client_price_per_day * 0.9, 0) }} MAD</span>
                                 </div>
                             </div>
                         </div>
@@ -819,7 +819,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('selected-duration').textContent = diffDays + ' jours';
         
         // Update price calculation
-        const pricePerDay = {{ $car->price_per_day }};
+        const pricePerDay = {{ $car->client_price_per_day }};
         const subtotal = diffDays * pricePerDay;
         const discount = subtotal * 0.1;
         const total = subtotal - discount;
@@ -879,7 +879,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateDurationPrice() {
         const days = parseInt(durationInput.value);
-        const pricePerDay = {{ $car->price_per_day }};
+        const pricePerDay = {{ $car->client_price_per_day }};
         const subtotal = days * pricePerDay;
         const discount = subtotal * 0.1;
         const total = subtotal - discount;
@@ -896,7 +896,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('selected-duration').textContent = newDuration + ' jours';
         
         // Update price calculation
-        const pricePerDay = {{ $car->price_per_day }};
+        const pricePerDay = {{ $car->client_price_per_day }};
         const subtotal = newDuration * pricePerDay;
         const discount = subtotal * 0.1;
         const total = subtotal - discount;

@@ -1,0 +1,582 @@
+@extends('layouts.public')
+
+@section('title', 'Paiement - ' . $car->brand . ' ' . $car->model)
+
+@push('head')
+<script src="https://js.stripe.com/v3/"></script>
+@endpush
+
+@section('content')
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-6">
+            <a href="{{ route('booking.step3') }}" class="text-gray-600 hover:text-gray-900 inline-flex items-center mb-4">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Retour
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900">Paiement</h1>
+            <p class="text-gray-600 mt-2">Choisissez votre méthode de paiement</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column - Payment Form -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl border border-gray-200 p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Méthode de paiement</h2>
+
+                    @if(session('error'))
+                        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <p class="text-red-800">{{ session('error') }}</p>
+                        </div>
+                    @endif
+
+                    <!-- Payment Gateway Selection -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Choisir une passerelle de paiement</label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Stripe Option -->
+                            <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="stripe">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">Stripe</h3>
+                                        <p class="text-sm text-gray-600 mt-1">Paiement international</p>
+                                        <p class="text-xs text-gray-500 mt-1">EUR, USD, etc.</p>
+                                    </div>
+                                    <input type="radio" name="payment_gateway" value="stripe" class="payment-gateway-radio" checked>
+                                </div>
+                            </div>
+
+                            <!-- CMI Option -->
+                            <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="cmi">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">CMI</h3>
+                                        <p class="text-sm text-gray-600 mt-1">Paiement Maroc</p>
+                                        <p class="text-xs text-gray-500 mt-1">Cartes bancaires (MAD)</p>
+                                    </div>
+                                    <input type="radio" name="payment_gateway" value="cmi" class="payment-gateway-radio">
+                                </div>
+                            </div>
+
+                            <!-- PayPal Option -->
+                            <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="paypal">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">PayPal</h3>
+                                        <p class="text-sm text-gray-600 mt-1">Paiement PayPal</p>
+                                        <p class="text-xs text-gray-500 mt-1">Compte PayPal (EUR)</p>
+                                    </div>
+                                    <input type="radio" name="payment_gateway" value="paypal" class="payment-gateway-radio">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stripe Payment Form (Hidden by default, shown when Stripe is selected) -->
+                    <div id="stripe-payment-form" class="payment-form">
+                        <form id="payment-form" action="{{ route('booking.process-payment') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="payment_intent_id" id="payment_intent_id" value="">
+                            <input type="hidden" name="payment_method" value="card">
+                            <input type="hidden" name="payment_gateway" value="stripe">
+                            <input type="hidden" name="terms_accepted" value="1" id="terms_accepted">
+                            <input type="hidden" name="privacy_policy_accepted" value="1" id="privacy_policy_accepted">
+
+                            <!-- Stripe Elements Container -->
+                            <div id="card-element" class="mb-6 p-4 border border-gray-300 rounded-lg">
+                                <!-- Stripe Elements will create form elements here -->
+                            </div>
+
+                            <!-- Display form errors -->
+                            <div id="card-errors" role="alert" class="mb-6 text-red-600 text-sm"></div>
+
+                            <!-- Terms and Conditions -->
+                            <div class="mb-6 space-y-4">
+                                <label class="flex items-start">
+                                    <input type="checkbox" name="terms_checkbox" id="terms_checkbox" class="mt-1 mr-3" required>
+                                    <span class="text-sm text-gray-700">
+                                        J'accepte les <a href="#" class="text-red-600 hover:underline">conditions générales</a> de location
+                                    </span>
+                                </label>
+                                <label class="flex items-start">
+                                    <input type="checkbox" name="privacy_checkbox" id="privacy_checkbox" class="mt-1 mr-3" required>
+                                    <span class="text-sm text-gray-700">
+                                        J'accepte la <a href="#" class="text-red-600 hover:underline">politique de confidentialité</a>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" id="submit-button" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg font-semibold transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span id="button-text">Payer {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} €</span>
+                                <span id="spinner" class="hidden">
+                                    <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </span>
+                            </button>
+
+                            <p class="text-xs text-gray-500 mt-4 text-center">
+                                🔒 Paiement sécurisé par Stripe. Vos données bancaires sont cryptées et ne sont jamais stockées sur nos serveurs.
+                            </p>
+                        </form>
+                    </div>
+
+                    <!-- PayPal Payment Form -->
+                    <div id="paypal-payment-form" class="payment-form hidden">
+                        <form id="paypal-form" method="POST">
+                            @csrf
+                            <input type="hidden" name="payment_gateway" value="paypal">
+                            <input type="hidden" name="payment_method" value="paypal">
+
+                            <div class="mb-6">
+                                <p class="text-gray-700 mb-4">
+                                    Vous serez redirigé vers PayPal pour finaliser votre paiement de manière sécurisée.
+                                </p>
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                    <p class="text-sm text-blue-800">
+                                        <strong>Montant:</strong> {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} EUR
+                                    </p>
+                                    <p class="text-sm text-blue-800 mt-2">
+                                        Vous pouvez payer avec votre compte PayPal ou une carte bancaire.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Terms and Conditions -->
+                            <div class="mb-6 space-y-4">
+                                <label class="flex items-start">
+                                    <input type="checkbox" name="terms_checkbox_paypal" id="terms_checkbox_paypal" class="mt-1 mr-3" required>
+                                    <span class="text-sm text-gray-700">
+                                        J'accepte les <a href="#" class="text-red-600 hover:underline">conditions générales</a> de location
+                                    </span>
+                                </label>
+                                <label class="flex items-start">
+                                    <input type="checkbox" name="privacy_checkbox_paypal" id="privacy_checkbox_paypal" class="mt-1 mr-3" required>
+                                    <span class="text-sm text-gray-700">
+                                        J'accepte la <a href="#" class="text-red-600 hover:underline">politique de confidentialité</a>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" id="paypal-submit-button" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg font-semibold transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span id="paypal-button-text">Payer avec PayPal - {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} EUR</span>
+                                <span id="paypal-spinner" class="hidden">
+                                    <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </span>
+                            </button>
+
+                            <p class="text-xs text-gray-500 mt-4 text-center">
+                                🔒 Paiement sécurisé par PayPal. Vos données bancaires sont cryptées.
+                            </p>
+                        </form>
+                    </div>
+
+                    <!-- CMI Payment Form -->
+                    <div id="cmi-payment-form" class="payment-form hidden">
+                        <form id="cmi-form" method="POST">
+                            @csrf
+                            <input type="hidden" name="payment_gateway" value="cmi">
+                            <input type="hidden" name="payment_method" value="cmi">
+
+                            <div class="mb-6">
+                                <p class="text-gray-700 mb-4">
+                                    Vous serez redirigé vers la page de paiement sécurisée de CMI pour finaliser votre transaction.
+                                </p>
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                    <p class="text-sm text-blue-800">
+                                        <strong>Montant:</strong> {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} MAD
+                                    </p>
+                                    <p class="text-sm text-blue-800 mt-2">
+                                        Vous pouvez payer avec toutes les cartes bancaires marocaines acceptées par CMI.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Terms and Conditions -->
+                            <div class="mb-6 space-y-4">
+                                <label class="flex items-start">
+                                    <input type="checkbox" name="terms_checkbox_cmi" id="terms_checkbox_cmi" class="mt-1 mr-3" required>
+                                    <span class="text-sm text-gray-700">
+                                        J'accepte les <a href="#" class="text-red-600 hover:underline">conditions générales</a> de location
+                                    </span>
+                                </label>
+                                <label class="flex items-start">
+                                    <input type="checkbox" name="privacy_checkbox_cmi" id="privacy_checkbox_cmi" class="mt-1 mr-3" required>
+                                    <span class="text-sm text-gray-700">
+                                        J'accepte la <a href="#" class="text-red-600 hover:underline">politique de confidentialité</a>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" id="cmi-submit-button" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg font-semibold transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span id="cmi-button-text">Payer {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} MAD</span>
+                                <span id="cmi-spinner" class="hidden">
+                                    <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </span>
+                            </button>
+
+                            <p class="text-xs text-gray-500 mt-4 text-center">
+                                🔒 Paiement sécurisé par CMI (Credit Mutuel International). Vos données bancaires sont cryptées.
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Booking Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl border border-gray-200 p-6 sticky top-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Résumé de la réservation</h3>
+
+                    <!-- Car Image -->
+                    <div class="relative h-32 bg-gray-100 rounded-xl mb-4 overflow-hidden">
+                        @if($car->image_url)
+                            <img src="{{ $car->image_url }}" alt="{{ $car->brand }} {{ $car->model }}" 
+                                 class="w-full h-full object-cover">
+                        @else
+                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
+                                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                            </div>
+                        @endif
+                    </div>
+
+                    <h4 class="font-semibold text-gray-900 mb-2">{{ $car->brand }} {{ $car->model }}</h4>
+                    <p class="text-sm text-gray-600 mb-4">{{ $car->agency->agency_name ?? 'Agence' }}</p>
+
+                    <div class="border-t border-gray-200 pt-4 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Dates</span>
+                            <span class="text-gray-900 font-medium">
+                                {{ \Carbon\Carbon::parse($bookingData['start_date'])->format('d/m/Y') }} - 
+                                {{ \Carbon\Carbon::parse($bookingData['end_date'])->format('d/m/Y') }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Durée</span>
+                            <span class="text-gray-900 font-medium">{{ $bookingData['days'] }} jour(s)</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Prix par jour</span>
+                            <span class="text-gray-900 font-medium">{{ number_format($bookingData['price_per_day'], 2, ',', ' ') }} €</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Sous-total</span>
+                            <span class="text-gray-900 font-medium">{{ number_format($bookingData['total_price'], 2, ',', ' ') }} €</span>
+                        </div>
+                        <div class="border-t border-gray-200 pt-2 mt-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-900 font-semibold">Total</span>
+                                <span class="text-gray-900 font-bold text-lg">{{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} €</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let stripe = null;
+    let elements = null;
+    let cardElement = null;
+    let clientSecret = null;
+
+    // Payment Gateway Selection
+    document.querySelectorAll('.payment-gateway-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const gateway = this.dataset.gateway;
+            const radio = this.querySelector('.payment-gateway-radio');
+            radio.checked = true;
+
+            // Update border styles
+            document.querySelectorAll('.payment-gateway-option').forEach(opt => {
+                opt.classList.remove('border-red-500');
+                opt.classList.add('border-gray-200');
+            });
+            this.classList.remove('border-gray-200');
+            this.classList.add('border-red-500');
+
+            // Show/hide payment forms
+            if (gateway === 'stripe') {
+                document.getElementById('stripe-payment-form').classList.remove('hidden');
+                document.getElementById('cmi-payment-form').classList.add('hidden');
+                document.getElementById('paypal-payment-form').classList.add('hidden');
+                initStripe();
+            } else if (gateway === 'cmi') {
+                document.getElementById('stripe-payment-form').classList.add('hidden');
+                document.getElementById('cmi-payment-form').classList.remove('hidden');
+                document.getElementById('paypal-payment-form').classList.add('hidden');
+            } else if (gateway === 'paypal') {
+                document.getElementById('stripe-payment-form').classList.add('hidden');
+                document.getElementById('cmi-payment-form').classList.add('hidden');
+                document.getElementById('paypal-payment-form').classList.remove('hidden');
+            }
+        });
+    });
+
+    // Initialize Stripe when Stripe option is selected
+    function initStripe() {
+        if (stripe) return; // Already initialized
+
+        stripe = Stripe('{{ config('services.stripe.key') }}');
+        elements = stripe.elements();
+        
+        cardElement = elements.create('card', {
+            style: {
+                base: {
+                    fontSize: '16px',
+                    color: '#424770',
+                    '::placeholder': {
+                        color: '#aab7c4',
+                    },
+                },
+                invalid: {
+                    color: '#9e2146',
+                },
+            },
+        });
+
+        cardElement.mount('#card-element');
+
+        cardElement.on('change', function(event) {
+            const displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+    }
+
+    // Initialize Stripe on page load if Stripe is selected
+    if (document.querySelector('input[name="payment_gateway"][value="stripe"]').checked) {
+        initStripe();
+    }
+
+    // Stripe Form Submission
+    const stripeForm = document.getElementById('payment-form');
+    if (stripeForm) {
+        stripeForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const termsCheckbox = document.getElementById('terms_checkbox');
+            const privacyCheckbox = document.getElementById('privacy_checkbox');
+
+            if (!termsCheckbox.checked || !privacyCheckbox.checked) {
+                alert('Veuillez accepter les conditions générales et la politique de confidentialité');
+                return;
+            }
+
+            // Initialize Stripe if not already done
+            if (!stripe) {
+                initStripe();
+            }
+
+            // Get or create PaymentIntent
+            if (!clientSecret) {
+                const submitBtn = document.getElementById('submit-button');
+                const buttonText = document.getElementById('button-text');
+                const spinner = document.getElementById('spinner');
+                
+                submitBtn.disabled = true;
+                buttonText.classList.add('hidden');
+                spinner.classList.remove('hidden');
+
+                try {
+                    const response = await fetch('{{ route('booking.init-stripe-payment') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        clientSecret = data.client_secret;
+                        document.getElementById('payment_intent_id').value = data.payment_intent_id;
+                    } else {
+                        alert('Erreur: ' + (data.error || 'Impossible d\'initialiser le paiement'));
+                        submitBtn.disabled = false;
+                        buttonText.classList.remove('hidden');
+                        spinner.classList.add('hidden');
+                        return;
+                    }
+                } catch (error) {
+                    alert('Erreur lors de l\'initialisation du paiement');
+                    submitBtn.disabled = false;
+                    buttonText.classList.remove('hidden');
+                    spinner.classList.add('hidden');
+                    return;
+                }
+            }
+
+            // Confirm payment
+            const {error, paymentIntent} = await stripe.confirmCardPayment(
+                clientSecret,
+                {
+                    payment_method: {
+                        card: cardElement,
+                    }
+                }
+            );
+
+            const submitBtn = document.getElementById('submit-button');
+            const buttonText = document.getElementById('button-text');
+            const spinner = document.getElementById('spinner');
+
+            if (error) {
+                const displayError = document.getElementById('card-errors');
+                displayError.textContent = error.message;
+                submitBtn.disabled = false;
+                buttonText.classList.remove('hidden');
+                spinner.classList.add('hidden');
+            } else {
+                document.getElementById('payment_intent_id').value = paymentIntent.id;
+                document.getElementById('terms_accepted').value = '1';
+                document.getElementById('privacy_policy_accepted').value = '1';
+                stripeForm.submit();
+            }
+        });
+    }
+
+    // PayPal Form Submission
+    const paypalForm = document.getElementById('paypal-form');
+    if (paypalForm) {
+        paypalForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const termsCheckbox = document.getElementById('terms_checkbox_paypal');
+            const privacyCheckbox = document.getElementById('privacy_checkbox_paypal');
+
+            if (!termsCheckbox.checked || !privacyCheckbox.checked) {
+                alert('Veuillez accepter les conditions générales et la politique de confidentialité');
+                return;
+            }
+
+            const submitBtn = document.getElementById('paypal-submit-button');
+            const buttonText = document.getElementById('paypal-button-text');
+            const spinner = document.getElementById('paypal-spinner');
+            
+            submitBtn.disabled = true;
+            buttonText.classList.add('hidden');
+            spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch('{{ route('booking.init-paypal-payment') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.approve_url) {
+                    // Rediriger vers PayPal
+                    window.location.href = data.approve_url;
+                } else {
+                    alert('Erreur: ' + (data.error || 'Impossible d\'initialiser le paiement PayPal'));
+                    submitBtn.disabled = false;
+                    buttonText.classList.remove('hidden');
+                    spinner.classList.add('hidden');
+                }
+            } catch (error) {
+                alert('Erreur lors de l\'initialisation du paiement PayPal');
+                submitBtn.disabled = false;
+                buttonText.classList.remove('hidden');
+                spinner.classList.add('hidden');
+            }
+        });
+    }
+
+    // CMI Form Submission
+    const cmiForm = document.getElementById('cmi-form');
+    if (cmiForm) {
+        cmiForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const termsCheckbox = document.getElementById('terms_checkbox_cmi');
+            const privacyCheckbox = document.getElementById('privacy_checkbox_cmi');
+
+            if (!termsCheckbox.checked || !privacyCheckbox.checked) {
+                alert('Veuillez accepter les conditions générales et la politique de confidentialité');
+                return;
+            }
+
+            const submitBtn = document.getElementById('cmi-submit-button');
+            const buttonText = document.getElementById('cmi-button-text');
+            const spinner = document.getElementById('cmi-spinner');
+            
+            submitBtn.disabled = true;
+            buttonText.classList.add('hidden');
+            spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch('{{ route('booking.init-cmi-payment') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Create a form and submit it to CMI
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = data.redirect_url;
+
+                    Object.keys(data.params).forEach(key => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = data.params[key];
+                        form.appendChild(input);
+                    });
+
+                    document.body.appendChild(form);
+                    form.submit();
+                } else {
+                    alert('Erreur: ' + (data.error || 'Impossible d\'initialiser le paiement CMI'));
+                    submitBtn.disabled = false;
+                    buttonText.classList.remove('hidden');
+                    spinner.classList.add('hidden');
+                }
+            } catch (error) {
+                alert('Erreur lors de l\'initialisation du paiement CMI');
+                submitBtn.disabled = false;
+                buttonText.classList.remove('hidden');
+                spinner.classList.add('hidden');
+            }
+        });
+    }
+</script>
+
+<style>
+    .payment-gateway-option.selected {
+        border-color: #ef4444;
+        background-color: #fef2f2;
+    }
+</style>
+@endsection

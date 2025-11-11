@@ -3,6 +3,7 @@
 @section('title', 'ToubCar - Premium Car Rental Platform')
 
 @section('content')
+    <div class="home-mobile">
     <!-- Success/Error Messages -->
     @if (session('success'))
         <div class="fixed top-4 right-4 z-50 bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg shadow-lg" role="alert" id="success-message">
@@ -43,43 +44,80 @@
         </div>
         
         <!-- Content Overlay -->
-        <div class="relative z-10 min-h-screen flex items-center">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="relative z-10 min-h-screen flex items-start md:items-center hero-section">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-16 pb-12 sm:pt-20 sm:pb-20 md:py-12">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12 items-center">
                     <!-- Left Content -->
-                    <div class="space-y-8" id="hero-content">
-                        <div>
-                            <h1 class="text-5xl md:text-7xl font-bold text-white leading-tight mb-6 hero-title">
-                                Find Your Perfect
-                                <span class="block text-orange-500">
-                                    Car Rental
+                    <div class="space-y-6 sm:space-y-8 w-full" id="hero-content">
+                        <div class="w-full">
+                            <h1 class="text-left mb-6 sm:mb-8">
+                                <span class="block text-5xl sm:text-5xl md:text-6xl font-bold text-white mb-2 leading-tight">{{ __('home.hero.title_line1') }}</span>
+                                <span class="block text-5xl sm:text-5xl md:text-6xl font-bold text-white mb-3 leading-tight">{{ __('home.hero.title_line2') }}</span>
+                                <span class="block text-7xl sm:text-6xl md:text-8xl font-bold text-orange-500 leading-tight">
+                                    {{ __('home.hero.title_line3') }}
                                 </span>
                             </h1>
                             
-                            <p class="text-xl text-gray-300 leading-relaxed hero-subtitle">
-                                Découvrez notre large gamme de véhicules disponibles partout au Maroc. Simple, rapide et sécurisé.
-                            </p>
+                            <div class="space-y-1 text-left max-w-lg">
+                                <p class="text-base sm:text-lg text-gray-100 leading-relaxed font-normal">
+                                    {{ __('home.hero.subtitle_line1') }}
+                                </p>
+                                <p class="text-base sm:text-lg text-gray-100 leading-relaxed font-normal">
+                                    {{ __('home.hero.subtitle_line2') }}
+                                </p>
+                                <p class="text-sm sm:text-base text-gray-300 leading-relaxed font-normal">
+                                    {{ __('home.hero.subtitle_line3') }}
+                                </p>
+                            </div>
                         </div>
                     
-                        <!-- Search Form - Airbnb Style -->
-                        <div class="bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border border-gray-200 p-2 hero-search">
-                            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+                        <!-- Simple Search Bar - Mobile Only (Airbnb Style) -->
+                        <div class="md:hidden bg-white rounded-full shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-200 hero-search cursor-pointer" id="mobileSearchBar" onclick="openSearchModal('where')">
+                            <div class="w-full flex items-center gap-3 px-5 py-4">
+                                <svg class="w-5 h-5 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium text-gray-900 truncate" id="mobileSearchBarText">
+                                        @if(request('where') || request('check_in') || request('check_out'))
+                                            @if(request('where'))
+                                                {{ request('where') }}
+                                                @if(request('check_in') || request('check_out'))
+                                                    · 
+                                                @endif
+                                            @endif
+                                            @if(request('check_in') && request('check_out'))
+                                                {{ \Carbon\Carbon::parse(request('check_in'))->format('M d') }} - {{ \Carbon\Carbon::parse(request('check_out'))->format('M d') }}
+                                            @elseif(request('check_in'))
+                                                {{ \Carbon\Carbon::parse(request('check_in'))->format('M d') }}
+                                            @endif
+                                        @else
+                                            <span class="text-gray-500">{{ __('home.hero.search_placeholder') }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Full Search Form - Desktop Only (Airbnb Style) -->
+                        <div class="hidden md:block bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border border-gray-200 p-2 hero-search">
+                            <div class="flex flex-row items-center gap-2">
                                 <!-- Where -->
                                 <div class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-l-full transition-colors" onclick="openSearchModal('where')">
-                                    <label class="block text-xs font-semibold text-gray-900 mb-1">Where</label>
-                                    <div class="text-sm text-gray-600" id="whereDisplay">Search destinations</div>
+                                    <label class="block text-xs font-semibold text-gray-900 mb-1">{{ __('home.hero.where') }}</label>
+                                    <div class="text-sm text-gray-600" id="whereDisplayDesktop">{{ __('home.hero.where_placeholder') }}</div>
                                 </div>
                                 
                                 <!-- Check in -->
                                 <div class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkin')">
-                                    <label class="block text-xs font-semibold text-gray-900 mb-1">Check in</label>
-                                    <div class="text-sm text-gray-400" id="checkInDisplay">Add dates</div>
+                                    <label class="block text-xs font-semibold text-gray-900 mb-1">{{ __('home.hero.check_in') }}</label>
+                                    <div class="text-sm text-gray-400" id="checkInDisplayDesktop">{{ __('home.hero.add_dates') }}</div>
                                 </div>
                                 
                                 <!-- Check out -->
                                 <div class="flex-1 px-6 py-3 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkout')">
-                                    <label class="block text-xs font-semibold text-gray-900 mb-1">Check out</label>
-                                    <div class="text-sm text-gray-400" id="checkOutDisplay">Add dates</div>
+                                    <label class="block text-xs font-semibold text-gray-900 mb-1">{{ __('home.hero.check_out') }}</label>
+                                    <div class="text-sm text-gray-400" id="checkOutDisplayDesktop">{{ __('home.hero.add_dates') }}</div>
                                 </div>
                                 
                                 <!-- Search Button -->
@@ -87,7 +125,7 @@
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                     </svg>
-                                    <span class="hidden md:inline">Search</span>
+                                    <span>{{ __('home.hero.search') }}</span>
                                 </button>
                             </div>
                         </div>
@@ -100,32 +138,40 @@
         </div>
         
         <!-- Scroll Indicator -->
-        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20" id="scroll-indicator">
-            <div class="flex flex-col items-center gap-2 text-white animate-bounce">
-                <span class="text-sm font-medium">Scroll to explore</span>
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="absolute bottom-6 sm:bottom-10 left-1/2 transform -translate-x-1/2 z-20" id="scroll-indicator">
+            <div class="flex flex-col items-center gap-1 sm:gap-2 text-white animate-bounce">
+                <span class="text-xs sm:text-sm font-medium">{{ __('home.hero.scroll_to_explore') }}</span>
+                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                 </svg>
             </div>
         </div>
     </div>
 
-    <!-- Top Picks for this month -->
-    <div id="top-picks" class="py-16 bg-white reveal-section">
+    <!-- Top Picks for this month - Airbnb Style Horizontal Scroll -->
+    <div id="top-picks" class="py-10 sm:py-16 bg-white reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Véhicules Populaires</h2>
-                <p class="text-lg text-gray-600">Nos voitures les plus demandées ce mois-ci</p>
+            <div class="mb-6 sm:mb-8 flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">{{ __('home.popular_cars.title') }}</h2>
+                    <p class="text-sm sm:text-base text-gray-600">{{ __('home.popular_cars.subtitle') }}</p>
+                </div>
+                <button onclick="document.getElementById('topCarsScroll').scrollBy({left: 300, behavior: 'smooth'})" class="hidden md:flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 hover:border-gray-900 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Horizontal Scrollable Container -->
+            <div id="topCarsScroll" class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
                 @forelse($topCars as $car)
-                    <div onclick="window.location='{{ route('public.car.show', [$car->agency, $car]) }}'" class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+                    <div onclick="window.location='{{ route('public.car.show', [$car->agency, $car]) }}'" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer">
                         <!-- Car Image -->
-                        <div class="relative h-48 bg-gray-100">
+                        <div class="car-card-image relative h-[240px] bg-gray-100 overflow-hidden">
                             @if($car->image_url)
                                 <img src="{{ $car->image_url }}" alt="{{ $car->brand }} {{ $car->model }}" 
-                                     class="w-full h-full object-cover">
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                             @else
                                 <div class="w-full h-full flex items-center justify-center">
                                     <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,131 +182,131 @@
                             
                             <!-- Featured Badge -->
                             @if($car->featured || $car->agency->featured)
-                                <div class="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-lg bg-orange-600 text-white shadow-md">
+                                <div class="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-md bg-orange-600 text-white shadow-lg text-xs font-bold">
                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <span class="text-xs font-bold">{{ $car->featured ? 'FEATURED' : 'TOP PARTNER' }}</span>
+                                    <span>{{ $car->featured ? __('home.popular_cars.featured') : __('home.popular_cars.partner') }}</span>
                                 </div>
                             @endif
                             
+                            <!-- Heart Icon (Airbnb style) -->
+                            <button onclick="event.stopPropagation(); handleFavoriteClick({{ $car->id }}, event)" 
+                                    class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors shadow-sm favorite-btn" 
+                                    data-car-id="{{ $car->id }}">
+                                <svg class="w-5 h-5 text-gray-700 favorite-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                            
                             <!-- Rating Badge -->
                             @if($car->average_rating > 0)
-                                <div class="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg bg-white shadow-sm">
-                                    <x-star-rating :rating="$car->average_rating" size="w-4 h-4" />
+                                <div class="absolute bottom-3 left-3 flex items-center gap-1 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm shadow-sm">
+                                    <svg class="w-4 h-4 text-orange-600 fill-current" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
                                     <span class="text-sm font-semibold text-gray-900">{{ number_format($car->average_rating, 1) }}</span>
                                 </div>
                             @endif
                         </div>
                         
                         <!-- Car Details -->
-                        <div class="p-5">
-                            <div class="mb-4">
-                                <h3 class="text-lg font-bold text-gray-900">{{ $car->brand }}</h3>
-                                <p class="text-sm text-gray-600">{{ $car->model }}</p>
+                        <div class="p-4">
+                            <div class="mb-3">
+                                <h3 class="text-base font-semibold text-gray-900 truncate">{{ $car->brand }} {{ $car->model }}</h3>
+                                <p class="text-sm text-gray-500 mt-1">{{ $car->agency->city ?? 'Maroc' }}</p>
                             </div>
                             
-                            <!-- Features -->
-                            <div class="flex items-center gap-4 mb-4 text-sm text-gray-600">
-                                <div class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                                        </svg>
-                                    <span>{{ ucfirst($car->transmission ?? 'Auto') }}</span>
+                            <!-- Price + CTA -->
+                            <div class="flex items-center justify-between mt-3">
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-lg font-bold text-gray-900">{{ number_format($car->client_price_per_day, 0) }}</span>
+                                    <span class="text-sm text-gray-600">MAD</span>
+                                    <span class="text-sm text-gray-500">/ {{ __('home.popular_cars.per_day') }}</span>
                                 </div>
-                                <div class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                        </svg>
-                                    <span>{{ $car->seats ?? 5 }}</span>
-                            </div>
-                            </div>
-                            
-                            <!-- Price & CTA -->
-                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                                <div>
-                                    <div class="text-2xl font-bold text-gray-900">{{ number_format($car->price_per_day, 0) }} MAD</div>
-                                    <div class="text-sm text-gray-500">par jour</div>
-                                </div>
-                                <a href="{{ route('booking.main', $car) }}" 
-                                   class="bg-[#C2410C] hover:bg-[#9A3412] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-                                   onclick="event.stopPropagation()">
-                                    Réserver
+                                <a href="{{ route('booking.main', $car) }}" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 bg-[#C2410C] hover:bg-[#9A3412] text-white px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm">
+                                    {{ __('home.popular_cars.book') }}
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                                 </a>
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="col-span-full text-center py-12">
-                        <p class="text-gray-500">Aucune voiture disponible pour le moment</p>
+                    <div class="w-full text-center py-12">
+                        <p class="text-gray-500">{{ __('home.popular_cars.no_cars') }}</p>
                     </div>
                 @endforelse
             </div>
         </div>
     </div>
     <!-- Join Us Banner -->
-    <div class="bg-orange-600 py-16 reveal-section">
+    <div class="bg-orange-600 py-10 sm:py-16 reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
-                Prêt à Commencer?
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
+                {{ __('home.cta.title') }}
             </h2>
-            <p class="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-                Louez une voiture ou devenez partenaire et gérez votre flotte facilement
+            <p class="text-sm sm:text-lg text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto">
+                {{ __('home.cta.subtitle') }}
             </p>
-            <div class="flex flex-wrap justify-center gap-4">
+            <div class="flex flex-wrap justify-center gap-3 sm:gap-4">
                 <a href="{{ route('register') }}" 
-                   class="inline-flex items-center gap-2 bg-white hover:bg-gray-100 text-orange-600 px-8 py-3 rounded-lg font-semibold transition-colors">
-                    Commencer
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="inline-flex items-center gap-1.5 sm:gap-2 bg-white hover:bg-gray-100 text-orange-600 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base">
+                    {{ __('home.cta.button') }}
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                     </svg>
                 </a>
                 <a href="#discover" 
-                   class="inline-flex items-center gap-2 bg-transparent border-2 border-white hover:bg-white hover:text-orange-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
-                    Voir les Voitures
+                   class="inline-flex items-center gap-1.5 sm:gap-2 bg-transparent border-2 border-white hover:bg-white hover:text-orange-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base">
+                    {{ __('home.cta.view_cars') }}
                 </a>
             </div>
         </div>
     </div>
 
     <!-- Discover our wide range of cars -->
-    <div id="discover" class="py-16 bg-gray-50 reveal-section">
+    <div id="discover" class="py-10 sm:py-16 bg-gray-50 reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-8">Parcourir Par Catégorie</h2>
-                
-                <!-- Category Filters -->
-                <div class="flex flex-wrap gap-3 mb-8">
+            <div class="mb-6 sm:mb-8 flex items-center justify-between">
+                <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">{{ __('home.categories.title') }}</h2>
+                <button onclick="document.getElementById('discoverCarsScroll').scrollBy({left: 300, behavior: 'smooth'})" class="hidden md:flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 hover:border-gray-900 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Category Filters - Horizontal Scrollable (like Véhicules Populaires) -->
+            <div class="flex gap-2 sm:gap-3 mb-6 sm:mb-8 overflow-x-auto pb-2 scrollbar-hide scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
                     <a href="{{ route('public.home') }}" 
-                       class="px-5 py-2 rounded-lg font-semibold text-sm transition-colors {{ !request('category') ? 'bg-orange-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
-                        Tous
+                   class="flex-shrink-0 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors whitespace-nowrap {{ !request('category') ? 'bg-orange-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
+                        {{ __('home.categories.all') }}
                     </a>
                     @foreach($categories as $category)
                         <a href="{{ route('public.home', ['category' => $category->id]) }}" 
-                           class="px-5 py-2 rounded-lg font-semibold text-sm transition-colors {{ request('category') == $category->id ? 'bg-orange-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
+                       class="flex-shrink-0 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors whitespace-nowrap {{ request('category') == $category->id ? 'bg-orange-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
                             {{ $category->name }}
                         </a>
                     @endforeach
                     <button type="button" 
                             onclick="document.getElementById('filterModal').classList.remove('hidden')"
-                            class="px-5 py-2 rounded-lg font-semibold text-sm bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 transition-colors flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="flex-shrink-0 px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
                         </svg>
-                        Plus de Filtres
+                        {{ __('home.categories.more_filters') }}
                     </button>
-                </div>
             </div>
 
-            <!-- Cars Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Cars Horizontal Scroll Container - Airbnb Style -->
+            <div id="discoverCarsScroll" class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
                 @forelse($discoverCars as $car)
-                    <div onclick="window.location='{{ route('public.car.show', [$car->agency, $car]) }}'" class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+                    <div onclick="window.location='{{ route('public.car.show', [$car->agency, $car]) }}'" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer">
                         <!-- Car Image -->
-                        <div class="relative h-48 bg-gray-100">
+                        <div class="car-card-image relative h-[240px] bg-gray-100 overflow-hidden">
                             @if($car->image_url)
                                 <img src="{{ $car->image_url }}" alt="{{ $car->brand }} {{ $car->model }}" 
-                                     class="w-full h-full object-cover">
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                             @else
                                 <div class="w-full h-full flex items-center justify-center">
                                     <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -271,63 +317,58 @@
                             
                             <!-- Featured Badge -->
                             @if($car->featured || $car->agency->featured)
-                                <div class="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-lg bg-orange-600 text-white shadow-md">
+                                <div class="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-md bg-orange-600 text-white shadow-lg text-xs font-bold">
                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                     </svg>
-                                    <span class="text-xs font-bold">{{ $car->featured ? 'FEATURED' : 'TOP PARTNER' }}</span>
+                                    <span>{{ $car->featured ? __('home.popular_cars.featured') : __('home.popular_cars.partner') }}</span>
                                 </div>
                             @endif
                             
+                            <!-- Heart Icon (Airbnb style) -->
+                            <button onclick="event.stopPropagation(); handleFavoriteClick({{ $car->id }}, event)" 
+                                    class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors shadow-sm favorite-btn" 
+                                    data-car-id="{{ $car->id }}">
+                                <svg class="w-5 h-5 text-gray-700 favorite-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                            
                             <!-- Rating Badge -->
                             @if($car->average_rating > 0)
-                                <div class="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-lg bg-white shadow-sm">
-                                    <x-star-rating :rating="$car->average_rating" size="w-4 h-4" />
+                                <div class="absolute bottom-3 left-3 flex items-center gap-1 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm shadow-sm">
+                                    <svg class="w-4 h-4 text-orange-600 fill-current" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
                                     <span class="text-sm font-semibold text-gray-900">{{ number_format($car->average_rating, 1) }}</span>
                                 </div>
                             @endif
                     </div>
                         
                         <!-- Car Details -->
-                        <div class="p-5">
-                            <div class="mb-4">
-                                <h3 class="text-lg font-bold text-gray-900">{{ $car->brand }}</h3>
-                                <p class="text-sm text-gray-600">{{ $car->model }}</p>
+                        <div class="p-4">
+                            <div class="mb-3">
+                                <h3 class="text-base font-semibold text-gray-900 truncate">{{ $car->brand }} {{ $car->model }}</h3>
+                                <p class="text-sm text-gray-500 mt-1">{{ $car->agency->city ?? 'Maroc' }}</p>
                 </div>
 
-                            <!-- Features -->
-                            <div class="flex items-center gap-4 mb-4 text-sm text-gray-600">
-                                <div class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                                    </svg>
-                                    <span>{{ ucfirst($car->transmission ?? 'Auto') }}</span>
+                            <!-- Price + CTA -->
+                            <div class="flex items-center justify-between mt-3">
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-lg font-bold text-gray-900">{{ number_format($car->client_price_per_day, 0) }}</span>
+                                    <span class="text-sm text-gray-600">MAD</span>
+                                    <span class="text-sm text-gray-500">/ {{ __('home.popular_cars.per_day') }}</span>
                                 </div>
-                                <div class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                                    <span>{{ $car->seats ?? 5 }}</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Price & CTA -->
-                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-                                <div>
-                                    <div class="text-2xl font-bold text-gray-900">{{ number_format($car->price_per_day, 0) }} MAD</div>
-                                    <div class="text-sm text-gray-500">par jour</div>
-                                </div>
-                                <a href="{{ route('booking.main', $car) }}" 
-                                   class="bg-[#C2410C] hover:bg-[#9A3412] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-                                   onclick="event.stopPropagation()">
-                                    Réserver
+                                <a href="{{ route('booking.main', $car) }}" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 bg-[#C2410C] hover:bg-[#9A3412] text-white px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm">
+                                    {{ __('home.popular_cars.book') }}
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                                 </a>
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="col-span-full text-center py-12">
-                        <p class="text-gray-500">Aucune voiture disponible dans cette catégorie</p>
+                    <div class="w-full text-center py-12">
+                        <p class="text-gray-500">{{ __('home.popular_cars.no_cars_category') }}</p>
                     </div>
                 @endforelse
                 </div>
@@ -337,7 +378,7 @@
                 <div class="text-center mt-12">
                     <a href="{{ route('public.agencies') }}" 
                        class="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
-                        Voir Toutes les Voitures
+                        {{ __('home.popular_cars.view_all_cars') }}
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                         </svg>
@@ -397,8 +438,8 @@
     </div>
 
     <!-- Search Modal - Airbnb Style -->
-    <div id="searchModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+    <div id="searchModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-2xl w-full h-[90vh] sm:h-auto sm:max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
             <form action="{{ route('public.cars.search') }}" method="GET" id="searchForm" class="flex flex-col h-full">
                 <!-- Modal Tabs Header -->
                 <div class="bg-white border-b border-gray-200 flex-shrink-0">
@@ -408,19 +449,26 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
                         </button>
-                        <div class="flex-1 flex rounded-full bg-gray-100 p-1">
+                        <div class="flex-1 flex rounded-full bg-gray-100 p-1 gap-1">
                             <!-- Where Tab -->
-                            <button type="button" id="whereTab" onclick="switchToSection('where')" class="flex-1 px-6 py-3 rounded-full font-medium text-sm transition-all bg-white shadow-sm">
+                            <button type="button" id="whereTab" onclick="switchToSection('where')" class="flex-1 px-4 sm:px-6 py-3 rounded-full font-medium text-sm transition-all bg-white shadow-sm">
                                 <div class="text-left">
                                     <div class="text-xs font-semibold text-gray-900">Where</div>
-                                    <div class="text-sm text-gray-500" id="whereTabDisplay">Search destinations</div>
+                                    <div class="text-xs sm:text-sm text-gray-500 truncate" id="whereTabDisplay">Search destinations</div>
                                 </div>
                             </button>
                             <!-- Check in Tab -->
-                            <button type="button" id="checkInTab" onclick="switchToSection('checkin')" class="flex-1 px-6 py-3 rounded-full font-medium text-sm transition-all">
+                            <button type="button" id="checkInTab" onclick="switchToSection('checkin')" class="flex-1 px-4 sm:px-6 py-3 rounded-full font-medium text-sm transition-all">
                                 <div class="text-left">
                                     <div class="text-xs font-semibold text-gray-500">Check in</div>
-                                    <div class="text-sm text-gray-400" id="checkInTabDisplay">Add dates</div>
+                                    <div class="text-xs sm:text-sm text-gray-400 truncate" id="checkInTabDisplay">Add dates</div>
+                                </div>
+                            </button>
+                            <!-- Check out Tab -->
+                            <button type="button" id="checkOutTab" onclick="switchToSection('checkout')" class="flex-1 px-4 sm:px-6 py-3 rounded-full font-medium text-sm transition-all">
+                                <div class="text-left">
+                                    <div class="text-xs font-semibold text-gray-500">Check out</div>
+                                    <div class="text-xs sm:text-sm text-gray-400 truncate" id="checkOutTabDisplay">Add dates</div>
                                 </div>
                             </button>
                         </div>
@@ -431,23 +479,19 @@
                 <div class="flex-1 overflow-y-auto">
                     <!-- Where Section -->
                     <div id="whereSection" class="p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Where?</h2>
+                        <div class="relative mb-6">
+                            <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
                         <input type="text" name="where" id="whereInput" placeholder="Search destinations" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all text-base mb-6">
+                                   class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all text-base">
+                        </div>
                         
-                        <!-- Recent searches (Optional) -->
+                        <!-- Recent searches (Dynamic) -->
                         <div class="mb-6">
                             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Recent searches</p>
-                            <button type="button" onclick="selectDestination('Marrakesh')" class="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200">
-                                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                    </svg>
-                                </div>
-                                <div class="text-left">
-                                    <p class="font-medium text-gray-900">Marrakesh</p>
-                                    <p class="text-sm text-gray-500">Oct 16 – Nov 2</p>
-                                </div>
-                            </button>
+                            <div id="recentSearchesContainer" class="space-y-2"></div>
                         </div>
 
                         <!-- Suggested Destinations -->
@@ -725,16 +769,85 @@
 
         // Open modal with specific section
         function openSearchModal(section) {
-            document.getElementById('searchModal').classList.remove('hidden');
-            switchToSection(section);
+            const modal = document.getElementById('searchModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent background scroll
+                switchToSection(section || 'where');
+            }
         }
 
-        // Switch between sections (where/checkin)
+        // Close modal
+        function closeSearchModal() {
+            const modal = document.getElementById('searchModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = ''; // Restore scroll
+            }
+        }
+
+        // Ensure functions are available globally
+        window.openSearchModal = openSearchModal;
+        window.closeSearchModal = closeSearchModal;
+
+        // Add event listener when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileSearchBar = document.getElementById('mobileSearchBar');
+            if (mobileSearchBar) {
+                // Utiliser capture phase pour intercepter avant ultimate-navigation-fix
+                mobileSearchBar.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation(); // Empêcher ultimate-navigation-fix
+                    openSearchModal('where');
+                    return false;
+                }, true); // true = capture phase (avant la phase de propagation)
+            }
+
+            // Close modal when clicking outside
+            const searchModal = document.getElementById('searchModal');
+            if (searchModal) {
+                searchModal.addEventListener('click', function(e) {
+                    if (e.target === searchModal) {
+                        closeSearchModal();
+                    }
+                });
+            }
+
+            // Close modal on ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('searchModal');
+                    if (modal && !modal.classList.contains('hidden')) {
+                        closeSearchModal();
+                    }
+                }
+            });
+        });
+
+        // Switch between sections (where/checkin/checkout)
         function switchToSection(section) {
             const whereTab = document.getElementById('whereTab');
             const checkInTab = document.getElementById('checkInTab');
+            const checkOutTab = document.getElementById('checkOutTab');
             const whereSection = document.getElementById('whereSection');
             const whenSection = document.getElementById('whenSection');
+            
+            // Reset all tabs
+            [whereTab, checkInTab, checkOutTab].forEach(tab => {
+                if (tab) {
+                    tab.classList.remove('bg-white', 'shadow-sm');
+                    const label = tab.querySelector('.text-xs.font-semibold');
+                    const value = tab.querySelector('.text-xs, .text-sm');
+                    if (label) {
+                        label.classList.remove('text-gray-900');
+                        label.classList.add('text-gray-500');
+                    }
+                    if (value) {
+                        value.classList.remove('text-gray-900', 'text-gray-500');
+                        value.classList.add('text-gray-400');
+                    }
+                }
+            });
             
             if (section === 'where') {
                 // Show where section
@@ -743,52 +856,160 @@
                 
                 // Update tab styles
                 whereTab.classList.add('bg-white', 'shadow-sm');
-                whereTab.querySelector('.text-xs').classList.remove('text-gray-500');
-                whereTab.querySelector('.text-xs').classList.add('text-gray-900');
+                const whereLabel = whereTab.querySelector('.text-xs.font-semibold');
+                const whereValue = whereTab.querySelector('.text-xs, .text-sm');
+                if (whereLabel) {
+                    whereLabel.classList.remove('text-gray-500');
+                    whereLabel.classList.add('text-gray-900');
+                }
+                if (whereValue) {
+                    whereValue.classList.remove('text-gray-400');
+                    whereValue.classList.add('text-gray-500');
+                }
                 
-                checkInTab.classList.remove('bg-white', 'shadow-sm');
-                checkInTab.querySelector('.text-xs').classList.remove('text-gray-900');
-                checkInTab.querySelector('.text-xs').classList.add('text-gray-500');
-                
-                setTimeout(() => document.getElementById('whereInput').focus(), 100);
+                setTimeout(() => {
+                    const input = document.getElementById('whereInput');
+                    if (input) input.focus();
+                }, 100);
             } else if (section === 'checkin' || section === 'checkout') {
                 // Show when section
                 whereSection.classList.add('hidden');
                 whenSection.classList.remove('hidden');
                 
-                // Update tab styles
-                checkInTab.classList.add('bg-white', 'shadow-sm');
-                checkInTab.querySelector('.text-xs').classList.remove('text-gray-500');
-                checkInTab.querySelector('.text-xs').classList.add('text-gray-900');
-                
-                whereTab.classList.remove('bg-white', 'shadow-sm');
-                whereTab.querySelector('.text-xs').classList.remove('text-gray-900');
-                whereTab.querySelector('.text-xs').classList.add('text-gray-500');
+                // Update tab styles based on which date tab is active
+                const activeTab = section === 'checkin' ? checkInTab : checkOutTab;
+                if (activeTab) {
+                    activeTab.classList.add('bg-white', 'shadow-sm');
+                    const label = activeTab.querySelector('.text-xs.font-semibold');
+                    const value = activeTab.querySelector('.text-xs, .text-sm');
+                    if (label) {
+                        label.classList.remove('text-gray-500');
+                        label.classList.add('text-gray-900');
+                    }
+                    if (value) {
+                        value.classList.remove('text-gray-400');
+                        value.classList.add('text-gray-500');
+                    }
+                }
                 
                 generateCalendar();
             }
         }
 
-        // Close modal
-        function closeSearchModal() {
-            document.getElementById('searchModal').classList.add('hidden');
+        // Update mobile search bar text
+        function updateMobileSearchBar() {
+            const mobileSearchBar = document.getElementById('mobileSearchBarText');
+            if (!mobileSearchBar) return;
+            
+            const whereValue = document.getElementById('whereInput')?.value || '';
+            const checkIn = checkInDate ? new Date(checkInDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
+            const checkOut = checkOutDate ? new Date(checkOutDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
+            
+            let text = '';
+            if (whereValue) {
+                text = whereValue;
+                if (checkIn || checkOut) text += ' · ';
+            }
+            if (checkIn && checkOut) {
+                text += checkIn + ' - ' + checkOut;
+            } else if (checkIn) {
+                text += checkIn;
+            }
+            
+            if (text) {
+                mobileSearchBar.innerHTML = text;
+                mobileSearchBar.classList.remove('text-gray-500');
+                mobileSearchBar.classList.add('text-gray-900');
+            } else {
+                mobileSearchBar.innerHTML = '<span class="text-gray-500">Start your search</span>';
+                mobileSearchBar.classList.remove('text-gray-900');
+            }
         }
 
         // Select destination
         function selectDestination(city) {
             document.getElementById('whereInput').value = city;
-            document.getElementById('whereDisplay').textContent = city;
+            
+            // Update mobile search bar
+            updateMobileSearchBar();
+            
+            // Update desktop displays
+            const whereDisplayDesktop = document.getElementById('whereDisplayDesktop');
+            if (whereDisplayDesktop) {
+                whereDisplayDesktop.textContent = city;
+                whereDisplayDesktop.classList.remove('text-gray-600');
+                whereDisplayDesktop.classList.add('text-gray-900');
+            }
+            
+            // Update modal tab display
             document.getElementById('whereTabDisplay').textContent = city;
+            document.getElementById('whereDisplay').textContent = city;
             document.getElementById('whereDisplay').classList.remove('text-gray-600');
             document.getElementById('whereDisplay').classList.add('text-gray-900');
+
+            // Save to recent searches
+            addRecentSearch(city);
+            renderRecentSearches();
+            
             // Switch to dates section
             switchToSection('checkin');
         }
 
         // Perform search
         function performSearch() {
+            const whereValue = document.getElementById('whereInput') ? document.getElementById('whereInput').value.trim() : '';
+            if (whereValue) {
+                addRecentSearch(whereValue);
+                renderRecentSearches();
+            }
             const form = document.getElementById('searchForm');
             form.submit();
+        }
+
+        // Recent searches helpers (localStorage)
+        function getRecentSearches() {
+            try {
+                const data = JSON.parse(localStorage.getItem('recent_searches') || '[]');
+                return Array.isArray(data) ? data : [];
+            } catch (_) {
+                return [];
+            }
+        }
+
+        function addRecentSearch(city) {
+            const value = (city || '').trim();
+            if (!value) return;
+            let list = getRecentSearches();
+            // Remove existing duplicates (case-insensitive)
+            list = list.filter(item => item.toLowerCase() !== value.toLowerCase());
+            // Add to top
+            list.unshift(value);
+            // Cap to 6 items
+            if (list.length > 6) list = list.slice(0, 6);
+            localStorage.setItem('recent_searches', JSON.stringify(list));
+        }
+
+        function renderRecentSearches() {
+            const container = document.getElementById('recentSearchesContainer');
+            if (!container) return;
+            const list = getRecentSearches();
+            if (!list.length) {
+                container.innerHTML = '<p class="text-sm text-gray-400">No recent searches</p>';
+                return;
+            }
+            container.innerHTML = list.map(city => `
+                <button type="button" class="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200" onclick="selectDestination('${city.replace(/'/g, "\'")}')">
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                    </div>
+                    <div class="text-left">
+                        <p class="font-medium text-gray-900">${city}</p>
+                        <p class="text-sm text-gray-500">Recent search</p>
+                    </div>
+                </button>
+            `).join('');
         }
 
         function generateCalendar() {
@@ -843,7 +1064,20 @@
         function selectDate(dateStr, isPast) {
             if (isPast) return;
 
-            if (!checkInDate || (checkInDate && checkOutDate)) {
+            // Check which tab is currently active
+            const checkOutTab = document.getElementById('checkOutTab');
+            const isCheckOutTabActive = checkOutTab && checkOutTab.classList.contains('bg-white');
+            
+            if (isCheckOutTabActive && checkInDate) {
+                // If check out tab is active and check in is set, set check out date
+                if (new Date(dateStr) > new Date(checkInDate)) {
+                    checkOutDate = dateStr;
+                } else {
+                    // If selected date is before check in, set it as new check in and clear check out
+                    checkInDate = dateStr;
+                    checkOutDate = null;
+                }
+            } else if (!checkInDate || (checkInDate && checkOutDate)) {
                 // Start new selection
                 checkInDate = dateStr;
                 checkOutDate = null;
@@ -864,56 +1098,151 @@
             const checkInEl = document.getElementById('checkInDisplay');
             const checkOutEl = document.getElementById('checkOutDisplay');
             const checkInTabDisplay = document.getElementById('checkInTabDisplay');
+            const checkOutTabDisplay = document.getElementById('checkOutTabDisplay');
             const checkInInput = document.getElementById('checkInInput');
             const checkOutInput = document.getElementById('checkOutInput');
+
+            // Update desktop displays
+            const checkInDisplayDesktop = document.getElementById('checkInDisplayDesktop');
+            const checkOutDisplayDesktop = document.getElementById('checkOutDisplayDesktop');
 
             if (checkInDate) {
                 const date = new Date(checkInDate);
                 const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                // Modal displays
+                if (checkInEl) {
                 checkInEl.textContent = formatted;
-                checkInTabDisplay.textContent = formatted;
                 checkInEl.classList.remove('text-gray-400');
                 checkInEl.classList.add('text-gray-900');
+                }
+                if (checkInTabDisplay) {
+                    checkInTabDisplay.textContent = formatted;
                 checkInTabDisplay.classList.remove('text-gray-400');
-                checkInTabDisplay.classList.add('text-gray-900');
+                    checkInTabDisplay.classList.add('text-gray-500');
+                }
+                
+                // Desktop display
+                if (checkInDisplayDesktop) {
+                    checkInDisplayDesktop.textContent = formatted;
+                    checkInDisplayDesktop.classList.remove('text-gray-400');
+                    checkInDisplayDesktop.classList.add('text-gray-900');
+                }
+                
                 checkInInput.value = checkInDate;
             }
 
             if (checkOutDate) {
                 const date = new Date(checkOutDate);
                 const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                // Modal display
+                if (checkOutEl) {
                 checkOutEl.textContent = formatted;
                 checkOutEl.classList.remove('text-gray-400');
                 checkOutEl.classList.add('text-gray-900');
+                }
+                
+                // Check out tab display
+                if (checkOutTabDisplay) {
+                    checkOutTabDisplay.textContent = formatted;
+                    checkOutTabDisplay.classList.remove('text-gray-400');
+                    checkOutTabDisplay.classList.add('text-gray-500');
+                }
+                
+                // Desktop display
+                if (checkOutDisplayDesktop) {
+                    checkOutDisplayDesktop.textContent = formatted;
+                    checkOutDisplayDesktop.classList.remove('text-gray-400');
+                    checkOutDisplayDesktop.classList.add('text-gray-900');
+                }
+                
                 checkOutInput.value = checkOutDate;
                 
-                // Update check in tab to show check in → check out
-                if (checkInDate) {
+                // Update check in tab to show check in → check out if both dates are set
+                if (checkInDate && checkInTabDisplay) {
                     const checkInDateObj = new Date(checkInDate);
                     checkInTabDisplay.textContent = checkInDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' – ' + formatted;
                 }
             }
+            
+            // Update mobile search bar
+            updateMobileSearchBar();
         }
 
         function clearDates() {
             checkInDate = null;
             checkOutDate = null;
-            document.getElementById('checkInDisplay').textContent = 'Add dates';
-            document.getElementById('checkInDisplay').classList.remove('text-gray-900');
-            document.getElementById('checkInDisplay').classList.add('text-gray-400');
-            document.getElementById('checkInTabDisplay').textContent = 'Add dates';
-            document.getElementById('checkInTabDisplay').classList.remove('text-gray-900');
-            document.getElementById('checkInTabDisplay').classList.add('text-gray-400');
-            document.getElementById('checkOutDisplay').textContent = 'Add dates';
-            document.getElementById('checkOutDisplay').classList.remove('text-gray-900');
-            document.getElementById('checkOutDisplay').classList.add('text-gray-400');
+            
+            // Reset modal displays
+            const checkInDisplay = document.getElementById('checkInDisplay');
+            const checkOutDisplay = document.getElementById('checkOutDisplay');
+            const checkInTabDisplay = document.getElementById('checkInTabDisplay');
+            const checkOutTabDisplay = document.getElementById('checkOutTabDisplay');
+            
+            if (checkInDisplay) {
+                checkInDisplay.textContent = 'Add dates';
+                checkInDisplay.classList.remove('text-gray-900');
+                checkInDisplay.classList.add('text-gray-400');
+            }
+            if (checkInTabDisplay) {
+                checkInTabDisplay.textContent = 'Add dates';
+                checkInTabDisplay.classList.remove('text-gray-500', 'text-gray-900');
+                checkInTabDisplay.classList.add('text-gray-400');
+            }
+            if (checkOutDisplay) {
+                checkOutDisplay.textContent = 'Add dates';
+                checkOutDisplay.classList.remove('text-gray-900');
+                checkOutDisplay.classList.add('text-gray-400');
+            }
+            if (checkOutTabDisplay) {
+                checkOutTabDisplay.textContent = 'Add dates';
+                checkOutTabDisplay.classList.remove('text-gray-500', 'text-gray-900');
+                checkOutTabDisplay.classList.add('text-gray-400');
+            }
+            
+            // Reset desktop displays
+            const checkInDisplayDesktop = document.getElementById('checkInDisplayDesktop');
+            const checkOutDisplayDesktop = document.getElementById('checkOutDisplayDesktop');
+            const whereDisplayDesktop = document.getElementById('whereDisplayDesktop');
+            
+            if (checkInDisplayDesktop) {
+                checkInDisplayDesktop.textContent = 'Add dates';
+                checkInDisplayDesktop.classList.remove('text-gray-900');
+                checkInDisplayDesktop.classList.add('text-gray-400');
+            }
+            if (checkOutDisplayDesktop) {
+                checkOutDisplayDesktop.textContent = 'Add dates';
+                checkOutDisplayDesktop.classList.remove('text-gray-900');
+                checkOutDisplayDesktop.classList.add('text-gray-400');
+            }
+            if (whereDisplayDesktop) {
+                whereDisplayDesktop.textContent = 'Search destinations';
+                whereDisplayDesktop.classList.remove('text-gray-900');
+                whereDisplayDesktop.classList.add('text-gray-600');
+            }
+            
+            // Reset modal where display
+            const whereDisplay = document.getElementById('whereDisplay');
+            const whereTabDisplay = document.getElementById('whereTabDisplay');
+            if (whereDisplay) {
+                whereDisplay.textContent = 'Search destinations';
+                whereDisplay.classList.remove('text-gray-900');
+                whereDisplay.classList.add('text-gray-600');
+            }
+            if (whereTabDisplay) {
+                whereTabDisplay.textContent = 'Search destinations';
+                whereTabDisplay.classList.remove('text-gray-900');
+                whereTabDisplay.classList.add('text-gray-500');
+            }
+            
             document.getElementById('whereInput').value = '';
-            document.getElementById('whereDisplay').textContent = 'Search destinations';
-            document.getElementById('whereTabDisplay').textContent = 'Search destinations';
-            document.getElementById('whereDisplay').classList.remove('text-gray-900');
-            document.getElementById('whereDisplay').classList.add('text-gray-600');
             document.getElementById('checkInInput').value = '';
             document.getElementById('checkOutInput').value = '';
+            
+            // Update mobile search bar
+            updateMobileSearchBar();
+            
             generateCalendar();
         }
 
@@ -928,19 +1257,68 @@
         });
 
         // Update where input
-        document.getElementById('whereInput').addEventListener('input', function(e) {
+        const whereInput = document.getElementById('whereInput');
+        if (whereInput) {
+            whereInput.addEventListener('input', function(e) {
             const value = e.target.value;
             const displayText = value || 'Search destinations';
-            document.getElementById('whereDisplay').textContent = displayText;
-            document.getElementById('whereTabDisplay').textContent = displayText;
+                
+                // Update modal displays
+                const whereDisplay = document.getElementById('whereDisplay');
+                const whereTabDisplay = document.getElementById('whereTabDisplay');
+                
+                if (whereDisplay) {
+                    whereDisplay.textContent = displayText;
             if (value) {
-                document.getElementById('whereDisplay').classList.remove('text-gray-600');
-                document.getElementById('whereDisplay').classList.add('text-gray-900');
+                        whereDisplay.classList.remove('text-gray-600');
+                        whereDisplay.classList.add('text-gray-900');
             } else {
-                document.getElementById('whereDisplay').classList.remove('text-gray-900');
-                document.getElementById('whereDisplay').classList.add('text-gray-600');
-            }
-        });
+                        whereDisplay.classList.remove('text-gray-900');
+                        whereDisplay.classList.add('text-gray-600');
+                    }
+                }
+                
+                if (whereTabDisplay) {
+                    whereTabDisplay.textContent = displayText;
+                    if (value) {
+                        whereTabDisplay.classList.remove('text-gray-500');
+                        whereTabDisplay.classList.add('text-gray-900');
+                    } else {
+                        whereTabDisplay.classList.remove('text-gray-900');
+                        whereTabDisplay.classList.add('text-gray-500');
+                    }
+                }
+                
+                // Update desktop display
+                const whereDisplayDesktop = document.getElementById('whereDisplayDesktop');
+                if (whereDisplayDesktop) {
+                    whereDisplayDesktop.textContent = displayText;
+                    if (value) {
+                        whereDisplayDesktop.classList.remove('text-gray-600');
+                        whereDisplayDesktop.classList.add('text-gray-900');
+                    } else {
+                        whereDisplayDesktop.classList.remove('text-gray-900');
+                        whereDisplayDesktop.classList.add('text-gray-600');
+                    }
+                }
+                
+                // Update mobile search bar
+                updateMobileSearchBar();
+            });
+
+            // Add to recent searches when pressing Enter in the where input
+            whereInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const value = whereInput.value.trim();
+                    if (value) {
+                        addRecentSearch(value);
+                        renderRecentSearches();
+                        switchToSection('checkin');
+                    }
+                }
+            });
+        }
 
         // Switch calendar tabs (Dates/Months/Flexible)
         function switchCalendarTab(tab) {
@@ -1003,6 +1381,8 @@
 
         // Initialize calendar
         generateCalendar();
+        // Render recent searches on load
+        renderRecentSearches();
     </script>
 
     <style>
@@ -1158,6 +1538,446 @@
                         errorMessage.remove();
                     }, 500);
                 }, 7000); // Hide after 7 seconds
+            }
+        });
+
+        // Bottom Navigation Bar - Show/Hide on Scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            let lastScrollTop = 0;
+            const bottomNav = document.getElementById('bottom-nav');
+            let ticking = false;
+
+            function updateNavbar() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                if (scrollTop > lastScrollTop && scrollTop > 100) {
+                    // Scrolling down - hide navbar
+                    if (bottomNav) {
+                        bottomNav.classList.add('hidden');
+                    }
+                } else {
+                    // Scrolling up - show navbar
+                    if (bottomNav) {
+                        bottomNav.classList.remove('hidden');
+                    }
+                }
+                
+                lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+                ticking = false;
+            }
+
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    window.requestAnimationFrame(updateNavbar);
+                    ticking = true;
+                }
+            }, { passive: true });
+        });
+
+        // Smooth scroll to top-picks section
+        function scrollToTopPicks(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const topPicksSection = document.getElementById('top-picks');
+            if (topPicksSection) {
+                const offsetTop = topPicksSection.offsetTop - 20; // 20px offset from top
+                window.scrollTo({ 
+                    top: offsetTop,
+                    behavior: 'smooth'
+                });
+            }
+            return false;
+        }
+    </script>
+
+    <!-- Bottom Navigation Bar - Mobile Only -->
+    <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg md:hidden">
+        <div class="flex items-center justify-around h-16 px-2">
+            <!-- Explore Button (Active) -->
+            <button onclick="scrollToTopPicks(event); return false;" class="flex flex-col items-center justify-center flex-1 h-full active-nav-item">
+                <svg class="w-6 h-6 mb-1 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <span class="text-xs font-semibold text-red-600">Explore</span>
+            </button>
+
+            <!-- Wishlists Button -->
+            <a href="{{ route('public.wishlists') }}" class="flex flex-col items-center justify-center flex-1 h-full">
+                <svg class="w-6 h-6 mb-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+                <span class="text-xs font-medium text-gray-500">Wishlists</span>
+            </a>
+
+            <!-- Log in Button -->
+            @auth
+                <a href="{{ route('client.dashboard') }}" class="flex flex-col items-center justify-center flex-1 h-full">
+                    <svg class="w-6 h-6 mb-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span class="text-xs font-medium text-gray-500">Account</span>
+                </a>
+            @else
+                <a href="{{ route('login') }}" class="flex flex-col items-center justify-center flex-1 h-full">
+                    <svg class="w-6 h-6 mb-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span class="text-xs font-medium text-gray-500">Log in</span>
+                </a>
+            @endauth
+        </div>
+    </div>
+
+    <style>
+        #bottom-nav {
+            transform: translateY(0);
+            transition: transform 2.5s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform;
+        }
+        
+        #bottom-nav.hidden {
+            transform: translateY(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .active-nav-item:active {
+            opacity: 0.7;
+            transform: scale(0.95);
+        }
+        
+        .favorite-btn.active .favorite-icon {
+            fill: #ef4444;
+            stroke: #ef4444;
+        }
+    </style>
+
+    <!-- Login Modal (Airbnb Style) -->
+    <div id="loginModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black bg-opacity-50" onclick="closeLoginModal()"></div>
+            <div class="relative bg-white rounded-t-3xl w-full max-w-md shadow-2xl">
+                <!-- Close Button -->
+                <button onclick="closeLoginModal()" class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+                
+                <!-- Header -->
+                <div class="px-6 pt-8 pb-4 text-center border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900">Log in or sign up</h2>
+                </div>
+                
+                <!-- Content -->
+                <div class="px-6 py-6">
+                    <h1 class="text-2xl font-semibold text-gray-900 mb-6">Welcome to ToubCar</h1>
+                    
+                    <!-- Login Form -->
+                    <form action="{{ route('login') }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" name="email" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" name="password" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        </div>
+                        <button type="submit" 
+                                class="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white py-3 rounded-lg font-semibold hover:from-pink-600 hover:to-red-600 transition-colors">
+                            Continue
+                        </button>
+                    </form>
+                    
+                    <div class="relative my-6">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">or</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Alternative Login -->
+                    <div class="space-y-3">
+                        <a href="{{ route('login') }}" class="flex items-center justify-center w-full px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            <span class="text-sm font-medium text-gray-700">Continue with Google</span>
+                        </a>
+                        <a href="{{ route('login') }}" class="flex items-center justify-center w-full px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            <span class="text-sm font-medium text-gray-700">Continue with email</span>
+                        </a>
+                    </div>
+                    
+                    <p class="text-xs text-gray-500 mt-4 text-center">
+                        Don't have an account? <a href="{{ route('register') }}" class="text-orange-600 hover:underline">Sign up</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wishlist Modal -->
+    <div id="wishlistModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black bg-opacity-50" onclick="closeWishlistModal()"></div>
+            <div class="relative bg-white rounded-2xl w-full max-w-md shadow-2xl">
+                <!-- Close Button -->
+                <button onclick="closeWishlistModal()" class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+                
+                <!-- Header -->
+                <div class="px-6 pt-8 pb-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900">Save to wishlist</h2>
+                </div>
+                
+                <!-- Content -->
+                <div class="px-6 py-6">
+                    <div id="wishlistsList" class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                        <!-- Wishlists will be loaded here -->
+                    </div>
+                    
+                    <!-- Create New Wishlist -->
+                    <div class="border-t border-gray-200 pt-4 mt-4">
+                        <button onclick="showCreateWishlistForm()" 
+                                class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-700 hover:border-orange-500 hover:text-orange-500 transition-colors font-medium">
+                            + Create new wishlist
+                        </button>
+                    </div>
+                    
+                    <!-- Create Form (Hidden by default) -->
+                    <div id="createWishlistForm" class="hidden mt-4">
+                        <input type="text" id="wishlistName" placeholder="Name your wishlist" 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent mb-3">
+                        <div class="flex gap-2">
+                            <button onclick="createWishlist()" 
+                                    class="flex-1 bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors font-medium">
+                                Create
+                            </button>
+                            <button onclick="hideCreateWishlistForm()" 
+                                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Done Button -->
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <button onclick="closeWishlistModal()" 
+                                class="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-semibold">
+                            Done
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentCarId = null;
+        
+        function handleFavoriteClick(carId, event) {
+            event.stopPropagation();
+            currentCarId = carId;
+            
+            @auth
+                // User is logged in, show wishlist modal
+                loadWishlists();
+                document.getElementById('wishlistModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            @else
+                // User is not logged in, show login modal
+                document.getElementById('loginModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            @endauth
+        }
+        
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        
+        function closeWishlistModal() {
+            document.getElementById('wishlistModal').classList.add('hidden');
+            document.body.style.overflow = '';
+            currentCarId = null;
+        }
+        
+        function loadWishlists() {
+            if (!currentCarId) return;
+            
+            // Load wishlists and check which ones contain this car
+            Promise.all([
+                fetch('{{ route("client.wishlists.index") }}', {
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                }).then(r => r.json()),
+                fetch(`{{ url('client/wishlists/check') }}/${currentCarId}`, {
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                }).then(r => r.json())
+            ])
+            .then(([wishlists, checkData]) => {
+                const container = document.getElementById('wishlistsList');
+                container.innerHTML = '';
+                
+                const inWishlists = checkData.in_wishlists || [];
+                
+                if (wishlists.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">No wishlists yet. Create one!</p>';
+                } else {
+                    wishlists.forEach(wishlist => {
+                        const isInWishlist = inWishlists.includes(wishlist.id);
+                        const item = document.createElement('div');
+                        item.className = 'flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-orange-500 cursor-pointer';
+                        item.innerHTML = `
+                            <div class="flex-1" onclick="toggleWishlistCheckbox(${wishlist.id})">
+                                <h3 class="font-medium text-gray-900">${wishlist.name}</h3>
+                                <p class="text-sm text-gray-500">${wishlist.items_count || 0} cars</p>
+                            </div>
+                            <input type="checkbox" class="w-5 h-5 text-orange-600 rounded focus:ring-orange-500" 
+                                   ${isInWishlist ? 'checked' : ''}
+                                   onchange="toggleWishlist(${wishlist.id}, this.checked)">
+                        `;
+                        container.appendChild(item);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading wishlists:', error);
+            });
+        }
+        
+        function toggleWishlistCheckbox(wishlistId) {
+            const checkbox = document.querySelector(`input[onchange*="${wishlistId}"]`);
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                toggleWishlist(wishlistId, checkbox.checked);
+            }
+        }
+        
+        function toggleWishlist(wishlistId, add) {
+            if (!currentCarId) return;
+            
+            const url = add 
+                ? `{{ url('client/wishlists') }}/${wishlistId}/cars`
+                : `{{ url('client/wishlists') }}/${wishlistId}/cars/${currentCarId}`;
+            const method = add ? 'POST' : 'DELETE';
+            
+            fetch(url, {
+                method: method,
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: add ? JSON.stringify({ car_id: currentCarId }) : null
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateFavoriteButton(currentCarId, add);
+                // Don't close modal immediately, let user add to multiple wishlists
+                setTimeout(() => {
+                    loadWishlists(); // Reload to update counts
+                }, 300);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+        
+        function showCreateWishlistForm() {
+            document.getElementById('createWishlistForm').classList.remove('hidden');
+        }
+        
+        function hideCreateWishlistForm() {
+            document.getElementById('createWishlistForm').classList.add('hidden');
+            document.getElementById('wishlistName').value = '';
+        }
+        
+        function createWishlist() {
+            const name = document.getElementById('wishlistName').value.trim();
+            if (!name) {
+                alert('Please enter a wishlist name');
+                return;
+            }
+            
+            fetch('{{ route("client.wishlists.store") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ name: name })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideCreateWishlistForm();
+                loadWishlists();
+                // Automatically add car to new wishlist
+                if (currentCarId) {
+                    setTimeout(() => {
+                        toggleWishlist(data.id, true);
+                    }, 100);
+                }
+            })
+            .catch(error => {
+                console.error('Error creating wishlist:', error);
+            });
+        }
+        
+        function updateFavoriteButton(carId, isFavorite) {
+            const buttons = document.querySelectorAll(`[data-car-id="${carId}"]`);
+            buttons.forEach(btn => {
+                if (isFavorite) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+        
+        // Check favorite status on page load (for authenticated users)
+        @auth
+        document.addEventListener('DOMContentLoaded', function() {
+            const carIds = Array.from(document.querySelectorAll('.favorite-btn')).map(btn => btn.getAttribute('data-car-id'));
+            carIds.forEach(carId => {
+                if (carId) {
+                    fetch(`{{ url('client/wishlists/check') }}/${carId}`, {
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.in_wishlists && data.in_wishlists.length > 0) {
+                            updateFavoriteButton(carId, true);
+                        }
+                    })
+                    .catch(error => console.error('Error checking favorite status:', error));
+                }
+            });
+        });
+        @endauth
+        
+        // Close modals on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeLoginModal();
+                closeWishlistModal();
             }
         });
     </script>

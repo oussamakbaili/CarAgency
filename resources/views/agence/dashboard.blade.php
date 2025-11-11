@@ -70,21 +70,21 @@
             <x-agency-cancellation-widget :agency="auth()->user()->agency" />
             
             <!-- Welcome Header -->
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg mb-6">
-                <div class="p-6">
-                    <div class="flex items-center justify-between">
+            <div class="bg-white overflow-hidden shadow-sm rounded-lg mb-4 sm:mb-6 reveal-section">
+                <div class="p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Tableau de Bord - {{ auth()->user()->agency->agency_name }}</h1>
-                    <p class="mt-2 text-gray-600">Gérez votre flotte de véhicules et vos locations</p>
+                    <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Tableau de Bord - {{ auth()->user()->agency->agency_name }}</h1>
+                    <p class="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">Gérez votre flotte de véhicules et vos locations</p>
                         </div>
-                        <div class="flex items-center space-x-4">
+                        <div class="flex items-center gap-4 sm:gap-6 w-full sm:w-auto justify-between sm:justify-end">
                             <div class="text-right">
-                                <p class="text-sm text-gray-500">Solde actuel</p>
-                                <p class="text-2xl font-bold text-green-600">{{ number_format(auth()->user()->agency->balance ?? 0, 2) }}€</p>
+                                <p class="text-xs sm:text-sm text-gray-500">Solde actuel</p>
+                                <p class="text-lg sm:text-2xl font-bold text-green-600">{{ number_format(auth()->user()->agency->balance ?? 0, 2) }}€</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-sm text-gray-500">Gains totaux</p>
-                                <p class="text-lg font-semibold text-blue-600">{{ number_format(auth()->user()->agency->total_earnings ?? 0, 2) }}€</p>
+                                <p class="text-xs sm:text-sm text-gray-500">Gains totaux</p>
+                                <p class="text-base sm:text-lg font-semibold text-blue-600">{{ number_format(auth()->user()->agency->total_earnings ?? 0, 2) }}€</p>
                             </div>
                         </div>
                     </div>
@@ -92,19 +92,19 @@
             </div>
 
             <!-- Top Row - Business Overview Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6 reveal-section">
                 <!-- Total Fleet Size -->
                 <a href="{{ route('agence.cars.index') }}" class="block bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
-                    <div class="p-4">
+                    <div class="p-4 sm:p-6">
                         <div class="flex items-center">
-                            <div class="p-2 rounded-lg bg-blue-50">
-                                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="p-2 sm:p-3 rounded-lg bg-blue-50">
+                                <svg class="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                 </svg>
                             </div>
                             <div class="ml-3 flex-1">
-                                <h2 class="text-sm font-medium text-gray-600">Flotte Totale</h2>
-                                <p class="text-2xl font-bold text-gray-900">{{ $totalCars ?? 0 }}</p>
+                                <h2 class="text-xs sm:text-sm font-medium text-gray-600">Flotte Totale</h2>
+                                <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ $totalCars ?? 0 }}</p>
                                 <div class="flex items-center mt-1 text-xs text-gray-500">
                                     <span class="text-green-600">{{ $availableCars ?? 0 }} disponibles</span>
                                     <span class="mx-1.5">•</span>
@@ -112,7 +112,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-3 pt-3 border-t border-gray-100">
+                        <div class="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100">
                             <span class="text-blue-600 text-xs font-medium flex items-center">
                                 Gérer la flotte →
                             </span>
@@ -122,22 +122,22 @@
 
                 <!-- Active Rentals -->
                 <a href="{{ route('agence.bookings.pending') }}" class="block bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
-                    <div class="p-4">
+                    <div class="p-4 sm:p-6">
                         <div class="flex items-center">
-                            <div class="p-2 rounded-lg bg-green-50">
-                                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="p-2 sm:p-3 rounded-lg bg-green-50">
+                                <svg class="h-5 w-5 sm:h-6 sm:w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
                             <div class="ml-3 flex-1">
-                                <h2 class="text-sm font-medium text-gray-600">Locations Actives</h2>
-                                <p class="text-2xl font-bold text-gray-900">{{ $activeRentals ?? 0 }}</p>
+                                <h2 class="text-xs sm:text-sm font-medium text-gray-600">Locations Actives</h2>
+                                <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ $activeRentals ?? 0 }}</p>
                                 <div class="flex items-center mt-1 text-xs text-gray-500">
                                     <span class="text-yellow-600">{{ $pendingBookings ?? 0 }} en attente</span>
                             </div>
                             </div>
                         </div>
-                        <div class="mt-3 pt-3 border-t border-gray-100">
+                        <div class="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100">
                             <span class="text-green-600 text-xs font-medium flex items-center">
                                 Voir les locations →
                             </span>
@@ -147,16 +147,16 @@
 
                 <!-- Monthly Revenue -->
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow">
-                    <div class="p-4">
+                    <div class="p-4 sm:p-6">
                         <div class="flex items-center">
-                            <div class="p-2 rounded-lg bg-purple-50">
-                                <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="p-2 sm:p-3 rounded-lg bg-purple-50">
+                                <svg class="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
                                 </svg>
                             </div>
                             <div class="ml-3 flex-1">
-                                <h2 class="text-sm font-medium text-gray-600">Revenus Mensuels</h2>
-                                <p class="text-2xl font-bold text-gray-900">{{ number_format($monthlyRevenue ?? 0, 2) }}€</p>
+                                <h2 class="text-xs sm:text-sm font-medium text-gray-600">Revenus Mensuels</h2>
+                                <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ number_format($monthlyRevenue ?? 0, 2) }}€</p>
                                 <div class="flex items-center mt-1 text-xs">
                                     @if(($revenueGrowth ?? 0) >= 0)
                                         <span class="text-green-600">↗ +{{ number_format($revenueGrowth ?? 0, 1) }}%</span>
@@ -172,22 +172,22 @@
 
                 <!-- Customer Rating -->
                 <a href="{{ route('agence.customers.reviews') }}" class="block bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
-                    <div class="p-4">
+                    <div class="p-4 sm:p-6">
                         <div class="flex items-center">
-                            <div class="p-2 rounded-lg bg-yellow-50">
-                                <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="p-2 sm:p-3 rounded-lg bg-yellow-50">
+                                <svg class="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
                                 </svg>
                             </div>
                             <div class="ml-3 flex-1">
-                                <h2 class="text-sm font-medium text-gray-600">Satisfaction Client</h2>
-                                <p class="text-2xl font-bold text-gray-900">{{ $customerRating ?? 0 }}/5</p>
+                                <h2 class="text-xs sm:text-sm font-medium text-gray-600">Satisfaction Client</h2>
+                                <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ $customerRating ?? 0 }}/5</p>
                                 <div class="flex items-center mt-1 text-xs text-gray-500">
                                     <span>{{ $reviewCount ?? 0 }} avis</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-3 pt-3 border-t border-gray-100">
+                        <div class="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100">
                             <span class="text-yellow-600 text-xs font-medium flex items-center">
                                 Voir les avis →
                             </span>
@@ -197,13 +197,13 @@
             </div>
 
             <!-- Second Row - Recent Bookings and Revenue Chart -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6 reveal-section">
                 <!-- Recent Bookings Table -->
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-lg font-semibold text-gray-900">Réservations Récentes</h2>
-                            <a href="{{ route('agence.bookings.pending') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    <div class="p-4 sm:p-6">
+                        <div class="flex items-center justify-between mb-3 sm:mb-4">
+                            <h2 class="text-base sm:text-lg md:text-xl font-semibold text-gray-900">Réservations Récentes</h2>
+                            <a href="{{ route('agence.bookings.pending') }}" class="text-xs sm:text-sm text-blue-600 hover:text-blue-800 font-medium">
                                 Voir tout →
                             </a>
                         </div>
@@ -260,9 +260,9 @@
 
                 <!-- Revenue Chart -->
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                    <div class="p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Tendances des Revenus</h2>
-                        <div class="h-64">
+                    <div class="p-4 sm:p-6">
+                        <h2 class="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Tendances des Revenus</h2>
+                        <div class="h-48 sm:h-64">
                             <canvas id="revenueChart"></canvas>
                         </div>
                     </div>
@@ -270,12 +270,12 @@
             </div>
 
             <!-- Third Row - Fleet Utilization and Maintenance -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6 reveal-section">
                 <!-- Fleet Utilization -->
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                    <div class="p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Utilisation de la Flotte</h2>
-                        <div class="h-64">
+                    <div class="p-4 sm:p-6">
+                        <h2 class="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Utilisation de la Flotte</h2>
+                        <div class="h-48 sm:h-64">
                             <canvas id="fleetUtilizationChart"></canvas>
                         </div>
                     </div>
@@ -283,8 +283,8 @@
 
                 <!-- Upcoming Maintenance -->
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                    <div class="p-6">
-                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Maintenance à Venir</h2>
+                    <div class="p-4 sm:p-6">
+                        <h2 class="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Maintenance à Venir</h2>
                         <div class="space-y-3">
                             @forelse($dataTables['upcomingMaintenance'] ?? [] as $maintenance)
                             <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors cursor-pointer" onclick="window.location.href='{{ route('agence.maintenances.show', $maintenance->id) }}'">
@@ -323,10 +323,10 @@
             </div>
 
             <!-- Bottom Row - Recent Activity Feed -->
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg mb-8">
-                <div class="p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Activité Récente</h2>
-                    <div class="space-y-4">
+            <div class="bg-white overflow-hidden shadow-sm rounded-lg mb-6 sm:mb-8 reveal-section">
+                <div class="p-4 sm:p-6">
+                    <h2 class="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Activité Récente</h2>
+                    <div class="space-y-3 sm:space-y-4">
                         @forelse($recentActivity ?? [] as $activity)
                         <div class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer" 
                              onclick="handleActivityClick('{{ $activity['type'] }}', {{ $activity['data']->id ?? 'null' }})">
@@ -380,47 +380,47 @@
             </div>
 
             <!-- Quick Actions Panel -->
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-                <div class="p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions Rapides</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <a href="{{ route('agence.cars.create') }}" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-                            <svg class="h-8 w-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white overflow-hidden shadow-sm rounded-lg reveal-section">
+                <div class="p-4 sm:p-6">
+                    <h2 class="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Actions Rapides</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <a href="{{ route('agence.cars.create') }}" class="flex items-center p-3 sm:p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                            <svg class="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 mr-2 sm:mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                             </svg>
                             <div>
-                                <h3 class="font-medium text-gray-900">Ajouter un Véhicule</h3>
-                                <p class="text-sm text-gray-600">Ajouter un nouveau véhicule à votre flotte</p>
+                                <h3 class="text-xs sm:text-sm font-medium text-gray-900">Ajouter un Véhicule</h3>
+                                <p class="text-xs sm:text-sm text-gray-600">Ajouter un nouveau véhicule à votre flotte</p>
                             </div>
                         </a>
 
-                        <a href="{{ route('agence.bookings.pending') }}" class="flex items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors">
-                            <svg class="h-8 w-8 text-yellow-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <a href="{{ route('agence.bookings.pending') }}" class="flex items-center p-3 sm:p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors">
+                            <svg class="h-6 w-6 sm:h-8 sm:w-8 text-yellow-600 mr-2 sm:mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             <div>
-                                <h3 class="font-medium text-gray-900">Demandes en Attente</h3>
-                                <p class="text-sm text-gray-600">{{ $quickActions['pendingBookingsCount'] ?? 0 }} demandes à traiter</p>
+                                <h3 class="text-xs sm:text-sm font-medium text-gray-900">Demandes en Attente</h3>
+                                <p class="text-xs sm:text-sm text-gray-600">{{ $quickActions['pendingBookingsCount'] ?? 0 }} demandes à traiter</p>
                             </div>
                         </a>
 
-                        <a href="{{ route('agence.cars.index') }}" class="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
-                            <svg class="h-8 w-8 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <a href="{{ route('agence.cars.index') }}" class="flex items-center p-3 sm:p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                            <svg class="h-6 w-6 sm:h-8 sm:w-8 text-green-600 mr-2 sm:mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                             </svg>
                             <div>
-                                <h3 class="font-medium text-gray-900">Gérer la Flotte</h3>
-                                <p class="text-sm text-gray-600">{{ $quickActions['availableCarsCount'] ?? 0 }} véhicules disponibles</p>
+                                <h3 class="text-xs sm:text-sm font-medium text-gray-900">Gérer la Flotte</h3>
+                                <p class="text-xs sm:text-sm text-gray-600">{{ $quickActions['availableCarsCount'] ?? 0 }} véhicules disponibles</p>
                             </div>
                         </a>
 
-                        <a href="{{ route('agence.finance.reports') }}" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
-                            <svg class="h-8 w-8 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <a href="{{ route('agence.finance.reports') }}" class="flex items-center p-3 sm:p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                            <svg class="h-6 w-6 sm:h-8 sm:w-8 text-purple-600 mr-2 sm:mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
                             <div>
-                                <h3 class="font-medium text-gray-900">Rapports</h3>
-                                <p class="text-sm text-gray-600">Générer des rapports de performance</p>
+                                <h3 class="text-xs sm:text-sm font-medium text-gray-900">Rapports</h3>
+                                <p class="text-xs sm:text-sm text-gray-600">Générer des rapports de performance</p>
                             </div>
                         </a>
                     </div>

@@ -102,13 +102,13 @@ class DashboardController extends Controller
             ->where('status', 'cancelled')
             ->count();
 
-        // Financial Statistics
+        // Financial Statistics - Only count actual paid/completed rentals
         $totalSpent = Rental::where('user_id', $user->id)
-            ->whereIn('status', ['approved', 'completed'])
+            ->whereIn('status', ['active', 'completed', 'approved'])
             ->sum('total_price');
 
         $thisMonthSpent = Rental::where('user_id', $user->id)
-            ->whereIn('status', ['approved', 'completed'])
+            ->whereIn('status', ['active', 'completed', 'approved'])
             ->whereMonth('created_at', \Carbon\Carbon::now()->month)
             ->whereYear('created_at', \Carbon\Carbon::now()->year)
             ->sum('total_price');

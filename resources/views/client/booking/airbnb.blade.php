@@ -146,17 +146,17 @@
                         <h4 class="font-semibold text-gray-900 mb-4">Détails des prix</h4>
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <span class="text-gray-600">17 jours × {{ number_format($car->price_per_day, 0) }} MAD</span>
-                                <span class="text-gray-900">{{ number_format(17 * $car->price_per_day, 0) }} MAD</span>
+                                <span class="text-gray-600">17 jours × {{ number_format($car->client_price_per_day, 0) }} MAD</span>
+                                <span class="text-gray-900">{{ number_format(17 * $car->client_price_per_day, 0) }} MAD</span>
                             </div>
                             <div class="flex justify-between text-green-600">
                                 <span>Remise séjour longue durée</span>
-                                <span>-{{ number_format(17 * $car->price_per_day * 0.1, 0) }} MAD</span>
+                                <span>-{{ number_format(17 * $car->client_price_per_day * 0.1, 0) }} MAD</span>
                             </div>
                             <div class="border-t border-gray-200 pt-2 mt-2">
                                 <div class="flex justify-between font-semibold">
                                     <span class="text-gray-900">Total MAD</span>
-                                    <span class="text-gray-900">{{ number_format(17 * $car->price_per_day * 0.9, 0) }} MAD</span>
+                                    <span class="text-gray-900">{{ number_format(17 * $car->client_price_per_day * 0.9, 0) }} MAD</span>
                                 </div>
                             </div>
                         </div>

@@ -38,7 +38,7 @@
                             <!-- Price Badge -->
                             <div class="absolute top-4 right-4 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg px-3 py-2">
                                 <div class="text-right">
-                                    <div class="text-2xl font-bold text-blue-600">{{ number_format($car->price_per_day, 0) }} MAD</div>
+                                    <div class="text-2xl font-bold text-blue-600">{{ number_format($car->client_price_per_day, 0) }} MAD</div>
                                     <div class="text-sm text-gray-600">par jour</div>
                                 </div>
                             </div>
@@ -151,12 +151,8 @@
                                 <h3 class="font-semibold text-gray-900 mb-3">Résumé des prix</h3>
                                 <div class="space-y-2 text-sm">
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">{{ number_format($car->price_per_day, 0) }} MAD × <span id="days-count">0</span> jour(s)</span>
+                                        <span class="text-gray-600">{{ number_format($car->client_price_per_day, 0) }} MAD × <span id="days-count">0</span> jour(s)</span>
                                         <span class="text-gray-900" id="subtotal">0 MAD</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">Frais de service</span>
-                                        <span class="text-gray-900" id="service-fee">0 MAD</span>
                                     </div>
                                     <hr class="border-gray-300">
                                     <div class="flex justify-between font-semibold">
@@ -196,11 +192,10 @@
             const pricePreview = document.getElementById('price-preview');
             const daysCount = document.getElementById('days-count');
             const subtotal = document.getElementById('subtotal');
-            const serviceFee = document.getElementById('service-fee');
             const totalPrice = document.getElementById('total-price');
             const continueBtn = document.getElementById('continue-btn');
             
-            const pricePerDay = {{ $car->price_per_day }};
+            const pricePerDay = {{ $car->client_price_per_day }};
 
             function updatePrice() {
                 const startDate = new Date(startDateInput.value);
@@ -208,13 +203,9 @@
                 
                 if (startDate && endDate && endDate > startDate) {
                     const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-                    const subtotalAmount = days * pricePerDay;
-                    const serviceFeeAmount = subtotalAmount * 0.05; // 5% service fee
-                    const totalAmount = subtotalAmount + serviceFeeAmount;
+                    const totalAmount = days * pricePerDay;
 
                     daysCount.textContent = days;
-                    subtotal.textContent = subtotalAmount.toLocaleString() + ' MAD';
-                    serviceFee.textContent = serviceFeeAmount.toLocaleString() + ' MAD';
                     totalPrice.textContent = totalAmount.toLocaleString() + ' MAD';
                     
                     pricePreview.style.display = 'block';

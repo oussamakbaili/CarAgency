@@ -56,17 +56,24 @@
             letter-spacing: 0.1em;
             color: #9ca3af;
         }
+        
+        /* Reveal section animation */
+        .reveal-section {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
     </style>
 </head>
 <body class="font-sans antialiased">
     <div class="min-h-screen bg-gray-50">
         <!-- Sidebar -->
-        <div class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200">
+        <div id="sidebar-admin" class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out z-40 lg:z-0">
             <div class="flex flex-col h-full">
                 <!-- Logo -->
                 <div class="h-20 border-b border-gray-200 flex items-center px-6">
                     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 group hover:opacity-90 transition-opacity py-2">
-                        <img src="{{ asset('images/toubcar-logo.png') }}" alt="ToubCar Logo" class="h-24 w-auto">
+                        <img src="{{ asset('images/toubcar-logo.png') }}" alt="ToubCar Logo" class="h-16 lg:h-24 w-auto">
                         <div>
                             <p class="text-xs text-gray-500 font-medium">Administration</p>
                         </div>
@@ -148,6 +155,24 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             <span class="text-sm">Commissions & Revenus</span>
+                        </a>
+
+                        <!-- Demandes de retrait -->
+                        @php
+                            $pendingPayoutRequests = \App\Models\Transaction::where('type', \App\Models\Transaction::TYPE_WITHDRAWAL_REQUEST)
+                                ->where('status', \App\Models\Transaction::STATUS_PENDING)
+                                ->count();
+                        @endphp
+                        <a href="{{ route('admin.payment-requests.index') }}" class="sidebar-link flex items-center px-3 py-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200 mb-1 {{ request()->routeIs('admin.payment-requests.*') ? 'active bg-gray-50 text-gray-900 font-medium' : '' }}">
+                            <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.payment-requests.*') ? 'text-orange-600' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                            </svg>
+                            <span class="text-sm flex-1">Demandes de retrait</span>
+                            @if($pendingPayoutRequests > 0)
+                                <span class="ml-auto bg-red-600 text-white py-0.5 px-2 rounded-full text-xs font-semibold">
+                                    {{ $pendingPayoutRequests }}
+                                </span>
+                            @endif
                         </a>
                     </div>
 
@@ -258,7 +283,7 @@
                     
                     <!-- Logout Button - Compact Design -->
                     <div class="mt-3 flex justify-center">
-                        <form method="POST" action="{{ route('logout') }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
                             <button type="submit" class="group flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-gradient-to-r hover:from-[#C2410C] hover:to-[#9A3412] rounded-lg transition-all duration-200 hover:shadow-md border border-gray-200 hover:border-transparent">
                                 <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -273,11 +298,17 @@
         </div>
 
         <!-- Main Content -->
-        <div class="pl-64">
+        <div class="lg:pl-64 pl-0">
             <!-- Top Navigation -->
-            <div class="bg-white border-b border-gray-200">
-                <div class="px-8 py-5 flex items-center justify-between">
-                    <h1 class="text-2xl font-semibold text-gray-900">
+            <div class="bg-white border-b border-gray-200 sticky top-0 z-30">
+                <div class="px-4 sm:px-6 lg:px-8 py-4 lg:py-5 flex items-center justify-between">
+                    <!-- Mobile hamburger -->
+                    <button id="open-sidebar-admin" class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none lg:hidden" aria-label="Ouvrir le menu">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">
                         @yield('header')
                     </h1>
                     
@@ -325,12 +356,12 @@
             </div>
 
             <!-- Page Content -->
-            <main class="py-10">
-                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <main class="py-6 sm:py-8 md:py-10 px-4 sm:px-6 lg:px-8">
+                <div class="max-w-7xl mx-auto">
                     {{-- Messages de succès supprimés --}}
 
                     @if (session('error'))
-                        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <div class="mb-4 sm:mb-6 bg-red-100 border border-red-400 text-red-700 px-4 sm:px-6 py-3 sm:py-4 rounded-lg text-sm sm:text-base" role="alert">
                             <span class="block sm:inline">{{ session('error') }}</span>
                         </div>
                     @endif
@@ -339,6 +370,8 @@
                 </div>
             </main>
         </div>
+        <!-- Mobile Sidebar Overlay -->
+        <div id="overlay-admin" class="fixed inset-0 z-30 bg-gray-900/60 backdrop-blur-sm hidden lg:hidden"></div>
     </div>
     
     <!-- Scripts Stack -->
@@ -508,6 +541,27 @@
             console.error('Error clearing all notifications:', error);
         }
     }
+    </script>
+
+    <script>
+        (function(){
+            const sidebar = document.getElementById('sidebar-admin');
+            const overlay = document.getElementById('overlay-admin');
+            const openBtn = document.getElementById('open-sidebar-admin');
+            function open(){
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+            function close(){
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+            if (openBtn) openBtn.addEventListener('click', open);
+            if (overlay) overlay.addEventListener('click', close);
+            document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+        })();
     </script>
 </body>
 </html> 

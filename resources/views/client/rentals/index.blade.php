@@ -4,16 +4,16 @@
 
 @section('content')
 <!-- Page Header -->
-<div class="bg-white overflow-hidden shadow-sm rounded-lg mb-6">
-    <div class="p-6">
-        <div class="flex items-center justify-between">
+<div class="bg-white overflow-hidden shadow-sm rounded-lg mb-4 sm:mb-6 reveal-section">
+    <div class="p-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <div>
-                <h1 class="text-2xl font-semibold text-gray-900">Mes Locations</h1>
-                <p class="text-gray-600 mt-1">Gérez vos réservations et suivez l'état de vos locations</p>
+                <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">Mes Locations</h1>
+                <p class="text-sm sm:text-base text-gray-600 mt-1">Gérez vos réservations et suivez l'état de vos locations</p>
             </div>
             <a href="{{ route('client.cars.index') }}" 
-               class="inline-flex items-center px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="inline-flex items-center px-4 sm:px-6 py-2 sm:py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium text-xs sm:text-sm">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
                 Nouvelle Location
@@ -23,19 +23,19 @@
 </div>
 
 <!-- Statistics Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6 reveal-section">
     <!-- Total Rentals -->
     <div class="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow">
-        <div class="p-4">
+        <div class="p-4 sm:p-6">
             <div class="flex items-center">
-                <div class="p-2 rounded-lg bg-blue-50">
-                    <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-2 sm:p-3 rounded-lg bg-blue-50">
+                    <svg class="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
                 </div>
                 <div class="ml-3 flex-1">
-                    <h2 class="text-sm font-medium text-gray-600">Total Locations</h2>
-                    <p class="text-2xl font-bold text-gray-900">{{ $rentals->total() }}</p>
+                    <h2 class="text-xs sm:text-sm font-medium text-gray-600">Total Locations</h2>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ $rentals->total() }}</p>
                     <div class="flex items-center mt-1 text-xs">
                         <span class="text-gray-500">Toutes confondues</span>
                     </div>
@@ -46,16 +46,16 @@
 
     <!-- Active Rentals -->
     <div class="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow">
-        <div class="p-4">
+        <div class="p-4 sm:p-6">
             <div class="flex items-center">
-                <div class="p-2 rounded-lg bg-green-50">
-                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-2 sm:p-3 rounded-lg bg-green-50">
+                    <svg class="h-5 w-5 sm:h-6 sm:w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
                 <div class="ml-3 flex-1">
-                    <h2 class="text-sm font-medium text-gray-600">Locations Actives</h2>
-                    <p class="text-2xl font-bold text-gray-900">{{ $rentals->where('status', 'approved')->count() }}</p>
+                    <h2 class="text-xs sm:text-sm font-medium text-gray-600">Locations Actives</h2>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ $rentals->where('status', 'approved')->count() }}</p>
                     <div class="flex items-center mt-1 text-xs">
                         <span class="text-green-600">En cours</span>
                     </div>
@@ -66,16 +66,16 @@
 
     <!-- Pending Rentals -->
     <div class="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow">
-        <div class="p-4">
+        <div class="p-4 sm:p-6">
             <div class="flex items-center">
-                <div class="p-2 rounded-lg bg-orange-50">
-                    <svg class="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-2 sm:p-3 rounded-lg bg-orange-50">
+                    <svg class="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
                 <div class="ml-3 flex-1">
-                    <h2 class="text-sm font-medium text-gray-600">En Attente</h2>
-                    <p class="text-2xl font-bold text-gray-900">{{ $rentals->where('status', 'pending')->count() }}</p>
+                    <h2 class="text-xs sm:text-sm font-medium text-gray-600">En Attente</h2>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ $rentals->where('status', 'pending')->count() }}</p>
                     <div class="flex items-center mt-1 text-xs">
                         <span class="text-orange-600">En validation</span>
                     </div>
@@ -86,16 +86,16 @@
 
     <!-- Total Spent -->
     <div class="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow">
-        <div class="p-4">
+        <div class="p-4 sm:p-6">
             <div class="flex items-center">
-                <div class="p-2 rounded-lg bg-yellow-50">
-                    <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-2 sm:p-3 rounded-lg bg-yellow-50">
+                    <svg class="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
                     </svg>
                 </div>
                 <div class="ml-3 flex-1">
-                    <h2 class="text-sm font-medium text-gray-600">Total Dépensé</h2>
-                    <p class="text-2xl font-bold text-gray-900">{{ number_format($rentals->whereIn('status', ['approved', 'completed'])->sum('total_price'), 0) }} MAD</p>
+                    <h2 class="text-xs sm:text-sm font-medium text-gray-600">Total Dépensé</h2>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ number_format($rentals->whereIn('status', ['approved', 'completed'])->sum('total_price'), 0) }} MAD</p>
                     <div class="flex items-center mt-1 text-xs">
                         <span class="text-green-600">Toutes locations</span>
                     </div>
@@ -106,11 +106,11 @@
 </div>
 
 <!-- Filters and Search -->
-<div class="bg-white overflow-hidden shadow-sm rounded-lg mb-6">
-    <div class="p-6">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-900">Filtrer les Locations</h3>
-            <button onclick="toggleFilters()" class="text-orange-600 hover:text-orange-800 text-sm font-medium flex items-center">
+<div class="bg-white overflow-hidden shadow-sm rounded-lg mb-4 sm:mb-6 reveal-section">
+    <div class="p-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
+            <h3 class="text-base sm:text-lg md:text-xl font-semibold text-gray-900">Filtrer les Locations</h3>
+            <button onclick="toggleFilters()" class="text-orange-600 hover:text-orange-800 text-xs sm:text-sm font-medium flex items-center">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"/>
                 </svg>
@@ -118,12 +118,12 @@
             </button>
         </div>
 
-                <form method="GET" action="{{ route('client.rentals.index') }}" class="space-y-4" id="rentalsFiltersForm">
-                    <div id="filtersGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <form method="GET" action="{{ route('client.rentals.index') }}" class="space-y-3 sm:space-y-4" id="rentalsFiltersForm">
+            <div id="filtersGrid" class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                         <!-- Status Filter -->
                         <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
-                            <select id="status" name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                    <label for="status" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Statut</label>
+                    <select id="status" name="status" class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
                                 <option value="">Tous les statuts</option>
                                 <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>En attente</option>
                                 <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approuvée</option>
@@ -135,29 +135,29 @@
 
                         <!-- Date Range -->
                         <div>
-                            <label for="date_from" class="block text-sm font-medium text-gray-700 mb-2">Date de début</label>
+                    <label for="date_from" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Date de début</label>
                             <input type="date" id="date_from" name="date_from" value="{{ request('date_from') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                           class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
                         </div>
 
                         <div>
-                            <label for="date_to" class="block text-sm font-medium text-gray-700 mb-2">Date de fin</label>
+                    <label for="date_to" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Date de fin</label>
                             <input type="date" id="date_to" name="date_to" value="{{ request('date_to') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                           class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
                         </div>
                     </div>
 
-                    <div class="flex justify-between items-center pt-4 border-t border-gray-200">
-                        <div class="text-sm text-gray-600">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-200">
+                <div class="text-xs sm:text-sm text-gray-600">
                             {{ $rentals->total() }} location(s) trouvée(s)
                         </div>
-                        <div class="flex space-x-3">
+                <div class="flex flex-wrap gap-2 sm:gap-3">
                             <a href="{{ route('client.rentals.index') }}" 
-                               class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                       class="px-4 sm:px-6 py-2 sm:py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium">
                                 Réinitialiser
                             </a>
                             <button type="submit" 
-                                    class="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium">
+                            class="px-4 sm:px-6 py-2 sm:py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium text-xs sm:text-sm">
                                 Appliquer
                             </button>
                         </div>

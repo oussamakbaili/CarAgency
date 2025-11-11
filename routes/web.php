@@ -22,6 +22,9 @@ use App\Http\Controllers\ReviewController;
 |
 */
 
+// Language switching route (must be before other routes)
+Route::get('/lang/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');
+
 Route::get('/', [App\Http\Controllers\PublicController::class, 'home'])->name('welcome');
 Route::get('/', [App\Http\Controllers\PublicController::class, 'home'])->name('public.home');
 
@@ -87,6 +90,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/', [App\Http\Controllers\Admin\FinanceDashboardController::class, 'index'])->name('index');
         Route::post('/export', [App\Http\Controllers\Admin\FinanceDashboardController::class, 'export'])->name('export');
     });
+    
+    // Payment Requests
+    Route::get('/payment-requests', [App\Http\Controllers\Admin\PaymentRequestController::class, 'index'])->name('payment-requests.index');
+    Route::get('/payment-requests/{transaction}', [App\Http\Controllers\Admin\PaymentRequestController::class, 'show'])->name('payment-requests.show');
+    Route::post('/payment-requests/{transaction}/approve', [App\Http\Controllers\Admin\PaymentRequestController::class, 'approve'])->name('payment-requests.approve');
+    Route::post('/payment-requests/{transaction}/reject', [App\Http\Controllers\Admin\PaymentRequestController::class, 'reject'])->name('payment-requests.reject');
     
     // Commissions Management
     Route::prefix('commissions')->name('commissions.')->group(function () {
@@ -340,6 +349,7 @@ Route::middleware(['auth', 'role:agence'])->prefix('agence')->name('agence.')->g
         Route::get('/finance/export', [App\Http\Controllers\Agency\FinanceController::class, 'export'])->name('finance.export');
         Route::post('/finance/request-payment', [App\Http\Controllers\Agency\FinanceController::class, 'requestPayment'])->name('finance.request-payment');
         Route::get('/finance/reports', [App\Http\Controllers\Agency\FinanceController::class, 'reports'])->name('finance.reports');
+        Route::post('/finance/generate-report', [App\Http\Controllers\Agency\FinanceController::class, 'generateReport'])->name('finance.generate-report');
         Route::get('/finance/payouts', [App\Http\Controllers\Agency\FinanceController::class, 'payouts'])->name('finance.payouts');
         Route::get('/finance/payments/{id}/details', [App\Http\Controllers\Agency\FinanceController::class, 'getPaymentDetails'])->name('finance.payments.details');
         Route::post('/finance/payments/{id}/approve', [App\Http\Controllers\Agency\FinanceController::class, 'approvePayment'])->name('finance.payments.approve');
@@ -350,11 +360,6 @@ Route::middleware(['auth', 'role:agence'])->prefix('agence')->name('agence.')->g
         Route::get('/finance/export-commissions', [App\Http\Controllers\Agency\FinanceController::class, 'exportCommissions'])->name('finance.export-commissions');
         Route::get('/finance/export-payouts', [App\Http\Controllers\Agency\FinanceController::class, 'exportPayouts'])->name('finance.export-payouts');
         Route::get('/finance/payouts/{id}/details', [App\Http\Controllers\Agency\FinanceController::class, 'getPayoutDetails'])->name('finance.payouts.details');
-        
-        // Admin routes for payment requests
-        Route::get('/admin/payment-requests', [App\Http\Controllers\Admin\PaymentRequestController::class, 'index'])->name('admin.payment-requests');
-        Route::post('/admin/payment-requests/{id}/approve', [App\Http\Controllers\Admin\PaymentRequestController::class, 'approve'])->name('admin.payment-requests.approve');
-        Route::post('/admin/payment-requests/{id}/reject', [App\Http\Controllers\Admin\PaymentRequestController::class, 'reject'])->name('admin.payment-requests.reject');
         
         // Pricing & Availability
         Route::get('/pricing', [App\Http\Controllers\Agency\PricingController::class, 'index'])->name('pricing.index');
@@ -450,9 +455,11 @@ Route::prefix('client')->middleware(['auth', 'verified', 'client'])->name('clien
     Route::get('/rentals', [App\Http\Controllers\Client\RentalController::class, 'index'])->name('rentals.index');
     Route::get('/rentals/{rental}', [App\Http\Controllers\Client\RentalController::class, 'show'])->name('rentals.show');
     Route::get('/cars/{car}/rent', [App\Http\Controllers\Client\RentalController::class, 'create'])->name('rentals.create');
+    Route::get('/cars/{car}/confirm', [App\Http\Controllers\Client\RentalController::class, 'confirm'])->name('rentals.confirm');
     Route::post('/cars/{car}/rent', [App\Http\Controllers\Client\RentalController::class, 'store'])->name('rentals.store');
     Route::patch('/rentals/{rental}/cancel', [App\Http\Controllers\Client\RentalController::class, 'cancel'])->name('rentals.cancel');
     Route::get('/cars/{car}/unavailable-dates', [App\Http\Controllers\Client\RentalController::class, 'getUnavailableDates'])->name('rentals.unavailable-dates');
+    Route::post('/cars/{car}/check-availability', [App\Http\Controllers\Client\RentalController::class, 'checkAvailability'])->name('rentals.check-availability');
     
     
         // Profile management
@@ -502,7 +509,30 @@ Route::prefix('client')->middleware(['auth', 'verified', 'client'])->name('clien
             Route::post('/messages/{ticket}/mark-read', [App\Http\Controllers\Client\SupportMessageController::class, 'markAsRead'])->name('messages.mark-read');
             Route::get('/unread-count', [App\Http\Controllers\Client\SupportMessageController::class, 'getUnreadCount'])->name('unread-count');
         });
+        
+        // Wishlists
+        Route::prefix('wishlists')->name('wishlists.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Client\WishlistController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\Client\WishlistController::class, 'store'])->name('store');
+            Route::delete('/{id}', [App\Http\Controllers\Client\WishlistController::class, 'destroy'])->name('destroy');
+            Route::post('/{wishlistId}/cars', [App\Http\Controllers\Client\WishlistController::class, 'addCar'])->name('add-car');
+            Route::delete('/{wishlistId}/cars/{carId}', [App\Http\Controllers\Client\WishlistController::class, 'removeCar'])->name('remove-car');
+            Route::get('/check/{carId}', [App\Http\Controllers\Client\WishlistController::class, 'checkCar'])->name('check-car');
+        });
 });
+
+// Stripe Webhook (must be outside CSRF protection)
+Route::post('/stripe/webhook', [App\Http\Controllers\StripeWebhookController::class, 'handleWebhook'])
+    ->name('stripe.webhook');
+
+// CMI Callbacks (must be outside CSRF protection)
+Route::post('/cmi/callback', [App\Http\Controllers\CMIController::class, 'callback'])->name('cmi.callback');
+Route::get('/cmi/success', [App\Http\Controllers\CMIController::class, 'success'])->name('cmi.success');
+Route::get('/cmi/failure', [App\Http\Controllers\CMIController::class, 'failure'])->name('cmi.failure');
+
+// PayPal Callbacks (must be outside CSRF protection)
+Route::get('/paypal/success', [App\Http\Controllers\PayPalController::class, 'success'])->name('paypal.success');
+Route::get('/paypal/cancel', [App\Http\Controllers\PayPalController::class, 'cancel'])->name('paypal.cancel');
 
 // New booking system (Airbnb-style multi-step) - Public routes
 Route::prefix('booking')->name('booking.')->group(function () {
@@ -526,6 +556,9 @@ Route::prefix('booking')->name('booking.')->group(function () {
         
         Route::get('/step3', [App\Http\Controllers\Client\BookingController::class, 'step3'])->name('step3');
         Route::get('/step4', [App\Http\Controllers\Client\BookingController::class, 'step4'])->name('step4');
+        Route::post('/init-stripe-payment', [App\Http\Controllers\Client\BookingController::class, 'initStripePayment'])->name('init-stripe-payment');
+        Route::post('/init-cmi-payment', [App\Http\Controllers\Client\BookingController::class, 'initCMIPayment'])->name('init-cmi-payment');
+        Route::post('/init-paypal-payment', [App\Http\Controllers\Client\BookingController::class, 'initPayPalPayment'])->name('init-paypal-payment');
         Route::post('/process-payment', [App\Http\Controllers\Client\BookingController::class, 'processPayment'])->name('process-payment');
         Route::get('/step5', [App\Http\Controllers\Client\BookingController::class, 'step5'])->name('step5');
         Route::post('/cancel', [App\Http\Controllers\Client\BookingController::class, 'cancel'])->name('cancel');
@@ -560,6 +593,7 @@ Route::get('/debug/data', function () {
 Route::get('/agencies', [App\Http\Controllers\PublicController::class, 'agencies'])->name('public.agencies');
 Route::get('/about', [App\Http\Controllers\PublicController::class, 'about'])->name('public.about');
 Route::get('/how-it-works', [App\Http\Controllers\PublicController::class, 'howItWorks'])->name('public.how-it-works');
+Route::get('/wishlists', [App\Http\Controllers\PublicController::class, 'wishlists'])->name('public.wishlists');
 Route::get('/search', [App\Http\Controllers\PublicController::class, 'search'])->name('public.search');
 Route::get('/cars/search', [App\Http\Controllers\PublicController::class, 'searchCars'])->name('public.cars.search');
 Route::get('/agencies/{agency}', [App\Http\Controllers\PublicController::class, 'showAgency'])->name('public.agency.show');

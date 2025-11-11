@@ -57,7 +57,16 @@
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-500">Revenus du Mois</p>
                             <p class="text-2xl font-semibold text-gray-900">{{ number_format($overview['monthly_revenue'] ?? 0, 0) }} DH</p>
-                            <p class="text-xs text-green-600">+12% vs mois dernier</p>
+                            @php
+                                $rentalsCount = \App\Models\Rental::where('rentals.agency_id', auth()->user()->agency->id)
+                                    ->whereIn('rentals.status', ['active', 'completed'])
+                                    ->whereMonth('rentals.created_at', \Carbon\Carbon::now()->month)
+                                    ->whereYear('rentals.created_at', \Carbon\Carbon::now()->year)
+                                    ->count();
+                            @endphp
+                            <p class="text-xs text-gray-500">
+                                {{ $rentalsCount }} location(s) ce mois
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -122,49 +131,124 @@
         </div>
 
         <!-- Recent Transactions -->
-        <div class="bg-white shadow-sm rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Transactions Récentes</h3>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
+            <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Transactions Récentes</h3>
+                        <p class="text-sm text-gray-500 mt-1">Historique de vos dernières transactions financières</p>
+                    </div>
+                    <a href="{{ route('agence.finance.payments') }}" class="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                        Voir tout
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Description</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Montant</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Statut</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($recentTransactions ?? [] as $transaction)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $transaction->created_at->format('d/m/Y H:i') }}
+                        @php
+                            // Déterminer si c'est un revenu ou une dépense
+                            $isIncome = in_array($transaction->type, [
+                                \App\Models\Transaction::TYPE_RENTAL_PAYMENT,
+                                \App\Models\Transaction::TYPE_AGENCY_COMMISSION
+                            ]);
+                            
+                            // Labels des types
+                            $typeLabels = [
+                                \App\Models\Transaction::TYPE_RENTAL_PAYMENT => 'Paiement Location',
+                                \App\Models\Transaction::TYPE_WITHDRAWAL => 'Retrait',
+                                \App\Models\Transaction::TYPE_WITHDRAWAL_REQUEST => 'Demande Retrait',
+                                \App\Models\Transaction::TYPE_REFUND => 'Remboursement',
+                                \App\Models\Transaction::TYPE_COMMISSION => 'Commission',
+                                \App\Models\Transaction::TYPE_ADMIN_COMMISSION => 'Commission Admin',
+                                \App\Models\Transaction::TYPE_AGENCY_COMMISSION => 'Commission Agence',
+                                \App\Models\Transaction::TYPE_PENALTY => 'Pénalité',
+                            ];
+                            
+                            $typeLabel = $typeLabels[$transaction->type] ?? ucfirst(str_replace('_', ' ', $transaction->type));
+                            
+                            // Statut labels
+                            $statusLabels = [
+                                \App\Models\Transaction::STATUS_COMPLETED => 'Terminé',
+                                \App\Models\Transaction::STATUS_PENDING => 'En attente',
+                                \App\Models\Transaction::STATUS_FAILED => 'Échoué',
+                                \App\Models\Transaction::STATUS_CANCELLED => 'Annulé',
+                            ];
+                            
+                            $statusLabel = $statusLabels[$transaction->status] ?? ucfirst($transaction->status);
+                        @endphp
+                        <tr class="hover:bg-blue-50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ $transaction->created_at->format('d/m/Y') }}</div>
+                                <div class="text-xs text-gray-500">{{ $transaction->created_at->format('H:i') }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">{{ $transaction->description ?: $typeLabel }}</div>
+                                @if($transaction->rental_id)
+                                    <div class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                        </svg>
+                                        Réservation #{{ $transaction->rental_id }}
+                                    </div>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $transaction->description }}</div>
-                                <div class="text-sm text-gray-500">Réservation #{{ $transaction->rental_id ?? 'N/A' }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $transaction->type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                    {{ $transaction->type === 'income' ? 'Revenu' : 'Dépense' }}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                    {{ $typeLabel }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium {{ $transaction->type === 'income' ? 'text-green-600' : 'text-red-600' }}">
-                                {{ $transaction->type === 'income' ? '+' : '-' }}{{ number_format($transaction->amount, 0) }} DH
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-bold {{ $isIncome ? 'text-green-600' : 'text-red-600' }}">
+                                    {{ $isIncome ? '+' : '-' }}{{ number_format($transaction->amount, 0) }} DH
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $transaction->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                    {{ ucfirst($transaction->status) }}
-                                </span>
+                                @if($transaction->status === \App\Models\Transaction::STATUS_COMPLETED)
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ $statusLabel }}
+                                    </span>
+                                @elseif($transaction->status === \App\Models\Transaction::STATUS_PENDING)
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                                        <svg class="w-3 h-3 mr-1 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        {{ $statusLabel }}
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                        {{ $statusLabel }}
+                                    </span>
+                                @endif
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
-                                Aucune transaction récente
+                            <td colspan="5" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                    </svg>
+                                    <p class="text-sm font-medium text-gray-900 mb-1">Aucune transaction récente</p>
+                                    <p class="text-xs text-gray-500">Vos transactions apparaîtront ici une fois créées</p>
+                                </div>
                             </td>
                         </tr>
                         @endforelse
@@ -174,67 +258,70 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Rapports Financiers Card -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
                 <div class="p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-medium text-gray-900">Rapports Financiers</h3>
-                            <p class="text-sm text-gray-500">Générez des rapports détaillés</p>
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-gray-900">Rapports Financiers</h3>
+                                <p class="text-sm text-gray-500 mt-1">Générez des rapports détaillés</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-4">
-                        <a href="{{ route('agence.finance.reports') }}" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 inline-block text-center">
-                            Voir les Rapports
-                        </a>
-                    </div>
+                    <a href="{{ route('agence.finance.reports') }}" class="block w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors duration-200 text-center shadow-sm hover:shadow">
+                        Voir les Rapports
+                    </a>
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+            <!-- Demander Paiement Card -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
                 <div class="p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-medium text-gray-900">Demander Paiement</h3>
-                            <p class="text-sm text-gray-500">Retirez vos gains</p>
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-gray-900">Demander Paiement</h3>
+                                <p class="text-sm text-gray-500 mt-1">Retirez vos gains</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-4">
-                        <button onclick="showPaymentRequestModal()" class="w-full bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700">
-                            Demander Paiement
-                        </button>
-                    </div>
+                    <button onclick="showPaymentRequestModal()" class="w-full bg-green-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors duration-200 shadow-sm hover:shadow">
+                        Demander Paiement
+                    </button>
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg">
+            <!-- Documents Fiscaux Card -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
                 <div class="p-6">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-medium text-gray-900">Documents Fiscaux</h3>
-                            <p class="text-sm text-gray-500">Téléchargez vos documents</p>
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-gray-900">Documents Fiscaux</h3>
+                                <p class="text-sm text-gray-500 mt-1">Téléchargez vos documents</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-4">
-                        <button onclick="downloadTaxDocuments()" class="w-full bg-purple-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-purple-700">
-                            Télécharger
-                        </button>
-                    </div>
+                    <button onclick="downloadTaxDocuments()" class="w-full bg-purple-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-purple-700 transition-colors duration-200 shadow-sm hover:shadow">
+                        Télécharger
+                    </button>
                 </div>
             </div>
         </div>
@@ -263,14 +350,31 @@
                     <p class="text-xs text-gray-500 mt-1">Solde disponible: {{ number_format($overview['current_balance'] ?? 0, 0) }} DH</p>
                 </div>
                 
-                <div class="mb-4">
-                    <label for="payment_method" class="block text-sm font-medium text-gray-700 mb-2">Méthode de Paiement</label>
-                    <select id="payment_method" name="payment_method" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                        <option value="">Sélectionner une méthode</option>
-                        <option value="bank_transfer">Virement Bancaire</option>
-                        <option value="check">Chèque</option>
-                        <option value="cash">Espèces</option>
-                    </select>
+                <!-- Bank details (transfer only) -->
+                <div id="bank_details" class="mb-4">
+                    <div class="mb-3">
+                        <label for="bank_name" class="block text-sm font-medium text-gray-700 mb-2">Banque</label>
+                        <select id="bank_name" name="bank_name" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option value="">Sélectionner une banque</option>
+                            <option value="Attijariwafa Bank">Attijariwafa Bank</option>
+                            <option value="CIH Bank">CIH Bank</option>
+                            <option value="Bank of Africa (BMCE)">Bank of Africa (BMCE)</option>
+                            <option value="Banque Populaire">Banque Populaire</option>
+                            <option value="Société Générale Maroc">Société Générale Maroc</option>
+                            <option value="Crédit du Maroc">Crédit du Maroc</option>
+                            <option value="CFG Bank">CFG Bank</option>
+                            <option value="Arab Bank Maroc">Arab Bank Maroc</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rib_number" class="block text-sm font-medium text-gray-700 mb-2">RIB / IBAN</label>
+                        <input type="text" id="rib_number" name="rib_number" maxlength="34" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex: MA1234..." required>
+                        <p class="text-xs text-gray-500 mt-1">Saisissez le RIB/IBAN du compte.</p>
+                    </div>
+                    <div>
+                        <label for="account_holder" class="block text-sm font-medium text-gray-700 mb-2">Nom complet du titulaire</label>
+                        <input type="text" id="account_holder" name="account_holder" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nom et prénom sur le compte" required>
+                    </div>
                 </div>
                 
                 <div class="mb-4">
@@ -296,13 +400,17 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Revenue Chart
     const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    @php
+        $chartLabels = $monthLabels ?? ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+        $chartData = $revenueTrendsData ?? [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    @endphp
     const revenueChart = new Chart(revenueCtx, {
         type: 'line',
         data: {
-            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
+            labels: @json($chartLabels),
             datasets: [{
                 label: 'Revenus (DH)',
-                data: [12000, 15000, 18000, 22000, 19000, 25000, 28000, 26000, 30000, 32000, 29000, 35000],
+                data: @json($chartData),
                 borderColor: 'rgb(59, 130, 246)',
                 backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 tension: 0.4,
@@ -337,7 +445,12 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: ['Carte Bancaire', 'Virement', 'Espèces', 'Chèque'],
             datasets: [{
-                data: [45, 30, 15, 10],
+                data: [
+                    {{ $paymentMethodsData['Carte Bancaire'] ?? 0 }},
+                    {{ $paymentMethodsData['Virement'] ?? 0 }},
+                    {{ $paymentMethodsData['Espèces'] ?? 0 }},
+                    {{ $paymentMethodsData['Chèque'] ?? 0 }}
+                ],
                 backgroundColor: [
                     'rgb(34, 197, 94)',
                     'rgb(59, 130, 246)',
@@ -374,22 +487,6 @@ function closePaymentRequestModal() {
     document.getElementById('paymentRequestForm').reset();
 }
 
-// Tax Documents Download
-function downloadTaxDocuments() {
-    // Show loading state
-    const button = event.target;
-    const originalText = button.textContent;
-    button.textContent = 'Téléchargement...';
-    button.disabled = true;
-    
-    // Simulate download (in real app, this would generate actual documents)
-    setTimeout(() => {
-        alert('Les documents fiscaux seront générés et téléchargés. Cette fonctionnalité sera implémentée avec un générateur de PDF.');
-        button.textContent = originalText;
-        button.disabled = false;
-    }, 1500);
-}
-
 // Handle payment request form submission
 document.addEventListener('DOMContentLoaded', function() {
     const paymentRequestForm = document.getElementById('paymentRequestForm');
@@ -399,8 +496,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const formData = new FormData(this);
             const amount = formData.get('amount');
-            const paymentMethod = formData.get('payment_method');
             const notes = formData.get('notes');
+            const bankName = formData.get('bank_name');
+            const ribNumber = formData.get('rib_number');
+            const accountHolder = formData.get('account_holder');
             
             // Validate amount
             const maxAmount = {{ $overview['current_balance'] ?? 0 }};
@@ -408,13 +507,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Le montant demandé ne peut pas dépasser votre solde disponible.');
                 return;
             }
-            
             if (parseFloat(amount) < 100) {
                 alert('Le montant minimum de retrait est de 100 DH.');
                 return;
             }
+            // Validate bank details
+            if (!bankName) { alert('Veuillez sélectionner une banque.'); return; }
+            if (!accountHolder || accountHolder.trim().length < 4) { alert('Veuillez saisir le nom complet du titulaire.'); return; }
+            if (!ribNumber || ribNumber.replace(/\s+/g,'').length < 16) { alert('Veuillez saisir un RIB/IBAN valide.'); return; }
             
-            // Send payment request
+            // Send payment request (forced to bank_transfer)
             fetch('/agence/finance/request-payment', {
                 method: 'POST',
                 headers: {
@@ -423,8 +525,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     amount: amount,
-                    payment_method: paymentMethod,
-                    notes: notes
+                    payment_method: 'bank_transfer',
+                    notes: notes,
+                    bank_name: bankName,
+                    rib_number: ribNumber,
+                    account_holder: accountHolder
                 })
             })
             .then(response => response.json())

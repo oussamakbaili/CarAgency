@@ -23,6 +23,15 @@
             return;
         }
         
+        // Skip search bar and modal elements - they have their own handlers
+        if (target.id === 'mobileSearchBar' || 
+            target.closest('#mobileSearchBar') || 
+            target.closest('#searchModal') ||
+            target.closest('.hero-search')) {
+            console.log('🔍 Search bar/modal - skipping navigation fix');
+            return;
+        }
+        
         console.log('✅ Cible trouvée:', target);
         
         // Empêcher TOUS les autres gestionnaires
@@ -46,35 +55,52 @@
                 // Sauvegarder window.location.href
                 const originalHref = window.location.href;
                 
-                // Intercepter les changements de location
+                // Intercepter les changements de location via un proxy sur location.href
                 let locationChanged = false;
-                const originalLocation = window.location;
+                const originalLocationHref = Object.getOwnPropertyDescriptor(window.location, 'href') || 
+                                            Object.getOwnPropertyDescriptor(Object.getPrototypeOf(window.location), 'href');
                 
-                // Créer un proxy pour window.location
-                Object.defineProperty(window, 'location', {
-                    get: function() {
-                        return originalLocation;
-                    },
-                    set: function(url) {
-                        console.log('📍 Location changée vers:', url);
-                        destinationUrl = url;
-                        locationChanged = true;
-                        originalLocation.href = url;
+                // Vérifier si on peut redéfinir location.href
+                try {
+                    // Intercepter location.href au lieu de location
+                    const locationHrefDescriptor = Object.getOwnPropertyDescriptor(window.location, 'href');
+                    if (locationHrefDescriptor && locationHrefDescriptor.configurable) {
+                        Object.defineProperty(window.location, 'href', {
+                            get: function() {
+                                return originalLocationHref ? originalLocationHref.get.call(this) : window.location.href;
+                            },
+                            set: function(url) {
+                                console.log('📍 Location changée vers:', url);
+                                destinationUrl = url;
+                                locationChanged = true;
+                                if (originalLocationHref && originalLocationHref.set) {
+                                    originalLocationHref.set.call(window.location, url);
+                                } else {
+                                    window.location.href = url;
+                                }
+                            },
+                            configurable: true
+                        });
                     }
-                });
+                } catch (e) {
+                    console.log('⚠️ Impossible de redéfinir location.href, utilisation alternative');
+                }
                 
                 // Exécuter le onclick
-                target.onclick(event);
+                if (typeof target.onclick === 'function') {
+                    target.onclick(event);
+                } else if (typeof target.onclick === 'object' && target.onclick.handleEvent) {
+                    target.onclick.handleEvent(event);
+                }
                 
-                // Restaurer window.location
-                Object.defineProperty(window, 'location', {
-                    get: function() {
-                        return originalLocation;
-                    },
-                    set: function(url) {
-                        originalLocation.href = url;
+                // Restaurer location.href si nécessaire
+                if (locationChanged && originalLocationHref && originalLocationHref.configurable) {
+                    try {
+                        Object.defineProperty(window.location, 'href', originalLocationHref);
+                    } catch (e) {
+                        // Ignorer si on ne peut pas restaurer
                     }
-                });
+                }
                 
                 if (locationChanged && destinationUrl) {
                     console.log('✅ Navigation capturée:', destinationUrl);
@@ -82,6 +108,14 @@
                 
             } catch (error) {
                 console.error('❌ Erreur lors de l\'exécution du onclick:', error);
+                // Si l'onclick ne fonctionne pas, essayer d'exécuter directement
+                if (target.onclick && typeof target.onclick === 'function') {
+                    try {
+                        target.onclick.call(target, event);
+                    } catch (e2) {
+                        console.error('❌ Erreur lors de l\'exécution directe:', e2);
+                    }
+                }
             }
         }
         

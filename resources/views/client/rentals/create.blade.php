@@ -73,7 +73,7 @@
                             </div>
                             
                             <div class="flex items-center justify-between">
-                                <span class="text-3xl font-bold text-blue-600">{{ number_format($car->price_per_day, 0) }} MAD</span>
+                                <span class="text-3xl font-bold text-blue-600">{{ number_format($car->client_price_per_day, 0) }} MAD</span>
                                 <span class="text-gray-600">/jour</span>
                             </div>
                         </div>
@@ -223,7 +223,7 @@
                             <div class="space-y-3">
                                 <div class="flex justify-between items-center">
                                     <span class="text-gray-600">Prix par jour:</span>
-                                    <span class="text-gray-900 font-medium">{{ number_format($car->price_per_day, 0) }} MAD</span>
+                                    <span class="text-gray-900 font-medium">{{ number_format($car->client_price_per_day, 0) }} MAD</span>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-gray-600">Nombre de jours:</span>
@@ -334,7 +334,7 @@
             const endDateInput = document.getElementById('end_date');
             const daysCountElement = document.getElementById('days-count');
             const totalPriceElement = document.getElementById('total-price');
-            const pricePerDay = {{ $car->price_per_day }};
+            const pricePerDay = {{ $car->client_price_per_day }};
             const carId = {{ $car->id }};
             
             let unavailableDates = [];

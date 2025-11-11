@@ -94,6 +94,13 @@
             letter-spacing: 0.1em;
             color: #9ca3af;
         }
+        
+        /* Reveal section animation */
+        .reveal-section {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
     </style>
 </head>
     <body class="font-sans antialiased">
@@ -107,12 +114,12 @@
     
     <div class="min-h-screen bg-gray-50">
         <!-- Sidebar -->
-        <div class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200">
+        <div id="sidebar-client" class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out z-40 lg:z-0">
             <div class="flex flex-col h-full">
                 <!-- Logo -->
                 <div class="h-20 border-b border-gray-200 flex items-center px-6">
                     <a href="{{ route('client.dashboard') }}" class="flex items-center gap-3 group hover:opacity-90 transition-opacity py-2">
-                        <img src="{{ asset('images/toubcar-logo.png') }}" alt="ToubCar Logo" class="h-24 w-auto">
+                        <img src="{{ asset('images/toubcar-logo.png') }}" alt="ToubCar Logo" class="h-16 lg:h-24 w-auto">
                         <div>
                             <p class="text-xs text-gray-500 font-medium">Espace Client</p>
                         </div>
@@ -241,7 +248,7 @@
                     
                     <!-- Logout Button - Compact Design -->
                     <div class="mt-3 flex justify-center">
-                        <form method="POST" action="{{ route('logout') }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
                             <button type="submit" class="group flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-gradient-to-r hover:from-[#C2410C] hover:to-[#9A3412] rounded-lg transition-all duration-200 hover:shadow-md border border-gray-200 hover:border-transparent">
                                 <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,12 +263,18 @@
         </div>
 
         <!-- Main Content -->
-        <div class="pl-64">
+        <div class="lg:pl-64 pl-0">
             <!-- Top Navigation -->
-            <div class="bg-white border-b border-gray-200">
-                <div class="px-8 py-5">
+            <div class="bg-white border-b border-gray-200 sticky top-0 z-30">
+                <div class="px-4 sm:px-6 lg:px-8 py-4 lg:py-5">
                     <div class="flex items-center justify-between">
-                        <h1 class="text-2xl font-semibold text-gray-900">
+                        <!-- Mobile hamburger -->
+                        <button id="open-sidebar-client" class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none lg:hidden" aria-label="Ouvrir le menu">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                        <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">
                             @yield('header', 'Tableau de bord')
                         </h1>
                         
@@ -374,26 +387,77 @@
             </div>
 
             <!-- Page Content -->
-            <main class="p-8">
+            <main class="py-6 sm:py-8 md:py-10 px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8">
+                <div class="max-w-7xl mx-auto">
                 @if (session('success'))
-                    <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                        <div class="mb-4 sm:mb-6 bg-green-100 border border-green-400 text-green-700 px-4 sm:px-6 py-3 sm:py-4 rounded-lg text-sm sm:text-base" role="alert">
                         <span class="block sm:inline">{{ session('success') }}</span>
                     </div>
                 @endif
 
                 @if (session('error'))
-                    <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <div class="mb-4 sm:mb-6 bg-red-100 border border-red-400 text-red-700 px-4 sm:px-6 py-3 sm:py-4 rounded-lg text-sm sm:text-base" role="alert">
                         <span class="block sm:inline">{{ session('error') }}</span>
                     </div>
                 @endif
 
                 @yield('content')
+                </div>
             </main>
         </div>
+        <!-- Mobile Sidebar Overlay -->
+        <div id="overlay-client" class="fixed inset-0 z-30 bg-gray-900/60 backdrop-blur-sm hidden lg:hidden"></div>
     </div>
 
     <!-- Scripts Stack -->
     @stack('scripts')
+
+    <script>
+        (function(){
+            const sidebar = document.getElementById('sidebar-client');
+            const overlay = document.getElementById('overlay-client');
+            const openBtn = document.getElementById('open-sidebar-client');
+            function open(){
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+            function close(){
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+            if (openBtn) openBtn.addEventListener('click', open);
+            if (overlay) overlay.addEventListener('click', close);
+            document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+        })();
+    </script>
+
+    <!-- Mobile Bottom Navigation (inspiration Airbnb) -->
+    <nav class="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-t border-gray-200">
+        <div class="flex justify-between px-2 pt-1 pb-[calc(env(safe-area-inset-bottom)+6px)]">
+            <a href="{{ route('client.dashboard') }}" class="flex-1 flex flex-col items-center gap-0.5 py-2 {{ request()->routeIs('client.dashboard') ? 'text-orange-600' : 'text-gray-500' }}">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                <span class="text-[11px] font-medium">Accueil</span>
+            </a>
+            <a href="{{ route('client.cars.index') }}" class="flex-1 flex flex-col items-center gap-0.5 py-2 {{ request()->routeIs('client.cars.*') ? 'text-orange-600' : 'text-gray-500' }}">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                <span class="text-[11px] font-medium">Véhicules</span>
+            </a>
+            <a href="{{ route('client.rentals.index') }}" class="flex-1 flex flex-col items-center gap-0.5 py-2 {{ request()->routeIs('client.rentals.*') ? 'text-orange-600' : 'text-gray-500' }}">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span class="text-[11px] font-medium">Réserv.</span>
+            </a>
+            <a href="{{ route('client.messages.index') }}" class="flex-1 flex flex-col items-center gap-0.5 py-2 {{ (request()->routeIs('client.messages.*') || request()->routeIs('client.support.messages')) ? 'text-orange-600' : 'text-gray-500' }}">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                <span class="text-[11px] font-medium">Messages</span>
+            </a>
+            <a href="{{ route('client.profile.index') }}" class="flex-1 flex flex-col items-center gap-0.5 py-2 {{ request()->routeIs('client.profile.*') ? 'text-orange-600' : 'text-gray-500' }}">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A7 7 0 0112 15a7 7 0 016.879 2.804M15 11a3 3 0 10-6 0 3 3 0 006 0z"/></svg>
+                <span class="text-[11px] font-medium">Profil</span>
+            </a>
+        </div>
+    </nav>
 </body>
 </html>
 

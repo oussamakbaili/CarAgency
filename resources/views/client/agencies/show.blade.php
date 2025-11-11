@@ -173,7 +173,7 @@
                             </div>
                 <div class="text-right">
                     <div class="text-xl font-bold text-orange-600">
-                        {{ number_format($car->price_per_day, 0) }} MAD
+                        {{ number_format($car->client_price_per_day, 0) }} MAD
                     </div>
                     <div class="text-xs text-gray-500">par jour</div>
                     </div>

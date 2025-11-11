@@ -221,7 +221,7 @@
                     </h3>
                     <p class="text-sm text-gray-600">{{ $car->agency->user->name ?? 'N/A' }}</p>
                     <p class="text-sm font-medium text-gray-900">
-                        {{ number_format($car->price_per_day, 0) }}€/jour
+                        {{ number_format($car->client_price_per_day, 0) }}€/jour
                     </p>
                 </div>
                 <div class="flex-shrink-0">

@@ -5,45 +5,45 @@
 @section('content')
     <!-- Search Header -->
     <div class="bg-white border-b border-gray-200 sticky top-16 z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
             <!-- Compact Search Form -->
-            <div class="bg-white rounded-full shadow-lg border border-gray-200 p-2">
-                <form action="{{ route('public.cars.search') }}" method="GET" class="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+            <div class="bg-white rounded-full shadow-lg border border-gray-200 p-1.5 sm:p-2">
+                <form action="{{ route('public.cars.search') }}" method="GET" class="flex flex-col md:flex-row items-stretch md:items-center gap-1.5 sm:gap-2">
                     <!-- Where -->
-                    <div class="flex-1 px-4 py-2 border-r border-gray-200">
-                        <label class="block text-xs font-semibold text-gray-900 mb-1">Where</label>
+                    <div class="flex-1 px-3 sm:px-4 py-2 border-r border-gray-200">
+                        <label class="block text-xs font-semibold text-gray-900 mb-0.5 sm:mb-1">Where</label>
                         <input type="text" name="where" placeholder="Marrakesh, Morocco" 
                                value="{{ request('where') }}"
-                               class="w-full text-sm text-gray-600 placeholder-gray-400 border-0 p-0 focus:ring-0 focus:outline-none">
+                               class="w-full text-xs sm:text-sm text-gray-600 placeholder-gray-400 border-0 p-0 focus:ring-0 focus:outline-none">
                     </div>
                     
                     <!-- Check in -->
-                    <div class="flex-1 px-4 py-2 border-r border-gray-200">
-                        <label class="block text-xs font-semibold text-gray-900 mb-1">Check in</label>
+                    <div class="flex-1 px-3 sm:px-4 py-2 border-r border-gray-200">
+                        <label class="block text-xs font-semibold text-gray-900 mb-0.5 sm:mb-1">Check in</label>
                         <input type="date" name="check_in" 
                                value="{{ request('check_in') }}"
-                               class="w-full text-sm text-gray-600 border-0 p-0 focus:ring-0 focus:outline-none">
+                               class="w-full text-xs sm:text-sm text-gray-600 border-0 p-0 focus:ring-0 focus:outline-none">
                     </div>
                     
                     <!-- Check out -->
-                    <div class="flex-1 px-4 py-2 border-r border-gray-200">
-                        <label class="block text-xs font-semibold text-gray-900 mb-1">Check out</label>
+                    <div class="flex-1 px-3 sm:px-4 py-2 border-r border-gray-200">
+                        <label class="block text-xs font-semibold text-gray-900 mb-0.5 sm:mb-1">Check out</label>
                         <input type="date" name="check_out" 
                                value="{{ request('check_out') }}"
-                               class="w-full text-sm text-gray-600 border-0 p-0 focus:ring-0 focus:outline-none">
+                               class="w-full text-xs sm:text-sm text-gray-600 border-0 p-0 focus:ring-0 focus:outline-none">
                     </div>
                     
                     <!-- Who -->
-                    <div class="flex-1 px-4 py-2">
-                        <label class="block text-xs font-semibold text-gray-900 mb-1">Who</label>
+                    <div class="flex-1 px-3 sm:px-4 py-2">
+                        <label class="block text-xs font-semibold text-gray-900 mb-0.5 sm:mb-1">Who</label>
                         <input type="number" name="passengers" min="1" max="8" 
                                value="{{ request('passengers', 2) }}"
-                               class="w-full text-sm text-gray-600 border-0 p-0 focus:ring-0 focus:outline-none">
+                               class="w-full text-xs sm:text-sm text-gray-600 border-0 p-0 focus:ring-0 focus:outline-none">
                     </div>
                     
                     <!-- Search Button -->
-                    <button type="submit" class="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-6 py-2 rounded-full font-semibold flex items-center justify-center gap-2 transition-all duration-200">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button type="submit" class="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-4 sm:px-6 py-2 rounded-full font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-200">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                     </button>
@@ -53,11 +53,11 @@
     </div>
 
     <!-- Search Results -->
-    <div class="py-8 bg-gray-50 min-h-screen">
+    <div class="py-6 sm:py-8 bg-gray-50 min-h-screen reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Results Info -->
-            <div class="mb-8">
-                <h1 class="text-2xl font-bold text-gray-900 mb-2">
+            <div class="mb-6 sm:mb-8">
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                     @if(request('where'))
                         Locations de voitures à {{ request('where') }}
                     @else
@@ -65,7 +65,7 @@
                     @endif
                 </h1>
                 
-                <div class="flex items-center gap-4 text-sm text-gray-600">
+                <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600">
                     @if(request('check_in') && request('check_out'))
                         <span>📅 {{ \Carbon\Carbon::parse(request('check_in'))->format('d M') }} - {{ \Carbon\Carbon::parse(request('check_out'))->format('d M Y') }}</span>
                     @endif
@@ -77,7 +77,7 @@
             </div>
 
             <!-- Cars Grid - Same design as home page -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 @forelse($cars as $car)
                     <div onclick="window.location='{{ route('public.car.show', [$car->agency, $car]) }}'" class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
                         <!-- Car Image -->
@@ -108,22 +108,22 @@
                         </div>
                         
                         <!-- Car Details -->
-                        <div class="p-5">
-                            <div class="mb-4">
-                                <h3 class="text-lg font-bold text-gray-900">{{ $car->brand }}</h3>
-                                <p class="text-sm text-gray-600">{{ $car->model }}</p>
+                        <div class="p-4 sm:p-5">
+                            <div class="mb-3 sm:mb-4">
+                                <h3 class="text-base sm:text-lg font-bold text-gray-900">{{ $car->brand }}</h3>
+                                <p class="text-xs sm:text-sm text-gray-600">{{ $car->model }}</p>
                             </div>
                             
                             <!-- Features -->
-                            <div class="flex items-center gap-4 mb-4 text-sm text-gray-600">
+                            <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4 text-xs sm:text-sm text-gray-600">
                                 <div class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
                                     </svg>
                                     <span>{{ ucfirst($car->transmission ?? 'Auto') }}</span>
                                 </div>
                                 <div class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                                     </svg>
                                     <span>{{ $car->seats ?? 5 }}</span>
@@ -131,13 +131,13 @@
                             </div>
                             
                             <!-- Price & CTA -->
-                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <div class="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100">
                                 <div>
-                                    <div class="text-2xl font-bold text-gray-900">{{ number_format($car->price_per_day, 0) }} MAD</div>
-                                    <div class="text-sm text-gray-500">par jour</div>
+                                    <div class="text-lg sm:text-2xl font-bold text-gray-900">{{ number_format($car->client_price_per_day, 0) }} MAD</div>
+                                    <div class="text-xs sm:text-sm text-gray-500">par jour</div>
                                 </div>
                                 <a href="{{ route('booking.main', $car) }}" 
-                                   class="bg-[#C2410C] hover:bg-[#9A3412] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                                   class="bg-[#C2410C] hover:bg-[#9A3412] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors"
                                    onclick="event.stopPropagation()">
                                     Réserver
                                 </a>

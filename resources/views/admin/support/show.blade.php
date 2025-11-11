@@ -353,7 +353,14 @@ function displayMessages(messages) {
     const container = document.getElementById('messages-container');
     container.innerHTML = '';
     
-    messages.forEach(message => {
+    // Trier les messages par date croissante (anciens en premier, nouveaux en bas)
+    const sortedMessages = [...messages].sort((a, b) => {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        return dateA - dateB; // Croissant : anciens en premier, nouveaux en bas
+    });
+    
+    sortedMessages.forEach(message => {
         const messageDiv = createMessageElement(message);
         container.appendChild(messageDiv);
     });

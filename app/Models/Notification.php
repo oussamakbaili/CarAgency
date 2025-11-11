@@ -262,9 +262,97 @@ class Notification extends Model
             'data' => [
                 'transaction_id' => $transaction->id,
                 'amount' => $transaction->amount,
-                'payment_method' => $transaction->payment_method,
                 'status' => $transaction->status,
-                'client_name' => $transaction->client->user->name,
+                'description' => $transaction->description,
+            ],
+        ]);
+    }
+
+    /**
+     * Create payout request notification for admin.
+     */
+    public static function createPayoutRequestNotification($adminId, $transaction)
+    {
+        $agency = $transaction->agency;
+
+        return self::create([
+            'admin_id' => $adminId,
+            'agency_id' => $transaction->agency_id,
+            'transaction_id' => $transaction->id,
+            'category' => 'payment',
+            'priority' => 'high',
+            'type' => 'payout_request',
+            'title' => 'Nouvelle demande de retrait',
+            'message' => $agency
+                ? "{$agency->agency_name} demande un retrait de " . number_format($transaction->amount, 2) . ' MAD'
+                : 'Nouvelle demande de retrait reçue.',
+            'icon' => 'money',
+            'icon_color' => 'orange',
+            'action_url' => route('admin.payment-requests.index'),
+            'related_id' => $transaction->id,
+            'data' => [
+                'transaction_id' => $transaction->id,
+                'agency_name' => $agency->agency_name ?? null,
+                'amount' => $transaction->amount,
+                'bank_name' => data_get($transaction->metadata, 'bank_name'),
+                'rib_number' => data_get($transaction->metadata, 'rib_number'),
+                'account_holder' => data_get($transaction->metadata, 'account_holder'),
+                'requested_at' => $transaction->created_at,
+            ],
+        ]);
+    }
+
+    /**
+     * Create payout processed notification for agency.
+     */
+    public static function createAgencyPayoutProcessedNotification($agency, $transaction)
+    {
+        return self::create([
+            'agency_id' => $agency->id,
+            'transaction_id' => $transaction->id,
+            'category' => 'payment',
+            'priority' => 'medium',
+            'type' => 'payout_processed',
+            'title' => 'Retrait traité',
+            'message' => 'Votre demande de retrait de ' . number_format($transaction->amount, 2) . ' MAD a été traitée avec succès.',
+            'icon' => 'money',
+            'icon_color' => 'green',
+            'action_url' => route('agence.finance.index'),
+            'related_id' => $transaction->id,
+            'data' => [
+                'transaction_id' => $transaction->id,
+                'amount' => $transaction->amount,
+                'bank_name' => data_get($transaction->metadata, 'bank_name'),
+                'rib_number' => data_get($transaction->metadata, 'rib_number'),
+                'processed_at' => now(),
+            ],
+        ]);
+    }
+
+    /**
+     * Create payout rejected notification for agency.
+     */
+    public static function createAgencyPayoutRejectedNotification($agency, $transaction)
+    {
+        return self::create([
+            'agency_id' => $agency->id,
+            'transaction_id' => $transaction->id,
+            'category' => 'payment',
+            'priority' => 'high',
+            'type' => 'payout_rejected',
+            'title' => 'Retrait rejeté',
+            'message' => 'Votre demande de retrait de ' . number_format($transaction->amount, 2) . ' MAD a été rejetée.',
+            'icon' => 'alert',
+            'icon_color' => 'red',
+            'action_url' => route('agence.finance.index'),
+            'related_id' => $transaction->id,
+            'data' => [
+                'transaction_id' => $transaction->id,
+                'amount' => $transaction->amount,
+                'bank_name' => data_get($transaction->metadata, 'bank_name'),
+                'rib_number' => data_get($transaction->metadata, 'rib_number'),
+                'rejection_reason' => data_get($transaction->metadata, 'rejection_reason'),
+                'processed_at' => now(),
             ],
         ]);
     }

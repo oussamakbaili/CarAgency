@@ -159,7 +159,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900">{{ $car->agency->agency_name }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900">{{ number_format($car->price_per_day, 0) }} MAD</td>
+                                <td class="px-6 py-4 text-sm text-gray-900">{{ number_format($car->client_price_per_day, 0) }} MAD</td>
                                 <td class="px-6 py-4">
                                     <input type="number" 
                                            value="{{ $car->homepage_priority }}" 

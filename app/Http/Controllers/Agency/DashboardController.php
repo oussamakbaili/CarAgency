@@ -62,11 +62,12 @@ class DashboardController extends Controller
         $cacheKey = "agency.{$agency->id}.business_overview";
         
         return Cache::remember($cacheKey, 300, function() use ($agency) {
-            // Fleet Statistics
-            $totalCars = Car::where('agency_id', $agency->id)->sum('stock_quantity');
+            // Fleet Statistics - Use count() to get actual number of vehicles, not stock quantity
+            $totalCars = Car::where('agency_id', $agency->id)->count();
             $availableCars = Car::where('agency_id', $agency->id)
+                ->where('status', 'available')
                 ->where('available_stock', '>', 0)
-                ->sum('available_stock');
+                ->count();
             $carsInMaintenance = Car::where('agency_id', $agency->id)
                 ->where('status', 'maintenance')
                 ->count();
@@ -79,20 +80,22 @@ class DashboardController extends Controller
             ->where('rentals.status', 'pending')
             ->count();
         
-        // Revenue Statistics
+        // Revenue Statistics - Only count completed and active rentals with actual payments
         $monthlyRevenue = Rental::forAgency($agency->id)
             ->whereIn('rentals.status', ['active', 'completed'])
             ->whereMonth('rentals.created_at', Carbon::now()->month)
+            ->whereYear('rentals.created_at', Carbon::now()->year)
             ->sum('rentals.total_price');
         
         $previousMonthRevenue = Rental::forAgency($agency->id)
             ->whereIn('rentals.status', ['active', 'completed'])
             ->whereMonth('rentals.created_at', Carbon::now()->subMonth()->month)
+            ->whereYear('rentals.created_at', Carbon::now()->subMonth()->year)
             ->sum('rentals.total_price');
         
         $revenueGrowth = $previousMonthRevenue > 0 
             ? (($monthlyRevenue - $previousMonthRevenue) / $previousMonthRevenue) * 100 
-            : 0;
+            : ($monthlyRevenue > 0 ? 100 : 0);
         
         // Performance Metrics
         $totalBookings = Rental::forAgency($agency->id)->count();
@@ -279,6 +282,7 @@ class DashboardController extends Controller
                 ->where('rentals.status', 'pending')
                 ->count(),
             'availableCarsCount' => Car::where('cars.agency_id', $agency->id)
+                ->where('cars.status', 'available')
                 ->where('cars.available_stock', '>', 0)
                 ->count(),
             'maintenanceAlerts' => Car::where('cars.agency_id', $agency->id)

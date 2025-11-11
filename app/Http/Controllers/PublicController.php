@@ -314,6 +314,26 @@ class PublicController extends Controller
     }
 
     /**
+     * Show Wishlists page
+     */
+    public function wishlists()
+    {
+        if (auth()->check() && auth()->user()->isClient()) {
+            $wishlists = auth()->user()->wishlists()
+                ->withCount('items')
+                ->with(['items' => function($query) {
+                    $query->with(['car' => function($q) {
+                        $q->with('agency');
+                    }]);
+                }])
+                ->get();
+            return view('public.wishlists', compact('wishlists'));
+        }
+        
+        return view('public.wishlists');
+    }
+
+    /**
      * Redirect to login when trying to book without authentication
      */
     public function requireLogin(Request $request)

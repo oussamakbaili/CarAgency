@@ -6,46 +6,46 @@
     <!-- Hero Section - Parallax Effect -->
     <div class="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" style="min-height: 100vh;">
         <!-- Content Overlay -->
-        <div class="relative z-10 min-h-screen flex items-center justify-center text-center">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-20">
-                <div class="space-y-8" id="hero-content">
+        <div class="relative z-10 min-h-screen flex items-start md:items-center justify-center text-center">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-16 pb-12 sm:pt-20 sm:pb-20 md:py-12">
+                <div class="space-y-6 sm:space-y-8" id="hero-content">
                     <div class="text-center">
-                        <h1 class="text-5xl md:text-7xl font-bold text-white leading-tight mb-6 hero-title">
+                        <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-4 sm:mb-6 hero-title">
                             {{ $agency->user->name }}
                             <span class="block text-orange-500">
                                 Agence Premium
                             </span>
                         </h1>
                         
-                        <p class="text-xl text-gray-300 leading-relaxed hero-subtitle">
+                        <p class="text-base sm:text-lg md:text-xl text-gray-300 leading-relaxed hero-subtitle">
                             Découvrez notre large gamme de véhicules disponibles dans cette agence. Simple, rapide et sécurisé.
                         </p>
                     </div>
                 
                     <!-- Search Form - Airbnb Style -->
-                    <div class="bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border border-gray-200 p-2 hero-search">
-                        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+                    <div class="bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border border-gray-200 p-1.5 sm:p-2 hero-search">
+                        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-1.5 sm:gap-2">
                             <!-- Where -->
-                            <div class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-l-full transition-colors" onclick="openSearchModal('where')">
-                                <label class="block text-xs font-semibold text-gray-900 mb-1">Where</label>
-                                <div class="text-sm text-gray-600" id="whereDisplay">{{ $agency->city ?? 'Search destinations' }}</div>
+                            <div class="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-l-full transition-colors" onclick="openSearchModal('where')">
+                                <label class="block text-xs font-semibold text-gray-900 mb-0.5 sm:mb-1">Where</label>
+                                <div class="text-xs sm:text-sm text-gray-600" id="whereDisplay">{{ $agency->city ?? 'Search destinations' }}</div>
                             </div>
                             
                             <!-- Check in -->
-                            <div class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkin')">
-                                <label class="block text-xs font-semibold text-gray-900 mb-1">Check in</label>
-                                <div class="text-sm text-gray-400" id="checkInDisplay">Add dates</div>
+                            <div class="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkin')">
+                                <label class="block text-xs font-semibold text-gray-900 mb-0.5 sm:mb-1">Check in</label>
+                                <div class="text-xs sm:text-sm text-gray-400" id="checkInDisplay">Add dates</div>
                             </div>
                             
                             <!-- Check out -->
-                            <div class="flex-1 px-6 py-3 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkout')">
-                                <label class="block text-xs font-semibold text-gray-900 mb-1">Check out</label>
-                                <div class="text-sm text-gray-400" id="checkOutDisplay">Add dates</div>
+                            <div class="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkout')">
+                                <label class="block text-xs font-semibold text-gray-900 mb-0.5 sm:mb-1">Check out</label>
+                                <div class="text-xs sm:text-sm text-gray-400" id="checkOutDisplay">Add dates</div>
                             </div>
                             
                             <!-- Search Button -->
-                            <button type="button" onclick="performSearch()" class="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-full font-semibold flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button type="button" onclick="performSearch()" class="bg-orange-600 hover:bg-orange-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-semibold text-sm sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 transition-all duration-200 shadow-lg hover:shadow-xl">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                                 <span class="hidden md:inline">Search</span>
@@ -57,10 +57,10 @@
         </div>
         
         <!-- Scroll Indicator -->
-        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20" id="scroll-indicator">
-            <div class="flex flex-col items-center gap-2 text-white animate-bounce">
-                <span class="text-sm font-medium">Scroll to explore</span>
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="absolute bottom-6 sm:bottom-10 left-1/2 transform -translate-x-1/2 z-20" id="scroll-indicator">
+            <div class="flex flex-col items-center gap-1 sm:gap-2 text-white animate-bounce">
+                <span class="text-xs sm:text-sm font-medium">Scroll to explore</span>
+                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                 </svg>
             </div>
@@ -68,14 +68,14 @@
     </div>
 
     <!-- Top Picks for this month -->
-    <div id="top-picks" class="py-16 bg-white reveal-section">
+    <div id="top-picks" class="py-10 sm:py-16 bg-white reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Véhicules Populaires</h2>
-                <p class="text-lg text-gray-600">Nos voitures les plus demandées de cette agence</p>
+            <div class="mb-6 sm:mb-8 md:mb-12">
+                <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 sm:mb-3">Véhicules Populaires</h2>
+                <p class="text-sm sm:text-base md:text-lg text-gray-600">Nos voitures les plus demandées de cette agence</p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 @forelse($cars->take(4) as $car)
                     <div onclick="window.location='{{ route('public.car.show', [$agency, $car]) }}'" class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
                         <!-- Car Image -->
@@ -137,7 +137,7 @@
                             <!-- Price & CTA -->
                             <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                                 <div>
-                                    <div class="text-2xl font-bold text-gray-900">{{ number_format($car->price_per_day, 0) }} MAD</div>
+                                    <div class="text-2xl font-bold text-gray-900">{{ number_format($car->client_price_per_day, 0) }} MAD</div>
                                     <div class="text-sm text-gray-500">par jour</div>
                         </div>
                                 <a href="{{ route('booking.main', $car) }}" 
@@ -157,24 +157,24 @@
                 </div>
                                             </div>
     <!-- Join Us Banner -->
-    <div class="bg-orange-600 py-16 reveal-section">
+    <div class="bg-orange-600 py-10 sm:py-16 reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
                 Prêt à Réserver?
             </h2>
-            <p class="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+            <p class="text-sm sm:text-lg text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto">
                 Choisissez votre véhicule parfait et réservez en quelques clics
             </p>
-            <div class="flex flex-wrap justify-center gap-4">
+            <div class="flex flex-wrap justify-center gap-3 sm:gap-4">
                 <a href="#top-picks" 
-                   class="inline-flex items-center gap-2 bg-white hover:bg-gray-100 text-orange-600 px-8 py-3 rounded-lg font-semibold transition-colors">
+                   class="inline-flex items-center gap-1.5 sm:gap-2 bg-white hover:bg-gray-100 text-orange-600 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base">
                     Voir les Voitures
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                                                         </svg>
                 </a>
                 <a href="{{ route('public.agencies') }}" 
-                   class="inline-flex items-center gap-2 bg-transparent border-2 border-white hover:bg-white hover:text-orange-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+                   class="inline-flex items-center gap-1.5 sm:gap-2 bg-transparent border-2 border-white hover:bg-white hover:text-orange-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base">
                     Autres Agences
                 </a>
                                                 </div>
@@ -264,7 +264,7 @@
                             <!-- Price & CTA -->
                             <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                                 <div>
-                                    <div class="text-2xl font-bold text-gray-900">{{ number_format($car->price_per_day, 0) }} MAD</div>
+                                    <div class="text-2xl font-bold text-gray-900">{{ number_format($car->client_price_per_day, 0) }} MAD</div>
                                     <div class="text-sm text-gray-500">par jour</div>
                         </div>
                                 <a href="{{ route('booking.main', $car) }}" 

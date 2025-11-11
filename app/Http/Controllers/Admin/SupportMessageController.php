@@ -19,7 +19,10 @@ class SupportMessageController extends Controller
     public function getMessages($ticketId)
     {
         $ticket = SupportTicket::findOrFail($ticketId);
-        $messages = $ticket->messages()->with(['sender', 'recipient'])->get();
+        $messages = $ticket->messages()
+            ->with(['sender', 'recipient'])
+            ->orderBy('created_at', 'asc')
+            ->get();
 
         return response()->json([
             'success' => true,

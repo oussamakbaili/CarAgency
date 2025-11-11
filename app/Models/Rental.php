@@ -61,6 +61,16 @@ class Rental extends Model
         return $this->hasMany(Transaction::class);
     }
 
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class)->latestOfMany();
+    }
+
     public function messages()
     {
         return $this->hasMany(Message::class)->orderBy('created_at', 'asc');

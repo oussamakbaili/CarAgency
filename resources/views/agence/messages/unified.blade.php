@@ -180,7 +180,7 @@
             </div>
 
             <!-- Chat Interface (Hidden by default) -->
-            <div id="chat-interface" class="flex-1 flex flex-col hidden">
+            <div id="chat-interface" class="flex-1 flex flex-col hidden" style="min-height: 0; max-height: 100vh; overflow: hidden;">
                 <!-- Chat Header -->
                 <div id="chat-header" class="p-4 border-b border-gray-200 bg-gray-50">
                     <div class="flex items-center space-x-3">
@@ -206,22 +206,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
                             </button>
-                            <button class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                </svg>
-                            </button>
-                            <button class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                                </svg>
-                            </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Messages Area -->
-                <div id="messages-container" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+                <div id="messages-container" class="flex-1 overflow-y-auto p-4 bg-gray-50" style="max-height: calc(100vh - 300px); min-height: 0;">
                     <!-- Messages will be loaded here -->
                     <div class="text-center text-gray-500 mt-8">
                         <p>Chargement des messages...</p>
@@ -230,18 +220,41 @@
 
                 <!-- Message Input -->
                 <div class="p-4 border-t border-gray-200 bg-white">
+                    <!-- Keyboard Language Selector -->
+                    <div class="flex items-center justify-end mb-2 space-x-2">
+                        <span class="text-xs text-gray-500">Clavier:</span>
+                        <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+                            <button id="keyboard-fr" data-keyboard="fr" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors bg-white text-gray-700 shadow-sm" title="Français">
+                                FR
+                            </button>
+                            <button id="keyboard-ar" data-keyboard="ar" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors text-gray-500 hover:bg-gray-200" title="العربية">
+                                AR
+                            </button>
+                            <button id="keyboard-en" data-keyboard="en" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors text-gray-500 hover:bg-gray-200" title="English">
+                                EN
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Preview des fichiers sélectionnés -->
+                    <div id="file-preview-container" class="hidden flex flex-wrap gap-2 mb-2 px-4"></div>
+                    
                     <div class="flex items-center space-x-3">
-                        <button class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors">
+                        <!-- File Input (caché) -->
+                        <input type="file" id="file-input" class="hidden" accept="image/*,application/pdf,.doc,.docx,.txt" multiple>
+                        
+                        <!-- Attachment Button -->
+                        <button type="button" id="attach-file-btn" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors" title="Joindre un fichier">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
                             </svg>
                         </button>
+                        
                         <div class="flex-1">
                             <textarea id="message-input" placeholder="Tapez votre message..." 
                                       class="w-full px-4 py-2 border border-gray-300 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                      rows="1"></textarea>
+                                      rows="1" dir="ltr"></textarea>
                         </div>
-                        <button onclick="sendMessage()" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors">
+                        <button type="button" id="send-message-btn" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                             </svg>
@@ -299,6 +312,9 @@ function selectConversation(type, id, conversationData) {
         
         console.log('Parsed conversation data:', selectedConversationData);
         
+        // Effacer les fichiers sélectionnés quand on change de conversation
+        clearSelectedFiles();
+        
         // Update UI to show selected conversation
         document.querySelectorAll('.bg-orange-50').forEach(el => {
             el.classList.remove('bg-orange-50', 'border-r-orange-500');
@@ -313,6 +329,68 @@ function selectConversation(type, id, conversationData) {
         // Show chat interface and hide welcome screen
         document.getElementById('welcome-screen').classList.add('hidden');
         document.getElementById('chat-interface').classList.remove('hidden');
+        
+            // Initialiser le clavier après l'affichage du chat
+            setTimeout(function() {
+                // Réattacher les event listeners au cas où ils ne seraient pas attachés
+                document.querySelectorAll('.keyboard-btn').forEach(btn => {
+                    // Retirer les anciens listeners pour éviter les doublons
+                    const newBtn = btn.cloneNode(true);
+                    btn.parentNode.replaceChild(newBtn, btn);
+                    
+                    // Attacher le nouveau listener
+                    newBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const lang = this.getAttribute('data-keyboard');
+                        if (lang) {
+                            window.changeKeyboard(lang);
+                        }
+                    });
+                });
+                
+                // Initialiser la gestion des fichiers (ne sera initialisé qu'une seule fois)
+                initFileUpload();
+                
+                // S'assurer que le bouton d'envoi fonctionne correctement
+                const sendButton = document.getElementById('send-message-btn');
+                if (sendButton) {
+                    // Retirer l'ancien listener en clonant le bouton
+                    const newSendBtn = sendButton.cloneNode(true);
+                    sendButton.parentNode.replaceChild(newSendBtn, sendButton);
+                    
+                    // Ajouter un seul event listener (sans onclick dans le HTML)
+                    newSendBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔘 Bouton d\'envoi cliqué');
+                        if (typeof window.sendMessage === 'function') {
+                            window.sendMessage();
+                        } else {
+                            console.error('❌ La fonction sendMessage n\'est pas disponible');
+                        }
+                    });
+                }
+                
+                // Permettre l'envoi avec la touche Enter dans le champ de message
+                const messageInput = document.getElementById('message-input');
+                if (messageInput) {
+                    // Retirer les anciens listeners en clonant l'input
+                    const newMessageInput = messageInput.cloneNode(true);
+                    messageInput.parentNode.replaceChild(newMessageInput, messageInput);
+                    
+                    newMessageInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            if (typeof window.sendMessage === 'function') {
+                                window.sendMessage();
+                            }
+                        }
+                    });
+                }
+                
+                // Initialiser avec la langue sauvegardée
+                initKeyboard();
+            }, 150);
         
         // Load conversation data
         loadConversationData(selectedConversationData, type);
@@ -422,7 +500,14 @@ function displayRentalMessages(messages) {
         return;
     }
     
-    messages.forEach(message => {
+    // Trier les messages par date croissante (anciens en premier, nouveaux en bas)
+    const sortedMessages = [...messages].sort((a, b) => {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        return dateA - dateB; // Croissant : anciens en premier, nouveaux en bas
+    });
+    
+    sortedMessages.forEach(message => {
         const isFromAgency = message.sender_type === 'agency';
         const messageAlignment = isFromAgency ? 'justify-end' : 'justify-start';
         const messageBgColor = isFromAgency ? 'bg-orange-600 text-white' : 'bg-white border border-gray-200 text-gray-900';
@@ -430,20 +515,51 @@ function displayRentalMessages(messages) {
         
         const messageDiv = document.createElement('div');
         messageDiv.className = `flex ${messageAlignment} mb-4`;
+        
+        // Gérer les pièces jointes
+        let attachmentsHtml = '';
+        if (message.attachments && message.attachments.length > 0) {
+            attachmentsHtml = '<div class="mt-2 space-y-2">';
+            message.attachments.forEach(attachment => {
+                const isImage = attachment.type && attachment.type.startsWith('image/');
+                if (isImage) {
+                    attachmentsHtml += `
+                        <div class="rounded-lg overflow-hidden">
+                            <img src="${attachment.url}" alt="${attachment.name}" class="max-w-full h-auto rounded-lg cursor-pointer" onclick="window.open('${attachment.url}', '_blank')">
+                        </div>
+                    `;
+                } else {
+                    attachmentsHtml += `
+                        <a href="${attachment.url}" target="_blank" class="flex items-center gap-2 p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium truncate">${escapeHtml(attachment.name)}</p>
+                                <p class="text-xs text-gray-500">${formatFileSize(attachment.size || 0)}</p>
+                            </div>
+                        </a>
+                    `;
+                }
+            });
+            attachmentsHtml += '</div>';
+        }
+        
         messageDiv.innerHTML = `
-            <div class="${messageBgColor} px-4 py-2 rounded-lg max-w-xs">
+            <div class="${messageBgColor} px-4 py-2 rounded-lg max-w-xs lg:max-w-md">
                 <div class="flex items-center mb-1">
                     <span class="text-xs font-medium ${isFromAgency ? 'text-orange-100' : 'text-gray-600'}">${senderLabel}</span>
                     <span class="ml-2 text-xs ${isFromAgency ? 'text-orange-200' : 'text-gray-500'}">${new Date(message.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
                 </div>
-                <p class="text-sm whitespace-pre-wrap">${escapeHtml(message.message)}</p>
+                ${message.message ? `<p class="text-sm whitespace-pre-wrap">${escapeHtml(message.message)}</p>` : ''}
+                ${attachmentsHtml}
             </div>
         `;
         
         messagesContainer.appendChild(messageDiv);
     });
     
-    // Scroll to bottom
+    // Scroll en bas (les nouveaux messages sont en bas)
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
@@ -508,7 +624,14 @@ function displaySupportMessages(messages) {
         return;
     }
     
-    messages.forEach(message => {
+    // Trier les messages par date croissante (anciens en premier, nouveaux en bas)
+    const sortedMessages = [...messages].sort((a, b) => {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        return dateA - dateB; // Croissant : anciens en premier, nouveaux en bas
+    });
+    
+    sortedMessages.forEach(message => {
         const isFromAgency = message.sender_type === 'App\\Models\\Agency';
         const messageAlignment = isFromAgency ? 'justify-end' : 'justify-start';
         const messageBgColor = isFromAgency ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-900';
@@ -529,38 +652,313 @@ function displaySupportMessages(messages) {
         messagesContainer.appendChild(messageDiv);
     });
     
-    // Scroll to bottom
+    // Scroll en bas (les nouveaux messages sont en bas)
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-async function sendMessage() {
-    const messageInput = document.getElementById('message-input');
-    const message = messageInput.value.trim();
+// Variables pour gérer les fichiers (globales pour être accessibles partout)
+window.selectedFiles = window.selectedFiles || [];
+let fileUploadInitialized = false;
+let fileInputHandler = null;
+let attachBtnHandler = null;
+let isSending = false; // Flag pour éviter les doubles envois
+
+// Initialiser la gestion des fichiers (une seule fois)
+function initFileUpload() {
+    const fileInput = document.getElementById('file-input');
+    const attachBtn = document.getElementById('attach-file-btn');
     
-    if (message && selectedConversationData) {
-        // Determine conversation type
-        const conversationType = selectedConversationId.split('_')[0];
+    if (!fileInput || !attachBtn) return;
+    
+    // Si déjà initialisé, ne pas réinitialiser
+    if (fileUploadInitialized) {
+        return;
+    }
+    
+    // Supprimer les anciens listeners s'ils existent
+    if (attachBtnHandler) {
+        attachBtn.removeEventListener('click', attachBtnHandler);
+    }
+    if (fileInputHandler) {
+        fileInput.removeEventListener('change', fileInputHandler);
+    }
+    
+    // Créer les nouveaux handlers
+    attachBtnHandler = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        fileInput.click();
+    };
+    
+    fileInputHandler = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         
-        if (conversationType === 'support') {
-            // Send support message
-            await sendSupportMessage(message);
-        } else {
-            // Send rental message (existing logic)
-            await sendRentalMessage(message);
+        const files = Array.from(e.target.files);
+        
+        if (files.length > 0) {
+            // Vérifier la taille des fichiers (max 10MB par fichier)
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            const validFiles = [];
+            const invalidFiles = [];
+            const currentFiles = window.selectedFiles || [];
+            
+            files.forEach(file => {
+                // Vérifier si le fichier n'est pas déjà dans la liste (éviter les doublons)
+                const isDuplicate = currentFiles.some(existingFile => 
+                    existingFile.name === file.name && 
+                    existingFile.size === file.size && 
+                    existingFile.lastModified === file.lastModified
+                );
+                
+                if (!isDuplicate) {
+                    if (file.size > maxSize) {
+                        invalidFiles.push(file.name);
+                    } else {
+                        validFiles.push(file);
+                    }
+                }
+            });
+            
+            if (invalidFiles.length > 0) {
+                alert(`Les fichiers suivants sont trop volumineux (max 10MB): ${invalidFiles.join(', ')}`);
+            }
+            
+            if (validFiles.length > 0) {
+                window.selectedFiles = [...currentFiles, ...validFiles];
+                console.log('📎 Fichiers sélectionnés:', window.selectedFiles.map(f => f.name));
+                updateFilePreview();
+            }
         }
         
-        // Clear input
-        messageInput.value = '';
-        messageInput.style.height = 'auto';
+        // Réinitialiser l'input pour permettre de sélectionner le même fichier à nouveau
+        e.target.value = '';
+    };
+    
+    // Attacher les listeners
+    attachBtn.addEventListener('click', attachBtnHandler);
+    fileInput.addEventListener('change', fileInputHandler);
+    
+    fileUploadInitialized = true;
+}
+
+// Mettre à jour l'aperçu des fichiers
+function updateFilePreview() {
+    const filePreviewContainer = document.getElementById('file-preview-container');
+    if (!filePreviewContainer) return;
+    
+    const files = window.selectedFiles || [];
+    if (files.length === 0) {
+        filePreviewContainer.classList.add('hidden');
+        filePreviewContainer.innerHTML = '';
+        return;
+    }
+    
+    filePreviewContainer.classList.remove('hidden');
+    filePreviewContainer.innerHTML = '';
+    
+    files.forEach((file, index) => {
+        const fileDiv = document.createElement('div');
+        fileDiv.className = 'flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2 text-sm';
+        fileDiv.setAttribute('data-file-index', index);
+        
+        const isImage = file.type.startsWith('image/');
+        const fileIcon = isImage 
+            ? '<svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>'
+            : '<svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>';
+        
+        fileDiv.innerHTML = `
+            ${fileIcon}
+            <span class="flex-1 truncate max-w-xs">${escapeHtml(file.name)}</span>
+            <span class="text-xs text-gray-500">${formatFileSize(file.size)}</span>
+            <button type="button" class="remove-file-btn ml-2 text-red-500 hover:text-red-700" data-file-index="${index}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        `;
+        
+        // Attacher l'événement de suppression
+        const removeBtn = fileDiv.querySelector('.remove-file-btn');
+        removeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const fileIndex = parseInt(this.getAttribute('data-file-index'));
+            removeFile(fileIndex);
+        });
+        
+        filePreviewContainer.appendChild(fileDiv);
+    });
+}
+
+// Formater la taille du fichier
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+// Supprimer un fichier de la sélection (fonction globale)
+window.removeFile = function(index) {
+    const files = window.selectedFiles || [];
+    if (index >= 0 && index < files.length) {
+        window.selectedFiles.splice(index, 1);
+        updateFilePreview();
+        
+        // Réinitialiser l'input file si plus de fichiers
+        if (window.selectedFiles.length === 0) {
+            const fileInput = document.getElementById('file-input');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+        }
+    }
+};
+
+// Fonction pour effacer tous les fichiers sélectionnés
+function clearSelectedFiles() {
+    window.selectedFiles = [];
+    updateFilePreview();
+    const fileInput = document.getElementById('file-input');
+    if (fileInput) {
+        fileInput.value = '';
     }
 }
 
+// Fonction globale pour envoyer un message
+window.sendMessage = async function sendMessage() {
+    // Empêcher les doubles envois
+    if (isSending) {
+        console.log('⏳ Un envoi est déjà en cours, ignore...');
+        return;
+    }
+    
+    isSending = true;
+    
+    try {
+        const messageInput = document.getElementById('message-input');
+        const message = messageInput ? messageInput.value.trim() : '';
+        
+        // Vérifier qu'il y a au moins un message ou un fichier
+        const hasMessage = message && message.length > 0;
+        const files = window.selectedFiles || [];
+        const hasFiles = Array.isArray(files) && files.length > 0;
+        
+        console.log('📤 Tentative d\'envoi:', { 
+            hasMessage, 
+            hasFiles, 
+            filesCount: files.length, 
+            selectedConversationData: !!selectedConversationData,
+            files: files.map(f => f.name)
+        });
+        
+        if ((!hasMessage && !hasFiles) || !selectedConversationData) {
+            console.log('❌ Envoi bloqué: pas de message ni de fichier, ou pas de conversation sélectionnée');
+            if (!hasMessage && !hasFiles) {
+                alert('Veuillez saisir un message ou sélectionner un fichier');
+            }
+            return;
+        }
+        
+        // Vérifier si le message contient un numéro de téléphone (seulement si il y a un message)
+        if (hasMessage) {
+            const phoneNumber = detectPhoneNumber(message);
+            if (phoneNumber) {
+                // Bloquer l'envoi et afficher une alerte d'erreur
+                showPhoneNumberAlert(phoneNumber, true);
+                // Mettre le focus sur le champ de saisie
+                if (messageInput) {
+                    messageInput.focus();
+                    messageInput.select();
+                }
+                return;
+            }
+        }
+        
+        // Sauvegarder les fichiers avant l'envoi (au cas où ils seraient effacés)
+        const filesToSend = hasFiles ? [...files] : [];
+        
+        console.log('✅ Envoi autorisé:', { message: hasMessage ? 'Oui' : 'Non', files: filesToSend.length });
+        
+        // Determine conversation type
+        const conversationType = selectedConversationId ? selectedConversationId.split('_')[0] : null;
+        
+        if (!conversationType) {
+            console.error('❌ Type de conversation non trouvé');
+            alert('Erreur: Type de conversation non trouvé');
+            return;
+        }
+        
+        let sendSuccess = false;
+        
+        if (conversationType === 'support') {
+            // Send support message
+            sendSuccess = await sendSupportMessage(message || '', filesToSend);
+        } else {
+            // Send rental message (existing logic)
+            sendSuccess = await sendRentalMessage(message || '', filesToSend);
+        }
+        
+        // Clear input and files seulement si l'envoi a réussi
+        if (sendSuccess) {
+            if (messageInput) {
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+            }
+            window.selectedFiles = [];
+            updateFilePreview();
+            
+            // Réinitialiser l'input file
+            const fileInput = document.getElementById('file-input');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+        }
+    } finally {
+        // Réinitialiser le flag après un court délai
+        setTimeout(() => {
+            isSending = false;
+        }, 1000);
+    }
+};
+
 // Send message to support ticket
-async function sendSupportMessage(message) {
+async function sendSupportMessage(message, filesToSend = null) {
     try {
         const ticketId = selectedConversationData.id;
         
-        const response = await fetch(`/agence/support/messages/${ticketId}/send`, {
+        // Pour le support, on utilise FormData si on a des fichiers, sinon JSON
+        const files = filesToSend || (window.selectedFiles || []);
+        let response;
+        
+        if (files && files.length > 0) {
+            // Utiliser FormData pour les fichiers
+            const formData = new FormData();
+            formData.append('message', message || '');
+            
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (csrfToken) {
+                formData.append('_token', csrfToken.getAttribute('content'));
+            }
+            
+            files.forEach((file, index) => {
+                if (file instanceof File) {
+                    formData.append(`attachments[${index}]`, file);
+                }
+            });
+            
+            response = await fetch(`/agence/support/messages/${ticketId}/send`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+        } else {
+            // Utiliser JSON si pas de fichiers
+            response = await fetch(`/agence/support/messages/${ticketId}/send`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -570,53 +968,111 @@ async function sendSupportMessage(message) {
                 message: message
             })
         });
+        }
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Erreur HTTP:', response.status, errorText);
+            alert(`Erreur ${response.status}: ${errorText || 'Erreur lors de l\'envoi du message'}`);
+            return false;
+        }
         
         const data = await response.json();
         
         if (data.success) {
             // Reload support messages
             await loadSupportMessages(selectedConversationData);
+            return true;
         } else {
-            alert('Erreur lors de l\'envoi du message');
+            alert(data.message || 'Erreur lors de l\'envoi du message');
+            return false;
         }
     } catch (error) {
-        console.error('Error sending support message:', error);
-        alert('Erreur lors de l\'envoi du message');
+        console.error('❌ Erreur lors de l\'envoi du message support:', error);
+        alert('Erreur lors de l\'envoi du message: ' + error.message);
+        return false;
     }
 }
 
 // Send message to rental conversation
-async function sendRentalMessage(message) {
+async function sendRentalMessage(message, filesToSend = null) {
     try {
+        // Utiliser les fichiers passés en paramètre ou ceux dans window.selectedFiles
+        const files = filesToSend || (window.selectedFiles || []);
+        
         const rentalId = selectedConversationData.id || selectedConversationData.original?.id;
         
         if (!rentalId) {
             alert('Impossible d\'envoyer le message. ID de réservation manquant.');
-            return;
+            return false;
+        }
+        
+        // Préparer FormData pour l'envoi avec fichiers
+        const formData = new FormData();
+        formData.append('message', message || '');
+        
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            formData.append('_token', csrfToken.getAttribute('content'));
+        }
+        
+        // Ajouter les fichiers
+        if (files && files.length > 0) {
+            console.log(`📎 Préparation de ${files.length} fichier(s) pour l'envoi:`, files.map(f => ({name: f.name, size: f.size, type: f.type})));
+            
+            // Vérifier que tous les fichiers sont valides
+            const validFiles = files.filter(file => file instanceof File);
+            if (validFiles.length !== files.length) {
+                console.error('❌ Certains fichiers ne sont pas valides');
+                alert('Erreur: Certains fichiers ne sont pas valides');
+                return false;
+            }
+            
+            // Ajouter chaque fichier au FormData
+            validFiles.forEach((file, index) => {
+                formData.append(`attachments[${index}]`, file);
+                console.log(`✅ Fichier ${index + 1}/${validFiles.length} ajouté:`, file.name, `(${file.size} bytes)`);
+            });
+            
+            // Vérifier le contenu du FormData (pour debug)
+            console.log('📦 FormData préparé avec', validFiles.length, 'fichier(s)');
+        } else {
+            console.log('ℹ️ Aucun fichier à envoyer');
         }
         
         const response = await fetch(`/agence/messages/${rentalId}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-Requested-With': 'XMLHttpRequest'
+                // Ne pas mettre Content-Type pour FormData, le navigateur le fait automatiquement
             },
-            body: JSON.stringify({
-                message: message
-            })
+            body: formData
         });
+        
+        // Vérifier si la réponse est OK
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Erreur HTTP:', response.status, errorText);
+            alert(`Erreur ${response.status}: ${errorText || 'Erreur lors de l\'envoi du message'}`);
+            return false;
+        }
         
         const data = await response.json();
         
         if (data.success) {
+            console.log('✅ Message envoyé avec succès');
             // Reload messages to show the new one
             await loadMessages(selectedConversationData);
+            return true;
         } else {
-            alert('Erreur lors de l\'envoi du message');
+            console.error('❌ Erreur du serveur:', data);
+            alert(data.message || 'Erreur lors de l\'envoi du message');
+            return false;
         }
     } catch (error) {
-        console.error('Error sending rental message:', error);
-        alert('Erreur lors de l\'envoi du message');
+        console.error('❌ Erreur lors de l\'envoi du message:', error);
+        alert('Erreur lors de l\'envoi du message: ' + error.message);
+        return false;
     }
 }
 
@@ -673,13 +1129,325 @@ function filterConversations(filterType) {
     }
 }
 
+// Fonction pour convertir les chiffres arabes en chiffres latins
+function convertArabicDigitsToLatin(text) {
+    const arabicToLatin = {
+        '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+        '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+    };
+    
+    return text.split('').map(char => {
+        return arabicToLatin[char] || char;
+    }).join('');
+}
+
+// Fonction pour convertir les lettres en chiffres selon le clavier T9
+function convertT9ToDigits(text) {
+    const t9Map = {
+        'a': '2', 'b': '2', 'c': '2',
+        'd': '3', 'e': '3', 'f': '3',
+        'g': '4', 'h': '4', 'i': '4',
+        'j': '5', 'k': '5', 'l': '5',
+        'm': '6', 'n': '6', 'o': '6',
+        'p': '7', 'q': '7', 'r': '7', 's': '7',
+        't': '8', 'u': '8', 'v': '8',
+        'w': '9', 'x': '9', 'y': '9', 'z': '9'
+    };
+    
+    return text.toLowerCase().split('').map(char => {
+        return t9Map[char] || char;
+    }).join('');
+}
+
+// Fonction pour normaliser un texte (convertir lettres en chiffres T9 et garder chiffres)
+function normalizePhoneText(text) {
+    // D'abord convertir les chiffres arabes en chiffres latins
+    let normalized = convertArabicDigitsToLatin(text);
+    // Ensuite convertir les lettres en chiffres T9
+    normalized = convertT9ToDigits(normalized);
+    // Garder seulement les chiffres et le signe +
+    return normalized.replace(/[^\d+]/g, '');
+}
+
+// Fonction pour extraire les séquences qui pourraient être des numéros
+function extractPhoneSequences(text) {
+    const sequences = [];
+    
+    // Normaliser le texte (convertir lettres en chiffres T9)
+    const normalized = normalizePhoneText(text);
+    
+    // Extraire les séquences de chiffres (8-15 chiffres)
+    const digitSequences = normalized.match(/\d{8,15}/g);
+    if (digitSequences) {
+        sequences.push(...digitSequences);
+    }
+    
+    // Chercher aussi dans le texte original avec lettres mélangées
+    // Pattern: mix de chiffres et lettres (au moins 8 caractères)
+    const mixedPattern = /[0-9a-z]{8,15}/gi;
+    const mixedMatches = text.match(mixedPattern);
+    
+    if (mixedMatches) {
+        mixedMatches.forEach(match => {
+            const normalizedMatch = normalizePhoneText(match);
+            if (normalizedMatch.length >= 8 && normalizedMatch.length <= 15) {
+                sequences.push(normalizedMatch);
+            }
+        });
+    }
+    
+    // Chercher les formats français avec séparateurs variés
+    const frenchPatterns = [
+        /(?:0|\+33|0033)[\s.\-]?[1-9][\s.\-a-z]?[\d\s.\-a-z]{8,}/gi,  // Format français flexible
+        /[0][1-9][\s.\-a-z]?[\d\s.\-a-z]{8,}/gi  // Format 0X avec séparateurs
+    ];
+    
+    frenchPatterns.forEach(pattern => {
+        const matches = text.match(pattern);
+        if (matches) {
+            matches.forEach(match => {
+                const normalizedMatch = normalizePhoneText(match);
+                if (normalizedMatch.length >= 10 && normalizedMatch.length <= 15) {
+                    sequences.push(normalizedMatch);
+                }
+            });
+        }
+    });
+    
+    // Chercher les formats marocains (+212) avec séparateurs variés et chiffres arabes
+    const moroccanPatterns = [
+        /(?:\+212|00212|212)[\s.\-]?[5-7][\s.\-]?[\d\s.\-a-z٠-٩]{8,}/gi,  // Format marocain avec +212
+        /[0][5-7][\s.\-a-z٠-٩]?[\d\s.\-a-z٠-٩]{8,}/gi,  // Format marocain local 05X ou 06X ou 07X
+        /[5-7][\s.\-a-z٠-٩]?[\d\s.\-a-z٠-٩]{8,}/gi  // Format marocain sans indicatif
+    ];
+    
+    moroccanPatterns.forEach(pattern => {
+        const matches = text.match(pattern);
+        if (matches) {
+            matches.forEach(match => {
+                const normalizedMatch = normalizePhoneText(match);
+                // Numéros marocains: 10 chiffres (avec 0) ou 9 chiffres (sans 0) ou 13 chiffres (avec +212)
+                if ((normalizedMatch.length >= 9 && normalizedMatch.length <= 13) || 
+                    (normalizedMatch.startsWith('212') && normalizedMatch.length >= 12)) {
+                    sequences.push(normalizedMatch);
+                }
+            });
+        }
+    });
+    
+    // Chercher aussi les chiffres arabes mélangés
+    const arabicPattern = /[٠-٩0-9\s.\-a-z]{8,15}/gi;
+    const arabicMatches = text.match(arabicPattern);
+    if (arabicMatches) {
+        arabicMatches.forEach(match => {
+            const normalizedMatch = normalizePhoneText(match);
+            if (normalizedMatch.length >= 8 && normalizedMatch.length <= 15) {
+                sequences.push(normalizedMatch);
+            }
+        });
+    }
+    
+    return [...new Set(sequences)]; // Retourner les séquences uniques
+}
+
+// Fonction pour valider si une séquence est un vrai numéro de téléphone
+function isValidPhoneNumber(sequence) {
+    // Un numéro valide doit avoir entre 8 et 15 chiffres
+    if (sequence.length < 8 || sequence.length > 15) {
+        return false;
+    }
+    
+    // Formats français: commence par 0 suivi de 1-9, puis 8 chiffres (total 10)
+    if (sequence.match(/^0[1-9]\d{8}$/)) {
+        return true;
+    }
+    
+    // Formats internationaux français: +33 suivi de 9 chiffres
+    if (sequence.match(/^\+?33[1-9]\d{8}$/)) {
+        return true;
+    }
+    
+    // Formats marocains: +212 suivi de 9 chiffres (commence par 5, 6 ou 7)
+    if (sequence.match(/^\+?212[5-7]\d{8}$/)) {
+        return true;
+    }
+    
+    // Formats marocains locaux: commence par 05, 06 ou 07 suivi de 8 chiffres
+    if (sequence.match(/^0[5-7]\d{8}$/)) {
+        return true;
+    }
+    
+    // Formats marocains sans indicatif: commence par 5, 6 ou 7 suivi de 8 chiffres
+    if (sequence.match(/^[5-7]\d{8}$/)) {
+        return true;
+    }
+    
+    // Formats internationaux: commence par + suivi de 1-3 chiffres (code pays)
+    if (sequence.match(/^\+?\d{1,3}\d{7,14}$/)) {
+        return true;
+    }
+    
+    // Numéros de 8 à 15 chiffres consécutifs (pour détecter les tentatives de contournement)
+    if (sequence.length >= 8 && sequence.length <= 15 && /^\d+$/.test(sequence)) {
+        // Vérifier qu'il ne s'agit pas d'une date ou d'un code postal
+        // Exclure les dates (format YYYYMMDD ou similaire)
+        if (sequence.length === 8 && sequence.match(/^(19|20)\d{6}$/)) {
+            return false; // Probablement une date
+        }
+        return true;
+    }
+    
+    return false;
+}
+
+// Fonction principale pour détecter les numéros de téléphone (version avancée)
+function detectPhoneNumber(text) {
+    if (!text || typeof text !== 'string') {
+        return null;
+    }
+    
+    // Extraire toutes les séquences potentielles
+    const sequences = extractPhoneSequences(text);
+    
+    // Valider chaque séquence
+    for (const sequence of sequences) {
+        if (isValidPhoneNumber(sequence)) {
+            // Retrouver la séquence originale dans le texte pour l'afficher
+            const originalMatch = findOriginalMatch(text, sequence);
+            return originalMatch || sequence;
+        }
+    }
+    
+    return null;
+}
+
+// Fonction pour retrouver la correspondance originale dans le texte
+function findOriginalMatch(text, normalizedSequence) {
+    // Chercher le pattern original qui correspond à la séquence normalisée
+    const patterns = [
+        // Pattern avec lettres mélangées (ex: 06aa22aa25)
+        /[0-9a-z\s.\-]{8,20}/gi,
+        // Pattern français standard
+        /(?:0|\+33|0033)[\s.\-]?[1-9][\s.\-]?[\d\s.\-]{8,}/gi,
+        // Pattern marocain standard
+        /(?:\+212|00212|212|0[5-7])[\s.\-]?[\d\s.\-a-z٠-٩]{8,}/gi,
+        // Pattern avec chiffres arabes
+        /[٠-٩0-9\s.\-a-z]{8,20}/gi,
+        // Pattern avec séparateurs variés
+        /[0-9][\s.\-a-z]?[0-9a-z\s.\-]{7,}/gi
+    ];
+    
+    for (const pattern of patterns) {
+        const matches = text.match(pattern);
+        if (matches) {
+            for (const match of matches) {
+                const normalized = normalizePhoneText(match);
+                if (normalized === normalizedSequence || 
+                    normalized.includes(normalizedSequence) || 
+                    normalizedSequence.includes(normalized)) {
+                    return match.trim();
+                }
+            }
+        }
+    }
+    
+    return normalizedSequence;
+}
+
+// Fonction pour afficher l'alerte de numéro de téléphone
+function showPhoneNumberAlert(phoneNumber, isError = false) {
+    // Vérifier si une alerte existe déjà
+    let alertDiv = document.getElementById('phone-number-alert');
+    
+    // Supprimer l'ancienne alerte si elle existe
+    if (alertDiv) {
+        alertDiv.remove();
+    }
+    
+    // Créer l'élément d'alerte
+    alertDiv = document.createElement('div');
+    alertDiv.id = 'phone-number-alert';
+    
+    if (isError) {
+        // Alerte d'erreur (rouge) pour bloquer l'envoi
+        alertDiv.className = 'fixed top-4 right-4 bg-red-50 border-l-4 border-red-500 p-4 shadow-lg rounded-md z-50 max-w-md';
+        alertDiv.innerHTML = `
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-red-800">
+                        Envoi bloqué - Numéro de téléphone détecté
+                    </p>
+                    <p class="mt-1 text-sm text-red-700">
+                        Le message contient un numéro de téléphone: <strong>${phoneNumber}</strong><br>
+                        <strong>Pour votre sécurité, les numéros de téléphone ne sont pas autorisés dans les messages.</strong><br>
+                        Veuillez supprimer le numéro de téléphone avant d'envoyer le message.
+                    </p>
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" class="mt-2 text-sm text-red-800 hover:text-red-900 underline font-medium">
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        `;
+    } else {
+        // Alerte d'avertissement (jaune) pour prévenir
+        alertDiv.className = 'fixed top-4 right-4 bg-yellow-50 border-l-4 border-yellow-400 p-4 shadow-lg rounded-md z-50 max-w-md';
+        alertDiv.innerHTML = `
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-yellow-800">
+                        Numéro de téléphone détecté
+                    </p>
+                    <p class="mt-1 text-sm text-yellow-700">
+                        Vous avez saisi un numéro de téléphone: <strong>${phoneNumber}</strong><br>
+                        <strong>Les numéros de téléphone ne sont pas autorisés dans les messages.</strong><br>
+                        Le message ne pourra pas être envoyé tant que le numéro est présent.
+                    </p>
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" class="mt-2 text-sm text-yellow-800 hover:text-yellow-900 underline">
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-fermer après 8 secondes pour les erreurs, 10 secondes pour les avertissements
+    setTimeout(() => {
+        if (alertDiv && alertDiv.parentElement) {
+            alertDiv.remove();
+        }
+    }, isError ? 8000 : 10000);
+}
+
 // Auto-resize textarea and apply initial filter
 document.addEventListener('DOMContentLoaded', function() {
     const textarea = document.getElementById('message-input');
     if (textarea) {
+        let lastDetectedPhone = null;
+        
         textarea.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = this.scrollHeight + 'px';
+            
+            // Détecter les numéros de téléphone
+            const text = this.value;
+            const phoneNumber = detectPhoneNumber(text);
+            
+            if (phoneNumber && phoneNumber !== lastDetectedPhone) {
+                lastDetectedPhone = phoneNumber;
+                showPhoneNumberAlert(phoneNumber);
+            }
         });
 
         // Send message on Enter key
@@ -706,6 +1474,136 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && !document.getElementById('chat-interface').classList.contains('hidden')) {
         exitConversation();
     }
+});
+
+// Fonction pour changer le clavier (FR/AR/EN) - Version globale
+let currentKeyboard = 'fr';
+window.changeKeyboard = function(lang) {
+    currentKeyboard = lang;
+    const messageInput = document.getElementById('message-input');
+    
+    if (!messageInput) {
+        console.warn('Message input not found');
+        return;
+    }
+    
+    // Mettre à jour les boutons
+    document.querySelectorAll('.keyboard-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-gray-700', 'shadow-sm');
+        btn.classList.add('text-gray-500', 'hover:bg-gray-200');
+    });
+    
+    const activeBtn = document.getElementById(`keyboard-${lang}`);
+    if (activeBtn) {
+        activeBtn.classList.add('bg-white', 'text-gray-700', 'shadow-sm');
+        activeBtn.classList.remove('text-gray-500', 'hover:bg-gray-200');
+    }
+    
+    // Changer la direction du texte et le placeholder
+    if (lang === 'ar') {
+        messageInput.dir = 'rtl';
+        messageInput.style.textAlign = 'right';
+        messageInput.style.direction = 'rtl';
+        messageInput.placeholder = 'اكتب رسالتك...';
+        messageInput.setAttribute('lang', 'ar');
+        messageInput.setAttribute('inputmode', 'text');
+    } else {
+        messageInput.dir = 'ltr';
+        messageInput.style.textAlign = 'left';
+        messageInput.style.direction = 'ltr';
+        if (lang === 'en') {
+            messageInput.placeholder = 'Type your message...';
+            messageInput.setAttribute('lang', 'en');
+        } else {
+            messageInput.placeholder = 'Tapez votre message...';
+            messageInput.setAttribute('lang', 'fr');
+        }
+        messageInput.setAttribute('inputmode', 'text');
+    }
+    
+    // Sauvegarder la préférence
+    localStorage.setItem('preferredKeyboard', lang);
+    
+    // Mettre le focus sur le champ si visible
+    if (messageInput.offsetParent !== null) {
+        messageInput.focus();
+    }
+};
+
+// Fonction pour initialiser le clavier (appelée quand le champ est disponible)
+function initKeyboard() {
+    const messageInput = document.getElementById('message-input');
+    if (!messageInput) {
+        return;
+    }
+    
+    // Attacher les event listeners aux boutons de clavier
+    document.querySelectorAll('.keyboard-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lang = this.getAttribute('data-keyboard');
+            if (lang) {
+                window.changeKeyboard(lang);
+            }
+        });
+    });
+    
+    // Initialiser avec la langue sauvegardée
+    const savedKeyboard = localStorage.getItem('preferredKeyboard') || 'fr';
+    window.changeKeyboard(savedKeyboard);
+}
+
+// Initialiser le clavier au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    // Attacher les event listeners immédiatement
+    document.querySelectorAll('.keyboard-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lang = this.getAttribute('data-keyboard');
+            if (lang) {
+                window.changeKeyboard(lang);
+            }
+        });
+    });
+    
+    // Initialiser la gestion des fichiers
+    initFileUpload();
+    
+    // S'assurer que le bouton d'envoi fonctionne correctement
+    const sendButton = document.getElementById('send-message-btn');
+    if (sendButton) {
+        // Retirer l'ancien listener en clonant le bouton
+        const newSendBtn = sendButton.cloneNode(true);
+        sendButton.parentNode.replaceChild(newSendBtn, sendButton);
+        
+        // Ajouter un seul event listener (sans onclick dans le HTML)
+        newSendBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔘 Bouton d\'envoi cliqué');
+            if (typeof window.sendMessage === 'function') {
+                window.sendMessage();
+            } else {
+                console.error('❌ La fonction sendMessage n\'est pas disponible');
+            }
+        });
+    }
+    
+    // Permettre l'envoi avec la touche Enter dans le champ de message
+    const messageInput = document.getElementById('message-input');
+    if (messageInput) {
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (typeof window.sendMessage === 'function') {
+                    window.sendMessage();
+                }
+            }
+        });
+    }
+    
+    // Essayer d'initialiser immédiatement
+    setTimeout(initKeyboard, 100);
 });
 </script>
 @endpush

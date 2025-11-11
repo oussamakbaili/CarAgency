@@ -88,13 +88,71 @@
                     </div>
 
                     <div>
-                    <label for="color" class="block text-sm font-medium text-gray-700 mb-2">Couleur</label>
-                    <input type="text" name="color" id="color" value="{{ old('color', $car->color) }}"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    @error('color')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Couleur</label>
+                        <div class="relative">
+                            @php
+                                $colors = [
+                                    'Noir' => '#000000',
+                                    'Blanc' => '#FFFFFF',
+                                    'Gris' => '#808080',
+                                    'Argent' => '#C0C0C0',
+                                    'Bleu' => '#0066CC',
+                                    'Rouge' => '#CC0000',
+                                    'Vert' => '#008000',
+                                    'Marron' => '#8B4513',
+                                    'Beige' => '#F5F5DC',
+                                    'Jaune' => '#FFD700',
+                                    'Orange' => '#FF6600',
+                                ];
+                                $selectedColor = old('color', $car->color ?? '');
+                                $selectedColorHex = $selectedColor && isset($colors[$selectedColor]) ? $colors[$selectedColor] : '';
+                            @endphp
+                            
+                            <!-- Dropdown Button -->
+                            <button type="button" id="color-dropdown-button" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-left flex items-center justify-between hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                <div class="flex items-center space-x-3">
+                                    @if($selectedColor && $selectedColorHex)
+                                        <div class="w-5 h-5 rounded-full border border-gray-300 flex-shrink-0" 
+                                             style="background-color: {{ $selectedColorHex }}; {{ $selectedColor === 'Blanc' || $selectedColor === 'Beige' || $selectedColor === 'Argent' ? 'border-color: #999; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);' : '' }}"></div>
+                                        <span class="text-sm text-gray-700" id="color-selected-label">{{ $selectedColor }}</span>
+                                    @else
+                                        <span class="text-sm text-gray-500">Sélectionner une couleur</span>
+                                    @endif
+                                </div>
+                                <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" id="color-dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            
+                            <!-- Dropdown Menu -->
+                            <div id="color-dropdown-menu" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                                <div class="p-2 space-y-1">
+                                    @foreach($colors as $colorName => $colorHex)
+                                        <label class="flex items-center space-x-3 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                            <input type="radio" name="color" value="{{ $colorName }}" {{ $selectedColor === $colorName ? 'checked' : '' }}
+                                                class="sr-only color-radio">
+                                            <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0" 
+                                                 style="background-color: {{ $colorHex }}; {{ $colorName === 'Blanc' || $colorName === 'Beige' || $colorName === 'Argent' ? 'border-color: #999; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);' : '' }}"></div>
+                                            <span class="text-sm text-gray-700 flex-1">{{ $colorName }}</span>
+                                            @if($selectedColor === $colorName)
+                                                <svg class="w-5 h-5 text-blue-600 check-icon" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                </svg>
+                                            @else
+                                                <svg class="w-5 h-5 text-blue-600 check-icon hidden" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                </svg>
+                                            @endif
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        @error('color')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
             </div>
 
             <div class="mt-6">
@@ -427,6 +485,84 @@ function previewImages(input, previewId) {
         }
     }
 }
+
+// Handle color dropdown
+document.addEventListener('DOMContentLoaded', function() {
+    const dropdownButton = document.getElementById('color-dropdown-button');
+    const dropdownMenu = document.getElementById('color-dropdown-menu');
+    const dropdownArrow = document.getElementById('color-dropdown-arrow');
+    const colorRadios = document.querySelectorAll('input[name="color"]');
+    const selectedLabel = document.getElementById('color-selected-label');
+    const colorButton = dropdownButton.querySelector('.flex.items-center.space-x-3');
+    
+    const colors = {
+        'Noir': '#000000',
+        'Blanc': '#FFFFFF',
+        'Gris': '#808080',
+        'Argent': '#C0C0C0',
+        'Bleu': '#0066CC',
+        'Rouge': '#CC0000',
+        'Vert': '#008000',
+        'Marron': '#8B4513',
+        'Beige': '#F5F5DC',
+        'Jaune': '#FFD700',
+        'Orange': '#FF6600'
+    };
+    
+    // Toggle dropdown
+    dropdownButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !dropdownMenu.classList.contains('hidden');
+        if (isOpen) {
+            dropdownMenu.classList.add('hidden');
+            dropdownArrow.classList.remove('rotate-180');
+        } else {
+            dropdownMenu.classList.remove('hidden');
+            dropdownArrow.classList.add('rotate-180');
+        }
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!dropdownButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
+            dropdownMenu.classList.add('hidden');
+            dropdownArrow.classList.remove('rotate-180');
+        }
+    });
+    
+    // Handle color selection
+    colorRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            const colorName = this.value;
+            const colorHex = colors[colorName];
+            
+            // Update button display
+            if (colorButton) {
+                const isLightColor = colorName === 'Blanc' || colorName === 'Beige' || colorName === 'Argent';
+                colorButton.innerHTML = `
+                    <div class="w-5 h-5 rounded-full border border-gray-300 flex-shrink-0" 
+                         style="background-color: ${colorHex}; ${isLightColor ? 'border-color: #999; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);' : ''}"></div>
+                    <span class="text-sm text-gray-700">${colorName}</span>
+                `;
+            }
+            
+            // Update check icons in dropdown
+            document.querySelectorAll('#color-dropdown-menu .color-radio').forEach(r => {
+                const label = r.closest('label');
+                const checkIcon = label.querySelector('.check-icon');
+                if (r.value === colorName) {
+                    if (checkIcon) checkIcon.classList.remove('hidden');
+                } else {
+                    if (checkIcon) checkIcon.classList.add('hidden');
+                }
+            });
+            
+            // Close dropdown
+            dropdownMenu.classList.add('hidden');
+            dropdownArrow.classList.remove('rotate-180');
+        });
+    });
+});
 
 // Handle custom features
 document.addEventListener('DOMContentLoaded', function() {

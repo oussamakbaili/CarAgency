@@ -132,9 +132,47 @@ class MessageController extends Controller
         }
 
         $request->validate([
-            'message' => 'required|string|max:1000',
+            'message' => 'nullable|string|max:2000',
             'message_type' => 'in:text,image,document',
+            'attachments.*' => 'file|max:10240|mimes:jpeg,jpg,png,gif,pdf,doc,docx,txt',
         ]);
+
+        // Gérer l'upload des fichiers
+        $attachments = [];
+        if ($request->hasFile('attachments')) {
+            $uploadedFiles = $request->file('attachments');
+            
+            // Si c'est un tableau associatif (attachments[0], attachments[1], etc.)
+            if (is_array($uploadedFiles)) {
+                foreach ($uploadedFiles as $file) {
+                    if ($file && $file->isValid()) {
+                        try {
+                            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                            $path = $file->storeAs('messages/attachments', $filename, 'public');
+                            
+                            $attachments[] = [
+                                'name' => $file->getClientOriginalName(),
+                                'path' => $path,
+                                'size' => $file->getSize(),
+                                'type' => $file->getMimeType(),
+                                'url' => asset('storage/' . $path)
+                            ];
+                        } catch (\Exception $e) {
+                            \Log::error('Erreur lors de l\'upload du fichier: ' . $e->getMessage());
+                        }
+                    }
+                }
+            }
+        }
+
+        // Déterminer le type de message
+        $messageType = 'text';
+        if (!empty($attachments)) {
+            $hasImage = collect($attachments)->contains(function($attachment) {
+                return str_starts_with($attachment['type'], 'image/');
+            });
+            $messageType = $hasImage ? 'image' : 'document';
+        }
 
         // Créer le message
         $message = Message::create([
@@ -143,8 +181,9 @@ class MessageController extends Controller
             'sender_type' => $user->getMessageType(),
             'receiver_id' => $rental->agency->user_id,
             'receiver_type' => 'agency',
-            'message' => $request->message,
-            'message_type' => $request->message_type ?? 'text',
+            'message' => $request->message ?? '',
+            'message_type' => $request->message_type ?? $messageType,
+            'attachments' => !empty($attachments) ? $attachments : null,
         ]);
 
         // Déclencher l'événement pour les notifications
@@ -152,7 +191,7 @@ class MessageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Message envoyé avec succès.',
+            'message' => $message->load('sender'),
         ]);
     }
 

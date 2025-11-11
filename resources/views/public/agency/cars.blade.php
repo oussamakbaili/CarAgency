@@ -4,18 +4,18 @@
 
 @section('content')
     <!-- Hero Section -->
-    <div class="relative bg-orange-50 py-16">
+    <div class="relative bg-orange-50 py-10 sm:py-16 reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-2 sm:mb-4">
                         Voitures de <span class="text-[#C2410C]">{{ $agency->agency_name }}</span>
                     </h1>
-                    <p class="text-lg text-gray-600">{{ $cars->total() }} voitures disponibles</p>
+                    <p class="text-sm sm:text-base md:text-lg text-gray-600">{{ $cars->total() }} voitures disponibles</p>
                 </div>
                 <a href="{{ route('public.agency.show', $agency) }}" 
-                   class="inline-flex items-center gap-2 px-6 py-3 border-2 border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white rounded-xl font-semibold transition-all duration-200">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-3 border-2 border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white rounded-xl font-semibold text-sm sm:text-base transition-all duration-200">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
                     Retour à l'agence
@@ -26,36 +26,36 @@
 
     <!-- Filters Section -->
     <div class="sticky top-0 z-40 bg-white shadow-md border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <form method="GET" action="{{ route('public.agency.cars', $agency) }}" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+            <form method="GET" action="{{ route('public.agency.cars', $agency) }}" class="space-y-3 sm:space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 sm:gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Marque</label>
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">Marque</label>
                         <input type="text" name="brand" value="{{ request('brand') }}" 
                                placeholder="Marque..." 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
+                               class="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Modèle</label>
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">Modèle</label>
                         <input type="text" name="model" value="{{ request('model') }}" 
                                placeholder="Modèle..." 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
+                               class="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Prix min (MAD/jour)</label>
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">Prix min (MAD/jour)</label>
                         <input type="number" name="min_price" value="{{ request('min_price') }}" 
                                placeholder="Prix min..." 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
+                               class="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Prix max (MAD/jour)</label>
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">Prix max (MAD/jour)</label>
                         <input type="number" name="max_price" value="{{ request('max_price') }}" 
                                placeholder="Prix max..." 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
+                               class="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
                     </div>
                     <div class="flex items-end">
-                        <button type="submit" class="w-full bg-[#C2410C] hover:bg-[#9A3412] text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button type="submit" class="w-full bg-[#C2410C] hover:bg-[#9A3412] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold text-sm sm:text-base transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-1.5 sm:gap-2">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                             Filtrer
@@ -67,9 +67,9 @@
     </div>
 
     <!-- Cars Grid -->
-    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 reveal-section">
         @if($cars->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 @foreach($cars as $car)
                     <div onclick="window.location='{{ route('public.car.show', [$agency, $car]) }}'" class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer">
                         <!-- Car Image -->
@@ -129,7 +129,7 @@
                                 <div>
                                     <p class="text-sm text-gray-500 mb-1">Prix par jour</p>
                                     <p class="text-3xl font-bold text-[#C2410C]">
-                                        {{ number_format($car->price_per_day, 0) }} <span class="text-lg">MAD</span>
+                                        {{ number_format($car->client_price_per_day, 0) }} <span class="text-lg">MAD</span>
                                     </p>
                                 </div>
                             </div>

@@ -424,7 +424,14 @@ function displayRentalMessages(messages) {
         return;
     }
     
-    messages.forEach(message => {
+    // Trier les messages par date croissante (anciens en premier, nouveaux en bas)
+    const sortedMessages = [...messages].sort((a, b) => {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        return dateA - dateB; // Croissant : anciens en premier, nouveaux en bas
+    });
+    
+    sortedMessages.forEach(message => {
         const isFromAdmin = message.sender_type === 'App\\Models\\User';
         const messageAlignment = isFromAdmin ? 'justify-end' : 'justify-start';
         const messageBgColor = isFromAdmin ? 'bg-orange-600 text-white' : 'bg-white border border-gray-200 text-gray-900';
@@ -510,7 +517,14 @@ function displaySupportMessages(messages) {
         return;
     }
     
-    messages.forEach(message => {
+    // Trier les messages par date croissante (anciens en premier, nouveaux en bas)
+    const sortedMessages = [...messages].sort((a, b) => {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        return dateA - dateB; // Croissant : anciens en premier, nouveaux en bas
+    });
+    
+    sortedMessages.forEach(message => {
         const isFromAdmin = message.sender_type === 'App\\Models\\User';
         const messageAlignment = isFromAdmin ? 'justify-end' : 'justify-start';
         const messageBgColor = isFromAdmin ? 'bg-orange-600 text-white' : 'bg-gray-200 text-gray-900';

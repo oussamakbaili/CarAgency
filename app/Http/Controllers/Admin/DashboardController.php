@@ -71,12 +71,24 @@ class DashboardController extends Controller
 
     private function getOverviewStatistics()
     {
+        // Calculate customer growth
+        $currentMonthCustomers = Client::whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->count();
+        $previousMonthCustomers = Client::whereMonth('created_at', Carbon::now()->subMonth()->month)
+            ->whereYear('created_at', Carbon::now()->subMonth()->year)
+            ->count();
+        $customerGrowth = $previousMonthCustomers > 0 
+            ? (($currentMonthCustomers - $previousMonthCustomers) / $previousMonthCustomers) * 100 
+            : ($currentMonthCustomers > 0 ? 100 : 0);
+        
         return [
             'totalAgencies' => Agency::count(),
             'pendingAgencies' => Agency::where('status', 'pending')->count(),
             'approvedAgencies' => Agency::where('status', 'approved')->count(),
             'rejectedAgencies' => Agency::where('status', 'rejected')->count(),
             'totalCustomers' => Client::count(),
+            'customerGrowth' => round($customerGrowth, 1),
             'totalCars' => Car::count(),
             'activeRentals' => Rental::where('status', 'active')->count(),
             'monthlyRevenue' => $this->getMonthlyRevenue(),
@@ -86,11 +98,13 @@ class DashboardController extends Controller
 
     private function getMonthlyRevenue()
     {
-        return Transaction::where('type', Transaction::TYPE_RENTAL_PAYMENT)
-            ->where('status', Transaction::STATUS_COMPLETED)
+        // Calculate monthly revenue from completed rentals (more accurate than transactions)
+        $revenue = Rental::whereIn('status', ['active', 'completed'])
             ->whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
-            ->sum('amount');
+            ->sum('total_price');
+        
+        return $revenue ?? 0;
     }
 
     private function getRecentActivity()
@@ -259,6 +273,7 @@ class DashboardController extends Controller
             'total_revenue' => Rental::whereIn('status', ['active', 'completed'])->sum('total_price'),
             'monthly_revenue' => Rental::whereIn('status', ['active', 'completed'])
                 ->whereMonth('created_at', Carbon::now()->month)
+                ->whereYear('created_at', Carbon::now()->year)
                 ->sum('total_price'),
             'total_admin_commission' => $this->commissionService->getTotalAdminCommission(),
             'monthly_admin_commission' => $this->commissionService->getTotalAdminCommission(
@@ -268,8 +283,9 @@ class DashboardController extends Controller
             'total_bookings' => Rental::whereIn('status', ['active', 'completed'])->count(),
             'monthly_bookings' => Rental::whereIn('status', ['active', 'completed'])
                 ->whereMonth('created_at', Carbon::now()->month)
+                ->whereYear('created_at', Carbon::now()->year)
                 ->count(),
-            'average_booking_value' => Rental::whereIn('status', ['active', 'completed'])->avg('total_price'),
+            'average_booking_value' => Rental::whereIn('status', ['active', 'completed'])->avg('total_price') ?? 0,
         ];
     }
 

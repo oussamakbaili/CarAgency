@@ -200,7 +200,7 @@
                                 <p class="text-sm text-gray-600 mb-2">{{ $car->year }} • {{ $car->agency->agency_name }}</p>
                                 
                                 <div class="flex items-center justify-between">
-                                    <span class="text-lg font-bold text-blue-600">{{ number_format($car->price_per_day, 0) }} MAD/jour</span>
+                                    <span class="text-lg font-bold text-blue-600">{{ number_format($car->client_price_per_day, 0) }} MAD/jour</span>
                                     <a href="{{ route('public.car.show', ['agency' => $car->agency, 'car' => $car]) }}" 
                                        class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                         Voir détails →

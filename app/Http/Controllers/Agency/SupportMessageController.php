@@ -22,7 +22,10 @@ class SupportMessageController extends Controller
             ->where('agency_id', $agency->id)
             ->firstOrFail();
             
-        $messages = $ticket->messages()->with(['sender', 'recipient'])->get();
+        $messages = $ticket->messages()
+            ->with(['sender', 'recipient'])
+            ->orderBy('created_at', 'asc')
+            ->get();
 
         return response()->json([
             'success' => true,

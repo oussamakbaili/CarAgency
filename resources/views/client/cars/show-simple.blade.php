@@ -104,7 +104,7 @@
                         <div class="flex items-center space-x-4">
                             <div class="text-right">
                                 <p class="text-sm text-gray-500">Revenus du mois</p>
-                                <p class="text-lg font-semibold text-green-600">{{ number_format($car->price_per_day ?? 0, 2) }}€/jour</p>
+                                <p class="text-lg font-semibold text-green-600">{{ number_format($car->client_price_per_day ?? 0, 2) }}€/jour</p>
                             </div>
                             <div class="text-right">
                                 <p class="text-sm text-gray-500">Locations actives</p>
@@ -188,7 +188,7 @@
                         <div class="space-y-3">
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Prix par jour:</span>
-                                <span class="font-medium text-green-600">{{ number_format($car->price_per_day ?? 0, 2) }}€</span>
+                                <span class="font-medium text-green-600">{{ number_format($car->client_price_per_day ?? 0, 2) }}€</span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Statut:</span>

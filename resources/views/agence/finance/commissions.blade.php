@@ -18,7 +18,11 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600">Commission Totale</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($commissions->sum('amount'), 0, ',', ' ') }} MAD</p>
+                    @php
+                        $commissionsCollection = method_exists($commissions, 'items') ? collect($commissions->items()) : (is_iterable($commissions) ? collect($commissions) : collect([]));
+                        $totalCommissions = $commissionsCollection->sum('amount') ?? 0;
+                    @endphp
+                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($totalCommissions, 0, ',', ' ') }} MAD</p>
                 </div>
             </div>
         </div>
@@ -32,7 +36,11 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600">Revenus Nets</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($commissions->where('type', 'revenue')->sum('amount'), 0, ',', ' ') }} MAD</p>
+                    @php
+                        $commissionsCollection = method_exists($commissions, 'items') ? collect($commissions->items()) : (is_iterable($commissions) ? collect($commissions) : collect([]));
+                        $revenueTotal = $commissionsCollection->where('type', 'revenue')->sum('amount') ?? 0;
+                    @endphp
+                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($revenueTotal, 0, ',', ' ') }} MAD</p>
                 </div>
             </div>
         </div>
@@ -46,7 +54,11 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-600">Frais Plateforme</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($commissions->where('type', 'fee')->sum('amount'), 0, ',', ' ') }} MAD</p>
+                    @php
+                        $commissionsCollection = method_exists($commissions, 'items') ? collect($commissions->items()) : (is_iterable($commissions) ? collect($commissions) : collect([]));
+                        $feeTotal = $commissionsCollection->where('type', 'fee')->sum('amount') ?? 0;
+                    @endphp
+                    <p class="text-2xl font-semibold text-gray-900">{{ number_format($feeTotal, 0, ',', ' ') }} MAD</p>
                 </div>
             </div>
         </div>

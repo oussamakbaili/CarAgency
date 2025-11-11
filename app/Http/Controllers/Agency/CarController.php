@@ -190,11 +190,11 @@ class CarController extends Controller
         // Calculate utilization rate
         $utilizationRate = $totalCars > 0 ? round(($rentedCars / $totalCars) * 100, 1) : 0;
         
-        // Revenue analytics
+        // Revenue analytics - Include active and completed rentals
         $monthlyRevenue = $agency->rentals()
+            ->whereIn('status', ['active', 'completed'])
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
-            ->where('status', 'completed')
             ->sum('total_price');
         
         // Revenue per vehicle
@@ -208,8 +208,11 @@ class CarController extends Controller
             ->selectRaw('AVG(DATEDIFF(end_date, start_date)) as avg_days')
             ->value('avg_days') ?? 0;
         
-        // Customer satisfaction (mock data for now)
-        $satisfaction = 4.8;
+        // Customer satisfaction - Real calculation from reviews
+        $reviews = \App\Models\Avis::where('agency_id', $agency->id)
+            ->where('is_public', true)
+            ->get();
+        $satisfaction = $reviews->count() > 0 ? round($reviews->avg('rating'), 1) : 0;
         
         // Popular categories with revenue
         $categoryStats = $agency->cars()

@@ -43,6 +43,73 @@ class RentalController extends Controller
         return view('client.rentals.create', compact('car'));
     }
 
+    public function confirm(Request $request, Car $car, RentalService $rentalService)
+    {
+        // Si c'est un retour après paiement PayPal, utiliser les données de session
+        $paymentSuccess = $request->query('payment_success');
+        $rentalId = session('booking_data.rental_id');
+        
+        if ($paymentSuccess === 'paypal' && $rentalId) {
+            // Récupérer la réservation depuis la session
+            $rental = Rental::find($rentalId);
+            if ($rental && $rental->car_id == $car->id) {
+                $startDate = $rental->start_date;
+                $endDate = $rental->end_date;
+                $days = $startDate->diffInDays($endDate);
+                
+                // Récupérer les données de booking depuis la session
+                $bookingData = session('booking_data', []);
+                $totalPrice = $bookingData['total_price'] ?? ($days * $car->client_price_per_day);
+                $platformFee = 0; // Commission already included in client_price_per_day
+                $totalWithFees = $bookingData['total_with_fees'] ?? $totalPrice;
+                
+                $car->load(['agency.user', 'category']);
+                
+                return view('client.rentals.confirm', compact('car', 'startDate', 'endDate', 'days', 'totalPrice', 'platformFee', 'totalWithFees'));
+            }
+        }
+        
+        // Sinon, valider les dates normalement
+        $request->validate([
+            'start_date' => 'required|date|after:today',
+            'end_date' => 'required|date|after:start_date',
+        ]);
+
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
+        
+        // Check availability
+        if (!$rentalService->checkAvailability($car, $startDate, $endDate)) {
+            return redirect()->back()->with('error', 'Ce véhicule n\'est pas disponible pour les dates sélectionnées.');
+        }
+
+        // Calculate pricing with client commission already included
+        $days = $startDate->diffInDays($endDate);
+        $clientPricePerDay = $car->client_price_per_day;
+        $totalPrice = $days * $clientPricePerDay;
+        
+        // Store booking data in session
+        session([
+            'booking_data' => [
+                'car_id' => $car->id,
+                'start_date' => $startDate->format('Y-m-d'),
+                'end_date' => $endDate->format('Y-m-d'),
+                'days' => $days,
+                'price_per_day' => $clientPricePerDay,
+                'total_price' => $totalPrice,
+                'platform_fee' => 0, // Commission already included in client_price_per_day
+                'total_with_fees' => $totalPrice,
+            ]
+        ]);
+
+        $car->load(['agency.user', 'category']);
+        
+        $platformFee = 0; // Commission already included in client_price_per_day
+        $totalWithFees = $totalPrice;
+        
+        return view('client.rentals.confirm', compact('car', 'startDate', 'endDate', 'days', 'totalPrice', 'platformFee', 'totalWithFees'));
+    }
+
     public function store(Request $request, Car $car, RentalService $rentalService)
     {
         // Validate the car is still available
@@ -153,6 +220,38 @@ class RentalController extends Controller
 
         return response()->json([
             'unavailable_dates' => array_unique($unavailableDates)
+        ]);
+    }
+
+    /**
+     * Check availability for specific dates
+     */
+    public function checkAvailability(Request $request, Car $car, RentalService $rentalService)
+    {
+        $request->validate([
+            'start_date' => 'required|date|after:today',
+            'end_date' => 'required|date|after:start_date',
+        ]);
+
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
+
+        $isAvailable = $rentalService->checkAvailability($car, $startDate, $endDate);
+        
+        $days = $startDate->diffInDays($endDate);
+        $clientPricePerDay = $car->client_price_per_day;
+        $totalPrice = $days * $clientPricePerDay;
+
+        return response()->json([
+            'available' => $isAvailable,
+            'days' => $days,
+            'total_price' => $totalPrice,
+            'total_price_with_fees' => $totalPrice, // Commission already included
+            'markup_rate' => config('app.client_markup_rate', 15),
+            'price_per_day' => $clientPricePerDay,
+            'message' => $isAvailable 
+                ? 'Véhicule disponible pour ces dates' 
+                : 'Véhicule non disponible pour ces dates'
         ]);
     }
 }

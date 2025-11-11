@@ -222,7 +222,14 @@ class Car extends Model
     // Get the image URL
     public function getImageUrlAttribute()
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        if (!$this->image) {
+            return null;
+        }
+        
+        $imagePath = $this->image;
+        $imagePath = preg_replace('/^app\/public\//', '', $imagePath);
+        
+        return asset('storage/' . $imagePath);
     }
 
     // Get picture URLs
@@ -233,7 +240,15 @@ class Car extends Model
         }
         
         return collect($this->pictures)->map(function($picture) {
-            return asset('storage/' . $picture);
+            $picturePath = preg_replace('/^app\/public\//', '', $picture);
+            return asset('storage/' . $picturePath);
         })->toArray();
+    }
+
+    // Get client price with 15% commission
+    public function getClientPricePerDayAttribute()
+    {
+        $markupRate = config('app.client_markup_rate', 15);
+        return round($this->price_per_day * (1 + ($markupRate / 100)), 2);
     }
 }

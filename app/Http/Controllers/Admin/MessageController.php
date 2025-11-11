@@ -20,7 +20,7 @@ class MessageController extends Controller
         
         // Récupérer TOUS les tickets de support avec messages (clients et agences)
         $supportTickets = SupportTicket::with(['client.user', 'agency.user', 'messages' => function($query) {
-            $query->orderBy('created_at', 'desc');
+            $query->orderBy('created_at', 'asc');
         }])
         ->orderBy('updated_at', 'desc')
         ->get();

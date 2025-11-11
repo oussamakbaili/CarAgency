@@ -7,8 +7,13 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\Rental;
 use App\Models\Agency;
+use App\Models\Car;
+use App\Models\Client;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PaymentNotificationService;
+use Illuminate\Validation\ValidationException;
 
 class FinanceController extends Controller
 {
@@ -16,15 +21,36 @@ class FinanceController extends Controller
     {
         $agency = auth()->user()->agency;
         
+        // Calculate monthly revenue (current month)
+        $monthlyRevenue = Rental::where('rentals.agency_id', $agency->id)
+            ->whereIn('rentals.status', ['active', 'completed'])
+            ->whereMonth('rentals.created_at', Carbon::now()->month)
+            ->whereYear('rentals.created_at', Carbon::now()->year)
+            ->sum('rentals.total_price');
+        
+        // Calculate previous month revenue for growth percentage
+        $previousMonthRevenue = Rental::where('rentals.agency_id', $agency->id)
+            ->whereIn('rentals.status', ['active', 'completed'])
+            ->whereMonth('rentals.created_at', Carbon::now()->subMonth()->month)
+            ->whereYear('rentals.created_at', Carbon::now()->subMonth()->year)
+            ->sum('rentals.total_price');
+        
+        // Calculate revenue growth percentage
+        $revenueGrowth = 0;
+        if ($previousMonthRevenue > 0) {
+            $revenueGrowth = round((($monthlyRevenue - $previousMonthRevenue) / $previousMonthRevenue) * 100, 1);
+        } elseif ($monthlyRevenue > 0) {
+            $revenueGrowth = 100; // 100% growth if no previous revenue
+        }
+        
         // Financial overview
         $overview = [
             'total_earnings' => $agency->total_earnings ?? 0,
             'pending_earnings' => $agency->pending_earnings ?? 0,
             'current_balance' => $agency->balance ?? 0,
-            'monthly_revenue' => Rental::where('rentals.agency_id', $agency->id)
-                ->whereIn('rentals.status', ['active', 'completed'])
-                ->whereMonth('rentals.created_at', Carbon::now()->month)
-                ->sum('rentals.total_price'),
+            'monthly_revenue' => $monthlyRevenue,
+            'previous_month_revenue' => $previousMonthRevenue,
+            'revenue_growth' => $revenueGrowth,
             'commission_rate' => $agency->commission_rate ?? 0,
         ];
         
@@ -34,21 +60,74 @@ class FinanceController extends Controller
             ->take(10)
             ->get();
         
-        // Revenue trends (last 6 months)
-        $revenueTrends = Rental::where('rentals.agency_id', $agency->id)
-            ->whereIn('rentals.status', ['active', 'completed'])
-            ->select(
-                DB::raw('MONTH(rentals.created_at) as month'),
-                DB::raw('YEAR(rentals.created_at) as year'),
-                DB::raw('SUM(rentals.total_price) as revenue')
-            )
-            ->where('rentals.created_at', '>=', Carbon::now()->subMonths(6))
-            ->groupBy('year', 'month')
-            ->orderBy('year', 'asc')
-            ->orderBy('month', 'asc')
+        // Revenue trends (last 12 months) - for chart
+        $revenueTrendsData = [];
+        $monthLabels = [];
+        
+        for ($i = 11; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $revenue = Rental::where('rentals.agency_id', $agency->id)
+                ->whereIn('rentals.status', ['active', 'completed'])
+                ->whereMonth('rentals.created_at', $date->month)
+                ->whereYear('rentals.created_at', $date->year)
+                ->sum('rentals.total_price');
+            
+            $revenueTrendsData[] = round($revenue, 0);
+            // Format month in French
+            $monthLabels[] = $date->locale('fr')->shortMonthName;
+        }
+        
+        // Payment methods distribution - from payments table
+        $paymentMethods = \App\Models\Payment::whereHas('rental', function($query) use ($agency) {
+                $query->where('agency_id', $agency->id);
+            })
+            ->where('status', \App\Models\Payment::STATUS_COMPLETED)
+            ->select('payment_method', DB::raw('COUNT(*) as count'))
+            ->groupBy('payment_method')
             ->get();
         
-        return view('agence.finance.index', compact('overview', 'recentTransactions', 'revenueTrends'));
+        // Calculate counts for each payment method category
+        $totalPayments = 0;
+        foreach ($paymentMethods as $method) {
+            $totalPayments += (int) $method->count;
+        }
+        $paymentMethodsCounts = [
+            'Carte Bancaire' => 0,
+            'Virement' => 0,
+            'Espèces' => 0,
+            'Chèque' => 0,
+        ];
+        
+        foreach ($paymentMethods as $method) {
+            // Map payment methods to display names
+            switch ($method->payment_method) {
+                case 'stripe':
+                    $paymentMethodsCounts['Carte Bancaire'] += $method->count;
+                    break;
+                case 'paypal':
+                    $paymentMethodsCounts['Virement'] += $method->count; // PayPal can be considered as bank transfer
+                    break;
+                case 'bank_transfer':
+                    $paymentMethodsCounts['Virement'] += $method->count;
+                    break;
+            }
+        }
+        
+        // Calculate percentages from counts
+        $paymentMethodsData = [
+            'Carte Bancaire' => $totalPayments > 0 ? round(($paymentMethodsCounts['Carte Bancaire'] / $totalPayments) * 100, 1) : 0,
+            'Virement' => $totalPayments > 0 ? round(($paymentMethodsCounts['Virement'] / $totalPayments) * 100, 1) : 0,
+            'Espèces' => $totalPayments > 0 ? round(($paymentMethodsCounts['Espèces'] / $totalPayments) * 100, 1) : 0,
+            'Chèque' => $totalPayments > 0 ? round(($paymentMethodsCounts['Chèque'] / $totalPayments) * 100, 1) : 0,
+        ];
+        
+        return view('agence.finance.index', compact(
+            'overview', 
+            'recentTransactions', 
+            'revenueTrendsData', 
+            'monthLabels',
+            'paymentMethodsData'
+        ));
     }
     
     public function payments(Request $request)
@@ -383,6 +462,251 @@ class FinanceController extends Controller
         return view('agence.finance.reports', compact('reports'));
     }
     
+    public function generateReport(Request $request)
+    {
+        $request->validate([
+            'report_type' => 'required|in:revenue,expenses,profit_loss,tax,custom',
+            'period' => 'required|in:today,week,month,quarter,year,custom',
+            'format' => 'required|in:csv,excel,pdf',
+            'start_date' => 'required_if:period,custom|date',
+            'end_date' => 'required_if:period,custom|date|after_or_equal:start_date',
+        ]);
+        
+        $agency = auth()->user()->agency;
+        $reportType = $request->input('report_type');
+        $period = $request->input('period');
+        $format = $request->input('format');
+        
+        // Calculate date range based on period
+        $dateRange = $this->getDateRange($period, $request->input('start_date'), $request->input('end_date'));
+        
+        // Get data based on report type
+        $data = $this->getReportData($agency, $reportType, $dateRange);
+        
+        // Generate file based on format
+        return $this->generateFile($data, $reportType, $format, $dateRange);
+    }
+    
+    private function getDateRange($period, $startDate = null, $endDate = null)
+    {
+        $now = Carbon::now();
+        
+        switch ($period) {
+            case 'today':
+                return [
+                    'start' => $now->copy()->startOfDay(),
+                    'end' => $now->copy()->endOfDay(),
+                ];
+            case 'week':
+                return [
+                    'start' => $now->copy()->startOfWeek(),
+                    'end' => $now->copy()->endOfWeek(),
+                ];
+            case 'month':
+                return [
+                    'start' => $now->copy()->startOfMonth(),
+                    'end' => $now->copy()->endOfMonth(),
+                ];
+            case 'quarter':
+                return [
+                    'start' => $now->copy()->startOfQuarter(),
+                    'end' => $now->copy()->endOfQuarter(),
+                ];
+            case 'year':
+                return [
+                    'start' => $now->copy()->startOfYear(),
+                    'end' => $now->copy()->endOfYear(),
+                ];
+            case 'custom':
+                return [
+                    'start' => Carbon::parse($startDate)->startOfDay(),
+                    'end' => Carbon::parse($endDate)->endOfDay(),
+                ];
+            default:
+                return [
+                    'start' => $now->copy()->startOfMonth(),
+                    'end' => $now->copy()->endOfMonth(),
+                ];
+        }
+    }
+    
+    private function getReportData($agency, $reportType, $dateRange)
+    {
+        $query = Rental::where('rentals.agency_id', $agency->id)
+            ->whereIn('rentals.status', ['active', 'completed'])
+            ->whereBetween('rentals.created_at', [$dateRange['start'], $dateRange['end']]);
+        
+        switch ($reportType) {
+            case 'revenue':
+                return $query->select(
+                    'rentals.id',
+                    'rentals.created_at',
+                    'rentals.total_price',
+                    'rentals.status',
+                    DB::raw('(SELECT brand FROM cars WHERE cars.id = rentals.car_id) as car_brand'),
+                    DB::raw('(SELECT model FROM cars WHERE cars.id = rentals.car_id) as car_model')
+                )->get();
+                
+            case 'expenses':
+                return Transaction::where('agency_id', $agency->id)
+                    ->whereIn('type', ['withdrawal', 'withdrawal_request', 'fee'])
+                    ->whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
+                    ->get();
+                    
+            case 'profit_loss':
+                $revenues = Rental::where('rentals.agency_id', $agency->id)
+                    ->whereIn('rentals.status', ['active', 'completed'])
+                    ->whereBetween('rentals.created_at', [$dateRange['start'], $dateRange['end']])
+                    ->sum('total_price');
+                    
+                $expenses = Transaction::where('agency_id', $agency->id)
+                    ->whereIn('type', ['withdrawal', 'withdrawal_request', 'fee'])
+                    ->whereBetween('created_at', [$dateRange['start'], $dateRange['end']])
+                    ->sum('amount');
+                    
+                return [
+                    'revenue' => $revenues,
+                    'expenses' => $expenses,
+                    'profit' => $revenues - $expenses,
+                ];
+                
+            case 'tax':
+                return Rental::where('rentals.agency_id', $agency->id)
+                    ->whereIn('rentals.status', ['active', 'completed'])
+                    ->whereBetween('rentals.created_at', [$dateRange['start'], $dateRange['end']])
+                    ->select(
+                        'rentals.id',
+                        'rentals.created_at',
+                        'rentals.total_price',
+                        DB::raw('rentals.total_price * 0.20 as tax_amount')
+                    )
+                    ->get();
+                    
+            default:
+                return $query->get();
+        }
+    }
+    
+    private function generateFile($data, $reportType, $format, $dateRange)
+    {
+        $filename = 'rapport_' . $reportType . '_' . now()->format('Y-m-d_H-i-s');
+        
+        if ($format === 'csv') {
+            return $this->generateCSV($data, $reportType, $filename, $dateRange);
+        } elseif ($format === 'excel') {
+            return $this->generateCSV($data, $reportType, $filename, $dateRange); // Excel as CSV for now
+        } else {
+            // Generate PDF
+            return $this->generatePDF($data, $reportType, $filename, $dateRange);
+        }
+    }
+    
+    private function generatePDF($data, $reportType, $filename, $dateRange)
+    {
+        $agency = auth()->user()->agency;
+        
+        // Get report type label
+        $reportTypeLabels = [
+            'revenue' => 'Rapport de Revenus',
+            'expenses' => 'Rapport de Dépenses',
+            'profit_loss' => 'Bénéfices et Pertes',
+            'tax' => 'Rapport Fiscal',
+            'custom' => 'Rapport Personnalisé',
+        ];
+        
+        $reportTypeLabel = $reportTypeLabels[$reportType] ?? 'Rapport Financier';
+        
+        // Generate PDF using DomPDF
+        $pdf = Pdf::loadView('agence.finance.report-pdf', [
+            'data' => $data,
+            'reportType' => $reportType,
+            'reportTypeLabel' => $reportTypeLabel,
+            'dateRange' => $dateRange,
+            'agency' => $agency,
+        ]);
+        
+        // Set paper size and orientation
+        $pdf->setPaper('a4', 'landscape');
+        
+        // Download the PDF
+        return $pdf->download($filename . '.pdf');
+    }
+    
+    private function generateCSV($data, $reportType, $filename, $dateRange)
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '.csv"',
+        ];
+        
+        $callback = function() use ($data, $reportType, $dateRange) {
+            $file = fopen('php://output', 'w');
+            
+            // Add BOM for UTF-8
+            fwrite($file, "\xEF\xBB\xBF");
+            
+            // Headers based on report type
+            switch ($reportType) {
+                case 'revenue':
+                    fputcsv($file, ['Date', 'Véhicule', 'Montant (MAD)', 'Statut']);
+                    foreach ($data as $item) {
+                        fputcsv($file, [
+                            $item->created_at->format('d/m/Y H:i'),
+                            ($item->car_brand ?? '') . ' ' . ($item->car_model ?? ''),
+                            number_format($item->total_price, 2, ',', ' '),
+                            ucfirst($item->status),
+                        ]);
+                    }
+                    break;
+                    
+                case 'expenses':
+                    fputcsv($file, ['Date', 'Type', 'Description', 'Montant (MAD)', 'Statut']);
+                    foreach ($data as $item) {
+                        fputcsv($file, [
+                            $item->created_at->format('d/m/Y H:i'),
+                            ucfirst(str_replace('_', ' ', $item->type)),
+                            $item->description ?? 'N/A',
+                            number_format($item->amount, 2, ',', ' '),
+                            ucfirst($item->status),
+                        ]);
+                    }
+                    break;
+                    
+                case 'profit_loss':
+                    fputcsv($file, ['Type', 'Montant (MAD)']);
+                    fputcsv($file, ['Revenus', number_format($data['revenue'], 2, ',', ' ')]);
+                    fputcsv($file, ['Dépenses', number_format($data['expenses'], 2, ',', ' ')]);
+                    fputcsv($file, ['Bénéfice Net', number_format($data['profit'], 2, ',', ' ')]);
+                    break;
+                    
+                case 'tax':
+                    fputcsv($file, ['Date', 'Montant Total (MAD)', 'Montant TVA (20%)']);
+                    foreach ($data as $item) {
+                        fputcsv($file, [
+                            $item->created_at->format('d/m/Y H:i'),
+                            number_format($item->total_price, 2, ',', ' '),
+                            number_format($item->tax_amount, 2, ',', ' '),
+                        ]);
+                    }
+                    break;
+                    
+                default:
+                    fputcsv($file, ['Date', 'Description', 'Montant (MAD)']);
+                    foreach ($data as $item) {
+                        fputcsv($file, [
+                            $item->created_at->format('d/m/Y H:i'),
+                            $item->description ?? 'N/A',
+                            number_format($item->total_price ?? $item->amount ?? 0, 2, ',', ' '),
+                        ]);
+                    }
+            }
+            
+            fclose($file);
+        };
+        
+        return response()->stream($callback, 200, $headers);
+    }
+    
     public function export()
     {
         $agency = auth()->user()->agency;
@@ -434,55 +758,76 @@ class FinanceController extends Controller
     public function requestPayment(Request $request)
     {
         $agency = auth()->user()->agency;
-        
+
         $request->validate([
-            'amount' => 'required|numeric|min:100|max:' . ($agency->balance ?? 0),
-            'payment_method' => 'required|in:bank_transfer,check,cash',
-            'notes' => 'nullable|string|max:500'
+            'amount' => 'required|numeric|min:100',
+            'bank_name' => 'required|string|max:100',
+            'rib_number' => 'required|string|max:34',
+            'account_holder' => 'required|string|max:100',
+            'notes' => 'nullable|string|max:500',
         ]);
-        
+
         try {
-            // Create payment request transaction
-            $transaction = Transaction::create([
-                'agency_id' => $agency->id,
-                'rental_id' => null,
-                'type' => 'withdrawal_request',
-                'amount' => $request->amount,
-                'balance_before' => $agency->balance ?? 0,
-                'balance_after' => $agency->balance ?? 0, // Balance doesn't change until approved
-                'description' => 'Demande de paiement - ' . $request->payment_method,
-                'status' => 'pending',
-                'metadata' => [
-                    'payment_method' => $request->payment_method,
-                    'notes' => $request->notes,
-                    'requested_at' => now()->toISOString()
-                ],
-                'processed_at' => null
-            ]);
-            
-            // Log the request
-            \Log::info('Payment request created', [
-                'agency_id' => $agency->id,
-                'transaction_id' => $transaction->id,
-                'amount' => $request->amount,
-                'payment_method' => $request->payment_method
-            ]);
-            
+            $transaction = null;
+
+            DB::transaction(function () use ($request, $agency, &$transaction) {
+                $agency->refresh();
+                $availableBalance = $agency->balance ?? 0;
+
+                if ($request->amount > $availableBalance) {
+                    throw ValidationException::withMessages([
+                        'amount' => 'Le montant demandé dépasse votre solde disponible.',
+                    ]);
+                }
+
+                $balanceBefore = $availableBalance;
+                $balanceAfter = $balanceBefore - $request->amount;
+
+                $transaction = Transaction::create([
+                    'agency_id' => $agency->id,
+                    'rental_id' => null,
+                    'type' => Transaction::TYPE_WITHDRAWAL_REQUEST,
+                    'amount' => $request->amount,
+                    'balance_before' => $balanceBefore,
+                    'balance_after' => $balanceAfter,
+                    'description' => 'Demande de retrait - Virement bancaire',
+                    'status' => Transaction::STATUS_PENDING,
+                    'metadata' => [
+                        'payment_method' => 'bank_transfer',
+                        'bank_name' => $request->bank_name,
+                        'rib_number' => $request->rib_number,
+                        'account_holder' => $request->account_holder,
+                        'notes' => $request->notes,
+                        'requested_at' => now()->toISOString(),
+                    ],
+                ]);
+
+                // Update balances: move funds from available balance to pending earnings
+                $agency->balance = $balanceAfter;
+                $agency->pending_earnings = ($agency->pending_earnings ?? 0) + $request->amount;
+                $agency->save();
+            });
+
+            if ($transaction) {
+                // Notify all admins
+                PaymentNotificationService::notifyAdminPayoutRequested($transaction);
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Demande de paiement créée avec succès'
+                'message' => 'Votre demande de paiement a été envoyée avec succès.',
             ]);
-            
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             \Log::error('Payment request failed', [
                 'agency_id' => $agency->id,
                 'error' => $e->getMessage(),
-                'amount' => $request->amount
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la création de la demande: ' . $e->getMessage()
+                'message' => 'Erreur lors de la création de la demande: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -948,16 +1293,28 @@ class FinanceController extends Controller
     
     private function getCustomerAnalysis($agency)
     {
+        // Total customers who have at least one rental with this agency
+        $totalCustomers = Client::whereHas('rentals', function($query) use ($agency) {
+            $query->where('agency_id', $agency->id);
+        })->count();
+        
+        // Repeat customers (clients with more than one rental)
+        // Use a subquery to count rentals per client
+        $repeatCustomers = Client::whereHas('rentals', function($query) use ($agency) {
+            $query->where('agency_id', $agency->id);
+        })
+        ->whereRaw('(SELECT COUNT(*) FROM rentals WHERE rentals.user_id = clients.user_id AND rentals.agency_id = ?) > 1', [$agency->id])
+        ->count();
+        
+        // Average rental value
+        $averageRentalValue = Rental::where('rentals.agency_id', $agency->id)
+            ->whereIn('rentals.status', ['active', 'completed'])
+            ->avg('rentals.total_price');
+        
         return [
-            'total_customers' => Client::whereHas('rentals', function($query) use ($agency) {
-                $query->where('agency_id', $agency->id);
-            })->count(),
-            'repeat_customers' => Client::whereHas('rentals', function($query) use ($agency) {
-                $query->where('agency_id', $agency->id);
-            })->havingRaw('COUNT(rentals.id) > 1')->count(),
-            'average_rental_value' => Rental::where('rentals.agency_id', $agency->id)
-                ->whereIn('rentals.status', ['active', 'completed'])
-                ->avg('rentals.total_price'),
+            'total_customers' => $totalCustomers,
+            'repeat_customers' => $repeatCustomers,
+            'average_rental_value' => $averageRentalValue ?? 0,
         ];
     }
 }
