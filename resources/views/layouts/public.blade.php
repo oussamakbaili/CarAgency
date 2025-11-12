@@ -216,76 +216,64 @@
         </div>
     </nav>
 
-    <!-- Mobile Navigation -->
-    <nav class="md:hidden bg-white shadow-sm sticky top-0 z-50">
-        <div class="px-4 py-3">
-            <div class="flex items-center justify-between">
-                <!-- Logo -->
-                <div class="flex items-center">
-                    <a href="{{ route('public.home') }}" class="flex items-center group">
-                        <img src="{{ asset('images/toubcar-logo.png') }}" alt="ToubCar Logo" class="h-16 w-auto transform group-hover:scale-105 transition-transform duration-200">
+    <!-- Mobile Navigation - Minimal: Only Globe Icon and Hamburger -->
+    <nav class="md:hidden fixed top-4 right-4 z-50">
+        <div class="flex items-center space-x-3">
+            <!-- Language Selector Mobile - 3D Globe Icon -->
+            <div class="relative">
+                <button type="button" class="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-110" id="language-selector-mobile" style="filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));">
+                    <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 002 2h2.945M15 15v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3m0 0V9a2 2 0 012-2h2.945M9 9H7a2 2 0 00-2 2v1a2 2 0 002 2h2m4-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </button>
+                
+                <!-- Language Dropdown Mobile -->
+                <div id="language-dropdown-mobile" class="hidden absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                    <a href="{{ route('lang.switch', 'fr') }}" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 transition-colors {{ app()->getLocale() === 'fr' ? 'bg-orange-50' : '' }}">
+                        <svg class="w-5 h-5" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
+                            <g fill-rule="evenodd" stroke-width="1pt">
+                                <path fill="#fff" d="M0 0h640v480H0z"/>
+                                <path fill="#00267f" d="M0 0h213.3v480H0z"/>
+                                <path fill="#f31830" d="M426.7 0H640v480H426.7z"/>
+                            </g>
+                        </svg>
+                        <span class="text-xs font-medium text-gray-700">{{ __('common.language.french') }}</span>
+                        @if(app()->getLocale() === 'fr')
+                            <svg class="w-3 h-3 text-orange-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        @endif
+                    </a>
+                    <a href="{{ route('lang.switch', 'en') }}" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 transition-colors {{ app()->getLocale() === 'en' ? 'bg-orange-50' : '' }}">
+                        <svg class="w-5 h-5" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
+                            <g fill-rule="evenodd" stroke-width="1pt">
+                                <path fill="#012169" d="M0 0h640v480H0z"/>
+                                <path fill="#FFF" d="m75 0 244 181.7L562 0h78v62.5l-228 173.1 228 173.6v62.5h-78L319 301.2 81 471.2H0v-62.5l229-173.6L0 62.5V0h75z"/>
+                                <path fill="#C8102E" d="m424 281.2 216 162.5v37.5H426.7zm-184 10.3 6.5 4.8-222-166v-35.3l215.5 161.5zm398-123.5L410.2 192l-9.7-7.3L610 64.2v35.3zm-52.3 69.1-216-162.5H0v35.3l215.5 161.5 6.5-4.8z"/>
+                                <path fill="#FFF" d="M241 0v480h160V0H241zM0 160v160h640V160H0z"/>
+                                <path fill="#C8102E" d="M0 193.3v93.4h640v-93.4H0zM273.3 0v480h93.4V0h-93.4z"/>
+                            </g>
+                        </svg>
+                        <span class="text-xs font-medium text-gray-700">{{ __('common.language.english') }}</span>
+                        @if(app()->getLocale() === 'en')
+                            <svg class="w-3 h-3 text-orange-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        @endif
                     </a>
                 </div>
-
-                <!-- Right side: Language Selector (Globe Icon) and Hamburger Menu -->
-                <div class="flex items-center space-x-3">
-                    <!-- Language Selector Mobile - Globe Icon -->
-                    <div class="relative">
-                        <button type="button" class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" id="language-selector-mobile">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 002 2h2.945M15 15v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3m0 0V9a2 2 0 012-2h2.945M9 9H7a2 2 0 00-2 2v1a2 2 0 002 2h2m4-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </button>
-                        
-                        <!-- Language Dropdown Mobile -->
-                        <div id="language-dropdown-mobile" class="hidden absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                            <a href="{{ route('lang.switch', 'fr') }}" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 transition-colors {{ app()->getLocale() === 'fr' ? 'bg-orange-50' : '' }}">
-                                <svg class="w-5 h-5" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
-                                    <g fill-rule="evenodd" stroke-width="1pt">
-                                        <path fill="#fff" d="M0 0h640v480H0z"/>
-                                        <path fill="#00267f" d="M0 0h213.3v480H0z"/>
-                                        <path fill="#f31830" d="M426.7 0H640v480H426.7z"/>
-                                    </g>
-                                </svg>
-                                <span class="text-xs font-medium text-gray-700">{{ __('common.language.french') }}</span>
-                                @if(app()->getLocale() === 'fr')
-                                    <svg class="w-3 h-3 text-orange-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                @endif
-                            </a>
-                            <a href="{{ route('lang.switch', 'en') }}" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 transition-colors {{ app()->getLocale() === 'en' ? 'bg-orange-50' : '' }}">
-                                <svg class="w-5 h-5" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
-                                    <g fill-rule="evenodd" stroke-width="1pt">
-                                        <path fill="#012169" d="M0 0h640v480H0z"/>
-                                        <path fill="#FFF" d="m75 0 244 181.7L562 0h78v62.5l-228 173.1 228 173.6v62.5h-78L319 301.2 81 471.2H0v-62.5l229-173.6L0 62.5V0h75z"/>
-                                        <path fill="#C8102E" d="m424 281.2 216 162.5v37.5H426.7zm-184 10.3 6.5 4.8-222-166v-35.3l215.5 161.5zm398-123.5L410.2 192l-9.7-7.3L610 64.2v35.3zm-52.3 69.1-216-162.5H0v35.3l215.5 161.5 6.5-4.8z"/>
-                                        <path fill="#FFF" d="M241 0v480h160V0H241zM0 160v160h640V160H0z"/>
-                                        <path fill="#C8102E" d="M0 193.3v93.4h640v-93.4H0zM273.3 0v480h93.4V0h-93.4z"/>
-                                    </g>
-                                </svg>
-                                <span class="text-xs font-medium text-gray-700">{{ __('common.language.english') }}</span>
-                                @if(app()->getLocale() === 'en')
-                                    <svg class="w-3 h-3 text-orange-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                @endif
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Hamburger Menu Button -->
-                    <button type="button" id="mobile-menu-button" class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                        </svg>
-                    </button>
-                </div>
             </div>
+
+            <!-- Hamburger Menu Button -->
+            <button type="button" id="mobile-menu-button" class="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-110" style="filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));">
+                <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
         </div>
 
         <!-- Mobile Menu Dropdown -->
-        <div id="mobile-menu" class="hidden bg-white border-t border-gray-100">
+        <div id="mobile-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
             <div class="px-4 py-4 space-y-3">
                 <a href="{{ route('public.about') }}" class="block text-gray-700 hover:text-orange-600 font-medium py-2">{{ __('common.nav.about') }}</a>
                 <a href="{{ route('public.agencies') }}" class="block text-gray-700 hover:text-orange-600 font-medium py-2">{{ __('common.nav.partners') }}</a>
