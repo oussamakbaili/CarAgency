@@ -63,6 +63,11 @@
             transform: translateY(0);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
+        
+        /* Alpine.js x-cloak - Hide elements until Alpine is initialized */
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -315,7 +320,7 @@
                     <!-- Notifications -->
                     <div class="flex items-center space-x-4">
                         <!-- Notification Bell -->
-                        <div class="relative" x-data="{ open: false }">
+                        <div class="relative" x-data="{ open: false }" x-cloak>
                             <button @click="open = !open" class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
@@ -323,14 +328,41 @@
                                 <span id="notification-badge" class="absolute -top-1 -right-1 bg-orange-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
                             </button>
                             
+                            <!-- Mobile Overlay -->
+                            <div x-show="open" 
+                                 @click="open = false" 
+                                 x-transition:enter="transition-opacity ease-out duration-200"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 x-transition:leave="transition-opacity ease-in duration-150"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0"
+                                 class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+                                 style="display: none;"></div>
+                            
                             <!-- Notification Dropdown -->
-                            <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                            <div x-show="open" 
+                                 @click.away="open = false"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 transform scale-95"
+                                 x-transition:enter-end="opacity-100 transform scale-100"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100 transform scale-100"
+                                 x-transition:leave-end="opacity-0 transform scale-95"
+                                 class="absolute right-0 mt-2 w-80 md:w-80 sm:w-72 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                                 style="display: none;">
                                 <div class="p-4 border-b border-gray-200">
                                     <div class="flex items-center justify-between">
                                         <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
                                         <div class="flex items-center space-x-2">
-                                            <button onclick="markAllAsRead()" class="text-sm text-orange-600 hover:text-orange-800">Tout marquer comme lu</button>
-                                            <button onclick="clearAllNotifications()" class="text-sm text-red-600 hover:text-red-800">Effacer tout</button>
+                                            <!-- Close button for mobile -->
+                                            <button @click="open = false" class="lg:hidden p-1 text-gray-400 hover:text-gray-600">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                            <button onclick="markAllAsRead()" class="text-xs sm:text-sm text-orange-600 hover:text-orange-800">Tout marquer comme lu</button>
+                                            <button onclick="clearAllNotifications()" class="text-xs sm:text-sm text-red-600 hover:text-red-800">Effacer tout</button>
                                         </div>
                                     </div>
                                 </div>
@@ -345,7 +377,7 @@
                                 </div>
                                 
                                 <div class="p-4 border-t border-gray-200">
-                                    <a href="{{ route('admin.notifications.index') }}" class="block w-full text-center text-orange-600 hover:text-orange-800 font-medium">
+                                    <a href="{{ route('admin.notifications.index') }}" @click="open = false" class="block w-full text-center text-orange-600 hover:text-orange-800 font-medium">
                                         Voir toutes les notifications
                                     </a>
                                 </div>
