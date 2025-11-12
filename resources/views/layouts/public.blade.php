@@ -212,32 +212,27 @@
                         </a>
                     @endauth
                 </div>
-
-                <!-- Mobile menu button -->
-                <div>
-                    <button type="button" id="mobile-menu-button" class="text-gray-700 hover:text-orange-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                        </svg>
-                    </button>
-                </div>
             </div>
         </div>
+    </nav>
 
-        <!-- Mobile menu -->
-        <div id="mobile-menu" class="hidden bg-white border-t border-gray-100">
-            <div class="px-4 py-4 space-y-3">
-                <a href="{{ route('public.home') }}" class="block text-gray-700 hover:text-orange-600 font-medium py-2">{{ __('common.nav.home') }}</a>
-                <a href="{{ route('public.about') }}" class="block text-gray-700 hover:text-orange-600 font-medium py-2">{{ __('common.nav.about') }}</a>
-                <a href="{{ route('public.agencies') }}" class="block text-gray-700 hover:text-orange-600 font-medium py-2">{{ __('common.nav.partners') }}</a>
-                <a href="{{ route('public.how-it-works') }}" class="block text-gray-700 hover:text-orange-600 font-medium py-2">{{ __('common.nav.how_it_works') }}</a>
-                
-                <!-- Language Selector Mobile -->
-                <div class="pt-2 pb-2 border-t border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm font-medium text-gray-700">{{ __('common.footer.language') }}</span>
-                        <div class="flex items-center space-x-2">
-                            <a href="{{ route('lang.switch', 'fr') }}" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg {{ app()->getLocale() === 'fr' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700' }}">
+    <!-- Mobile Navigation -->
+    <nav class="md:hidden bg-white shadow-sm sticky top-0 z-50">
+        <div class="px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="{{ route('public.home') }}" class="flex items-center group">
+                        <img src="{{ asset('images/toubcar-logo.png') }}" alt="ToubCar Logo" class="h-20 w-auto transform group-hover:scale-105 transition-transform duration-200">
+                    </a>
+                </div>
+
+                <!-- Right side: Language Selector and Auth -->
+                <div class="flex items-center space-x-3">
+                    <!-- Language Selector Mobile - Visible -->
+                    <div class="relative">
+                        <button type="button" class="flex items-center space-x-1 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors" id="language-selector-mobile">
+                            @if(app()->getLocale() === 'fr')
                                 <svg class="w-5 h-5" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
                                     <g fill-rule="evenodd" stroke-width="1pt">
                                         <path fill="#fff" d="M0 0h640v480H0z"/>
@@ -245,9 +240,8 @@
                                         <path fill="#f31830" d="M426.7 0H640v480H426.7z"/>
                                     </g>
                                 </svg>
-                                <span class="text-xs font-medium">FR</span>
-                            </a>
-                            <a href="{{ route('lang.switch', 'en') }}" class="flex items-center space-x-2 px-3 py-1.5 rounded-lg {{ app()->getLocale() === 'en' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700' }}">
+                                <span class="text-xs font-medium text-gray-700">FR</span>
+                            @else
                                 <svg class="w-5 h-5" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
                                     <g fill-rule="evenodd" stroke-width="1pt">
                                         <path fill="#012169" d="M0 0h640v480H0z"/>
@@ -257,22 +251,81 @@
                                         <path fill="#C8102E" d="M0 193.3v93.4h640v-93.4H0zM273.3 0v480h93.4V0h-93.4z"/>
                                     </g>
                                 </svg>
-                                <span class="text-xs font-medium">EN</span>
+                                <span class="text-xs font-medium text-gray-700">EN</span>
+                            @endif
+                            <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        
+                        <!-- Language Dropdown Mobile -->
+                        <div id="language-dropdown-mobile" class="hidden absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                            <a href="{{ route('lang.switch', 'fr') }}" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 transition-colors {{ app()->getLocale() === 'fr' ? 'bg-orange-50' : '' }}">
+                                <svg class="w-5 h-5" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
+                                    <g fill-rule="evenodd" stroke-width="1pt">
+                                        <path fill="#fff" d="M0 0h640v480H0z"/>
+                                        <path fill="#00267f" d="M0 0h213.3v480H0z"/>
+                                        <path fill="#f31830" d="M426.7 0H640v480H426.7z"/>
+                                    </g>
+                                </svg>
+                                <span class="text-xs font-medium text-gray-700">{{ __('common.language.french') }}</span>
+                                @if(app()->getLocale() === 'fr')
+                                    <svg class="w-3 h-3 text-orange-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                @endif
+                            </a>
+                            <a href="{{ route('lang.switch', 'en') }}" class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 transition-colors {{ app()->getLocale() === 'en' ? 'bg-orange-50' : '' }}">
+                                <svg class="w-5 h-5" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
+                                    <g fill-rule="evenodd" stroke-width="1pt">
+                                        <path fill="#012169" d="M0 0h640v480H0z"/>
+                                        <path fill="#FFF" d="m75 0 244 181.7L562 0h78v62.5l-228 173.1 228 173.6v62.5h-78L319 301.2 81 471.2H0v-62.5l229-173.6L0 62.5V0h75z"/>
+                                        <path fill="#C8102E" d="m424 281.2 216 162.5v37.5H426.7zm-184 10.3 6.5 4.8-222-166v-35.3l215.5 161.5zm398-123.5L410.2 192l-9.7-7.3L610 64.2v35.3zm-52.3 69.1-216-162.5H0v35.3l215.5 161.5 6.5-4.8z"/>
+                                        <path fill="#FFF" d="M241 0v480h160V0H241zM0 160v160h640V160H0z"/>
+                                        <path fill="#C8102E" d="M0 193.3v93.4h640v-93.4H0zM273.3 0v480h93.4V0h-93.4z"/>
+                                    </g>
+                                </svg>
+                                <span class="text-xs font-medium text-gray-700">{{ __('common.language.english') }}</span>
+                                @if(app()->getLocale() === 'en')
+                                    <svg class="w-3 h-3 text-orange-600 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                @endif
                             </a>
                         </div>
                     </div>
-                </div>
-                
-                @guest
-                    <div class="pt-4 space-y-2">
-                        <a href="{{ route('login') }}" class="block bg-gray-200 hover:bg-gray-300 text-gray-900 px-6 py-2.5 rounded-full font-medium text-center transition duration-200">
+
+                    @auth
+                        @if(auth()->user()->role === 'client')
+                            <a href="{{ route('client.dashboard') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-full text-xs font-medium transition duration-200">
+                                {{ __('common.nav.my_account') }}
+                            </a>
+                        @elseif(auth()->user()->role === 'agency')
+                            <a href="{{ route('agency.dashboard') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-full text-xs font-medium transition duration-200">
+                                {{ __('common.nav.dashboard') }}
+                            </a>
+                        @elseif(auth()->user()->role === 'admin')
+                            <a href="{{ route('admin.dashboard') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-full text-xs font-medium transition duration-200">
+                                {{ __('common.nav.admin') }}
+                            </a>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}" class="text-gray-700 hover:text-orange-600 text-xs font-medium transition duration-200">
                             {{ __('common.login') }}
                         </a>
-                        <a href="{{ route('register') }}" class="block bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-full font-medium text-center transition duration-200">
+                        <a href="{{ route('register') }}" class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded-full text-xs font-medium transition duration-200">
                             {{ __('common.register') }}
                         </a>
-                    </div>
-                @endguest
+                    @endauth
+                </div>
+            </div>
+
+            <!-- Mobile Navigation Links -->
+            <div class="flex items-center justify-around mt-3 pt-3 border-t border-gray-100">
+                <a href="{{ route('public.home') }}" class="text-gray-700 hover:text-orange-600 text-xs font-medium transition duration-200">{{ __('common.nav.home') }}</a>
+                <a href="{{ route('public.about') }}" class="text-gray-700 hover:text-orange-600 text-xs font-medium transition duration-200">{{ __('common.nav.about') }}</a>
+                <a href="{{ route('public.agencies') }}" class="text-gray-700 hover:text-orange-600 text-xs font-medium transition duration-200">{{ __('common.nav.partners') }}</a>
+                <a href="{{ route('public.how-it-works') }}" class="text-gray-700 hover:text-orange-600 text-xs font-medium transition duration-200">{{ __('common.nav.how_it_works') }}</a>
             </div>
         </div>
     </nav>
@@ -381,18 +434,9 @@
             }
         }
         
-        // Mobile menu toggle
+        // Language selector dropdown (Desktop)
         document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
-            
-            if (mobileMenuButton && mobileMenu) {
-                mobileMenuButton.addEventListener('click', function() {
-                    mobileMenu.classList.toggle('hidden');
-                });
-            }
-            
-            // Language selector dropdown
+            // Desktop language selector
             const languageSelector = document.getElementById('language-selector');
             const languageDropdown = document.getElementById('language-dropdown');
             
@@ -407,6 +451,25 @@
                 document.addEventListener('click', function(e) {
                     if (!languageSelector.contains(e.target) && !languageDropdown.contains(e.target)) {
                         languageDropdown.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Mobile language selector
+            const languageSelectorMobile = document.getElementById('language-selector-mobile');
+            const languageDropdownMobile = document.getElementById('language-dropdown-mobile');
+            
+            if (languageSelectorMobile && languageDropdownMobile) {
+                // Toggle dropdown
+                languageSelectorMobile.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    languageDropdownMobile.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!languageSelectorMobile.contains(e.target) && !languageDropdownMobile.contains(e.target)) {
+                        languageDropdownMobile.classList.add('hidden');
                     }
                 });
             }
