@@ -16,5 +16,4 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-/storage/logs/*.log
-*.log  
+"*.log"  

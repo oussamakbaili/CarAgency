@@ -33,8 +33,8 @@ Après la création, vous verrez :
 
 ```env
 # --- Configuration PayPal ---
-PAYPAL_CLIENT_ID=your_paypal_client_id_here
-PAYPAL_CLIENT_SECRET=your_paypal_client_secret_here
+PAYPAL_CLIENT_ID=AWS-zPAiX8WQC-Af5J7nkv6UdSMQZclpDdJ0Tu3QEIj3xkbnOloW-p4OuYGFz4D17u5ImJYTw7l73ZCN
+PAYPAL_CLIENT_SECRET=EFSHCTGgyz6QMpqQ4oMjr9EaCVgacfV_kHoHN4ksQ0FshLOWKONZSImz_Dx7uPpEXxbjhrIXIlSGxbp3
 PAYPAL_TEST_MODE=true
 ```
 
