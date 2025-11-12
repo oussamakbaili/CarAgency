@@ -8,51 +8,48 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
                 <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-3 sm:mb-4">
-                    Nos Agences
-                    <span class="block text-[#C2410C]">
-                        Partenaires
-                    </span>
+                    {{ __('agencies.title') }}
                 </h1>
                 <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
-                    Découvrez nos agences de confiance partout au Maroc
+                    {{ __('agencies.subtitle') }}
                 </p>
             </div>
         </div>
     </div>
 
     <!-- Search and Filters -->
-    <div class="bg-white border-b border-gray-200 sticky top-20 z-40 shadow-sm">
+    <div class="bg-white border-b border-gray-200 md:sticky md:top-20 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
             <form method="GET" action="{{ route('public.agencies') }}">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
                     <!-- Search -->
                     <div>
-                        <label class="block text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">Rechercher</label>
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">{{ __('agencies.search') }}</label>
                         <input type="text" 
                                name="search" 
                                value="{{ request('search') }}" 
-                               placeholder="Nom de l'agence ou ville..." 
+                               placeholder="{{ __('agencies.search_placeholder') }}" 
                                class="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
                     </div>
                     
                     <!-- City -->
                     <div>
-                        <label class="block text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">Ville</label>
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">{{ __('agencies.city') }}</label>
                         <input type="text" 
                                name="city" 
                                value="{{ request('city') }}" 
-                               placeholder="Ville..." 
+                               placeholder="{{ __('agencies.city_placeholder') }}" 
                                class="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
                     </div>
                     
                     <!-- Rating -->
                     <div>
-                        <label class="block text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">Note minimum</label>
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-900 mb-1 sm:mb-2">{{ __('agencies.min_rating') }}</label>
                         <select name="min_rating" 
                                 class="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all">
-                            <option value="">Toutes les notes</option>
-                            <option value="4" {{ request('min_rating') == '4' ? 'selected' : '' }}>4+ étoiles</option>
-                            <option value="3" {{ request('min_rating') == '3' ? 'selected' : '' }}>3+ étoiles</option>
+                            <option value="">{{ __('agencies.all_ratings') }}</option>
+                            <option value="4" {{ request('min_rating') == '4' ? 'selected' : '' }}>4+ {{ __('agencies.stars') }}</option>
+                            <option value="3" {{ request('min_rating') == '3' ? 'selected' : '' }}>3+ {{ __('agencies.stars') }}</option>
                         </select>
                     </div>
                     
@@ -63,7 +60,7 @@
                             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
-                            Rechercher
+                            {{ __('common.search') }}
                         </button>
                     </div>
                 </div>
@@ -124,7 +121,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                             </svg>
                                         </div>
-                                        <span class="text-xs sm:text-sm font-medium">{{ $agency->cars_count ?? 0 }} voitures disponibles</span>
+                                        <span class="text-xs sm:text-sm font-medium">{{ $agency->cars_count ?? 0 }} {{ __('agencies.cars_available') }}</span>
                                     </div>
                                 </div>
                                 
@@ -132,11 +129,11 @@
                                 <div class="flex gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-100">
                                     <a href="{{ route('public.agency.show', $agency) }}" 
                                        class="flex-1 text-center px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-orange-500 hover:text-orange-600 transition-all">
-                                        Détails
+                                        {{ __('agencies.details') }}
                                     </a>
                                     <a href="{{ route('public.agency.cars', $agency) }}" 
                                        class="flex-1 text-center bg-[#C2410C] hover:bg-[#9A3412] text-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl">
-                                        Voir les voitures
+                                        {{ __('agencies.view_cars') }}
                                     </a>
                                 </div>
                             </div>
@@ -156,14 +153,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Aucune agence trouvée</h3>
-                    <p class="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">Essayez de modifier vos critères de recherche.</p>
+                    <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">{{ __('agencies.no_agencies_found') }}</h3>
+                    <p class="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">{{ __('agencies.try_modify_search') }}</p>
                     <a href="{{ route('public.agencies') }}" 
                        class="inline-flex items-center gap-1.5 sm:gap-2 bg-[#C2410C] hover:bg-[#9A3412] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold text-sm sm:text-base transition-all duration-200 shadow-lg hover:shadow-xl">
                         <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
-                        Voir toutes les agences
+                        {{ __('agencies.view_all_agencies') }}
                     </a>
                 </div>
             @endif
@@ -174,14 +171,14 @@
     <div class="bg-[#C2410C] py-10 sm:py-16 reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
-                Vous êtes une agence?
+                {{ __('agencies.are_you_agency') }}
             </h2>
             <p class="text-sm sm:text-lg text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto">
-                Rejoignez ToubCar et développez votre activité de location de voitures
+                {{ __('agencies.join_toubcar') }}
             </p>
             <a href="{{ route('register') }}" 
                class="inline-flex items-center gap-1.5 sm:gap-2 bg-white hover:bg-gray-100 text-orange-600 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base transition-colors shadow-xl">
-                Devenir Partenaire
+                {{ __('agencies.become_partner') }}
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                 </svg>
