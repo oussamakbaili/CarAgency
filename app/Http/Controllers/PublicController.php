@@ -318,6 +318,8 @@ class PublicController extends Controller
      */
     public function wishlists()
     {
+        $wishlists = collect([]);
+        
         if (auth()->check() && auth()->user()->isClient()) {
             $wishlists = auth()->user()->wishlists()
                 ->withCount('items')
@@ -327,10 +329,9 @@ class PublicController extends Controller
                     }]);
                 }])
                 ->get();
-            return view('public.wishlists', compact('wishlists'));
         }
         
-        return view('public.wishlists');
+        return view('public.wishlists', compact('wishlists'));
     }
 
     /**

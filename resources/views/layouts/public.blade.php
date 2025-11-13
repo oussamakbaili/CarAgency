@@ -279,7 +279,12 @@
                                                 </span>
                                                 <div>
                                                     <p class="font-semibold">{{ __('wishlists.page_title') }}</p>
-                                                    <p class="text-xs text-gray-400">{{ __('wishlists.items.saved', ['count' => auth()->user()->wishlists()->count()]) }}</p>
+                                                    <p class="text-xs text-gray-400">
+                                                        @php
+                                                            $wishlistCount = auth()->user()->wishlists()->count();
+                                                        @endphp
+                                                        {{ __('wishlists.items.saved', ['count' => $wishlistCount]) }}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">

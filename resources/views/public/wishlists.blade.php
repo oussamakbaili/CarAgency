@@ -143,7 +143,7 @@
 
                         @foreach($wishlists as $wishlist)
                             @php
-                                $previewItems = $wishlist->items->take(4);
+                                $previewItems = $wishlist->items ? $wishlist->items->take(4) : collect([]);
                                 $previewCount = $previewItems->count();
                                 $updatedTime = optional($wishlist->updated_at)->diffForHumans();
                             @endphp
@@ -152,10 +152,12 @@
                                     <div class="wishlist-collage rounded-2xl overflow-hidden mb-4">
                                         @foreach($previewItems as $item)
                                             @php
-                                                $imagePath = $item->car && $item->car->image ? asset('storage/'.$item->car->image) : asset('images/black-sedan-car-driving-bridge-road.png');
+                                                $car = $item->car ?? null;
+                                                $imagePath = $car && $car->image ? asset('storage/'.$car->image) : asset('images/black-sedan-car-driving-bridge-road.png');
+                                                $carBrand = $car ? ($car->brand ?? 'Car') : 'Car';
                                             @endphp
                                             <div class="relative aspect-square overflow-hidden">
-                                                <img src="{{ $imagePath }}" alt="{{ $item->car->brand ?? 'Car' }}"
+                                                <img src="{{ $imagePath }}" alt="{{ $carBrand }}"
                                                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                                             </div>
                                         @endforeach
@@ -176,7 +178,7 @@
                                             @endif
                                         </div>
                                         <div class="flex gap-2">
-                                            <a href="{{ route('client.wishlists.index') }}"
+                                            <a href="{{ route('public.wishlists') }}"
                                                class="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:text-orange-500 hover:border-orange-300 transition"
                                                title="{{ __('wishlists.items.view_all', ['count' => $wishlist->items_count]) }}">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
