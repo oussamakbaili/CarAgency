@@ -32,6 +32,40 @@
     body.modal-open {
         overflow: hidden;
     }
+
+    .animate-modal-in {
+        animation: modalFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .animate-illustration {
+        animation: illustrationFloat 1.2s ease-in-out;
+    }
+
+    @keyframes modalFadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+        }
+        60% {
+            opacity: 1;
+            transform: translateY(-6px) scale(1.02);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes illustrationFloat {
+        0% {
+            transform: translateY(30px) scale(0.85);
+            opacity: 0;
+        }
+        100% {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+    }
 </style>
 @endpush
 
@@ -46,14 +80,14 @@
     <div id="wishlist-intro-modal" class="hidden md:hidden fixed inset-0 z-50">
         <div class="absolute inset-0 bg-gray-900/50"></div>
         <div class="relative flex items-center justify-center min-h-screen px-6">
-            <div class="modal-card relative w-full max-w-sm rounded-[28px] overflow-hidden">
+            <div class="modal-card relative w-full max-w-sm rounded-[28px] overflow-hidden animate-modal-in">
                 <button id="wishlist-intro-close" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition" aria-label="Close">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
                 <div class="px-7 pt-8 pb-7 text-center space-y-6">
-                    <div class="modal-illustration mx-auto w-28 h-28 rounded-3xl flex items-center justify-center">
+                    <div class="modal-illustration mx-auto w-28 h-28 rounded-3xl flex items-center justify-center animate-illustration">
                         <div class="bg-white/95 w-24 h-24 rounded-2xl flex items-center justify-center shadow-inner">
                             <svg class="w-10 h-10 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12.1 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41.81 4.5 2.09C12.09 4.81 13.76 4 15.5 4 18 4 20 6 20 8.5c0 3.78-3.4 6.86-8.55 11.54l-.35.31z"/>
@@ -76,14 +110,14 @@
             <!-- Not Logged In State -->
             <div class="text-center py-10 sm:py-12 md:py-16">
                 <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
-                    Log in to view your wishlists
+                    {{ __('wishlists.guest.title') }}
                 </h2>
                 <p class="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto">
-                    You can create, view, or edit wishlists once you've logged in.
+                    {{ __('wishlists.guest.subtitle') }}
                 </p>
                 <a href="{{ route('login') }}" 
                    class="inline-flex items-center gap-1.5 sm:gap-2 bg-orange-600 hover:bg-orange-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base transition-colors shadow-lg">
-                    Log in
+                    {{ __('wishlists.guest.button') }}
                 </a>
             </div>
         @else
@@ -100,7 +134,7 @@
                                             @if($wishlist->description)
                                                 <p class="text-xs sm:text-sm text-gray-600">{{ $wishlist->description }}</p>
                                             @endif
-                                            <p class="text-xs sm:text-sm text-gray-500 mt-2">{{ $wishlist->items_count }} {{ $wishlist->items_count == 1 ? 'car' : 'cars' }}</p>
+                                            <p class="text-xs sm:text-sm text-gray-500 mt-2">{{ trans_choice('wishlists.items.count', $wishlist->items_count, ['count' => $wishlist->items_count]) }}</p>
                                         </div>
                                         <button onclick="deleteWishlist({{ $wishlist->id }})" 
                                                 class="text-gray-400 hover:text-red-600 transition-colors">
@@ -143,7 +177,7 @@
                                         @if($wishlist->items_count > 8)
                                             <a href="{{ route('public.wishlists') }}?wishlist={{ $wishlist->id }}" 
                                                class="inline-block mt-4 text-sm text-orange-600 hover:text-orange-700 font-medium">
-                                                View all {{ $wishlist->items_count }} cars →
+                                                {{ __('wishlists.items.view_all', ['count' => $wishlist->items_count]) }}
                                             </a>
                                         @endif
                                     @else
@@ -151,7 +185,7 @@
                                             <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                             </svg>
-                                            <p class="text-sm">This wishlist is empty</p>
+                                            <p class="text-sm">{{ __('wishlists.items.empty') }}</p>
                                         </div>
                                     @endif
                                 </div>
@@ -165,14 +199,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                         </svg>
                         <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
-                            No wishlists yet
+                            {{ __('wishlists.empty_state.title') }}
                         </h2>
                         <p class="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto">
-                            Start saving your favorite cars by clicking the heart icon on any car listing.
+                            {{ __('wishlists.empty_state.subtitle') }}
                         </p>
                         <a href="{{ route('public.home') }}" 
                            class="inline-flex items-center gap-1.5 sm:gap-2 bg-orange-600 hover:bg-orange-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base transition-colors shadow-lg">
-                            Explore Cars
+                            {{ __('wishlists.empty_state.button') }}
                         </a>
                     </div>
                 @endif
@@ -180,14 +214,14 @@
                 <!-- Not a Client -->
                 <div class="text-center py-10 sm:py-12 md:py-16">
                     <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
-                        Wishlists are for clients only
+                        {{ __('wishlists.clients_only.title') }}
                     </h2>
                     <p class="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8 max-w-md mx-auto">
-                        Please log in with a client account to use wishlists.
+                        {{ __('wishlists.clients_only.subtitle') }}
                     </p>
                     <a href="{{ route('login') }}" 
                        class="inline-flex items-center gap-1.5 sm:gap-2 bg-orange-600 hover:bg-orange-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base transition-colors shadow-lg">
-                        Log in
+                        {{ __('wishlists.clients_only.button') }}
                     </a>
                 </div>
             @endif
@@ -200,7 +234,7 @@
 @if(auth()->user()->isClient())
 <script>
     function deleteWishlist(wishlistId) {
-        if (!confirm('Are you sure you want to delete this wishlist?')) {
+        if (!confirm("{{ __('wishlists.actions.delete_confirm') }}")) {
             return;
         }
         
@@ -230,21 +264,21 @@
             const modal = document.getElementById('wishlist-intro-modal');
             if (!modal) return;
 
-            const storageKey = 'toubcar_wishlist_intro_shown_v1';
             const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
             function closeModal() {
                 modal.classList.add('hidden');
                 document.body.classList.remove('modal-open');
-                localStorage.setItem(storageKey, '1');
             }
 
             const closeBtn = document.getElementById('wishlist-intro-close');
             const confirmBtn = document.getElementById('wishlist-intro-confirm');
 
-            if (isMobile && !localStorage.getItem(storageKey)) {
-                modal.classList.remove('hidden');
-                document.body.classList.add('modal-open');
+            if (isMobile) {
+                setTimeout(() => {
+                    modal.classList.remove('hidden');
+                    document.body.classList.add('modal-open');
+                }, 200);
             }
 
             if (closeBtn) {
