@@ -26,6 +26,22 @@ return [
         'count' => '{0} :count voiture|{1} :count voiture|[2,*] :count voitures',
         'view_all' => 'Voir les :count voitures →',
         'empty' => 'Cette liste de favoris est vide',
+        'saved' => ':count sauvegardés',
+    ],
+    'cards' => [
+        'create_title' => 'Créez une nouvelle liste',
+        'create_description' => 'Organisez vos voitures préférées dans une collection dédiée.',
+        'cta_create' => 'Créer une liste',
+        'last_updated' => 'Mis à jour :time',
+    ],
+    'modal' => [
+        'title' => 'Ajouter aux favoris',
+        'create' => 'Créer une nouvelle liste',
+        'create_placeholder' => 'Nom de la liste de favoris',
+        'create_submit' => 'Créer',
+        'create_cancel' => 'Annuler',
+        'done' => 'Terminer',
+        'empty' => 'Pas encore de favoris. Créez-en une !',
     ],
     'actions' => [
         'delete_confirm' => 'Voulez-vous vraiment supprimer cette liste de favoris ?',

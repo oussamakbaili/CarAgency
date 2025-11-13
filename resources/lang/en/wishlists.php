@@ -26,6 +26,22 @@ return [
         'count' => '{0} :count car|{1} :count car|[2,*] :count cars',
         'view_all' => 'View all :count cars →',
         'empty' => 'This wishlist is empty',
+        'saved' => ':count saved',
+    ],
+    'cards' => [
+        'create_title' => 'Create a new wishlist',
+        'create_description' => 'Organise your favourite cars in a dedicated collection.',
+        'cta_create' => 'Create wishlist',
+        'last_updated' => 'Updated :time',
+    ],
+    'modal' => [
+        'title' => 'Save to wishlist',
+        'create' => 'Create new wishlist',
+        'create_placeholder' => 'Name your wishlist',
+        'create_submit' => 'Create',
+        'create_cancel' => 'Cancel',
+        'done' => 'Done',
+        'empty' => 'No wishlists yet. Create one!',
     ],
     'actions' => [
         'delete_confirm' => 'Are you sure you want to delete this wishlist?',
