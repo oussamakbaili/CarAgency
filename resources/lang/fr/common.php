@@ -52,6 +52,7 @@ return [
     'mobile_nav' => [
         'explore' => 'Explorer',
         'wishlists' => 'Favoris',
+        'messages' => 'Messages',
         'login' => 'Se connecter',
         'account' => 'Mon compte',
     ],

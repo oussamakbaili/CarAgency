@@ -16,6 +16,18 @@
             <span class="text-xs font-medium text-gray-500">{{ __('common.mobile_nav.wishlists') }}</span>
         </a>
 
+        <!-- Messages Button (only for authenticated clients) -->
+        @auth
+            @if(auth()->user()->isClient())
+                <a href="{{ route('public.messages') }}" class="flex flex-col items-center justify-center flex-1 h-full">
+                    <svg class="w-6 h-6 mb-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                    <span class="text-xs font-medium text-gray-500">{{ __('common.mobile_nav.messages') }}</span>
+                </a>
+            @endif
+        @endauth
+
         <!-- Account / Login Button -->
         @auth
             <a href="{{ route('client.dashboard') }}" class="flex flex-col items-center justify-center flex-1 h-full">

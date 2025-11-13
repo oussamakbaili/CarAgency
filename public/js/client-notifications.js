@@ -1,5 +1,6 @@
 // Client Notifications System
-function clientNotificationsDropdown() {
+// Make sure this function is available globally for Alpine.js
+window.clientNotificationsDropdown = function() {
     return {
         open: false,
         notifications: [],
@@ -113,6 +114,11 @@ function clientNotificationsDropdown() {
             await this.loadNotifications();
         }
     };
+};
+
+// Also export as a regular function for backward compatibility
+function clientNotificationsDropdown() {
+    return window.clientNotificationsDropdown();
 }
 
 // Real-time notifications using Server-Sent Events (if available)
