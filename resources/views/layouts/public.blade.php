@@ -91,6 +91,66 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #c2410c;
         }
+        
+        /* Mobile Menu Slow Motion Animations */
+        @keyframes slideDownSlow {
+            0% {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            50% {
+                opacity: 0.8;
+                transform: translateY(5px) scale(1.02);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes slideUpSlow {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+        
+        /* Mobile menu overlay positioning */
+        #mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        
+        /* Mobile menu item initial state */
+        .mobile-menu-item {
+            opacity: 0;
+            transform: translateY(20px);
+        }
     </style>
     @stack('styles')
 </head>
@@ -272,61 +332,64 @@
             </button>
         </div>
 
+        <!-- Mobile Menu Overlay Background -->
+        <div id="mobile-menu-overlay" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-40"></div>
+        
         <!-- Mobile Menu Dropdown -->
-        <div id="mobile-menu" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 py-4 z-50">
-            <div class="px-5 space-y-4">
-                <a href="{{ route('public.about') }}" class="flex items-center justify-between px-4 py-3 rounded-2xl bg-gray-50 hover:bg-orange-50 transition duration-200">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 3v4M8 3v4"/>
+        <div id="mobile-menu" class="hidden fixed top-16 right-4 w-80 bg-white rounded-3xl shadow-2xl border border-gray-100 py-5 z-50 overflow-hidden">
+            
+            <div class="px-6 space-y-3">
+                <!-- About Card -->
+                <a href="{{ route('public.about') }}" onclick="closeMobileMenu()" class="mobile-menu-item flex items-center justify-between px-5 py-4 rounded-2xl bg-white border border-gray-100 hover:border-orange-200 hover:bg-orange-50/50 transition-all duration-300 shadow-sm hover:shadow-md">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-orange-50 border-2 border-orange-200 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
                         </div>
-                        <div>
-                            <p class="text-sm font-semibold text-gray-900">{{ __('common.nav.about') }}</p>
-                            <p class="text-xs text-gray-500">{{ __('common.mobile_menu.about_desc') }}</p>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-base font-bold text-gray-900 mb-0.5">{{ __('common.nav.about') }}</p>
+                            <p class="text-xs text-gray-500 leading-relaxed">{{ __('common.mobile_menu.about_desc') }}</p>
                         </div>
                     </div>
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    <svg class="w-5 h-5 text-gray-400 flex-shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
                     </svg>
                 </a>
 
-                <a href="{{ route('public.agencies') }}" class="flex items-center justify-between px-4 py-3 rounded-2xl bg-gray-50 hover:bg-orange-50 transition duration-200">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                                <circle cx="9" cy="7" r="4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21v-2a4 4 0 00-3-3.87"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 3.13a4 4 0 010 7.75"/>
+                <!-- Partners Card -->
+                <a href="{{ route('public.agencies') }}" onclick="closeMobileMenu()" class="mobile-menu-item flex items-center justify-between px-5 py-4 rounded-2xl bg-white border border-gray-100 hover:border-blue-200 hover:bg-blue-50/50 transition-all duration-300 shadow-sm hover:shadow-md">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 border-2 border-blue-200 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                             </svg>
                         </div>
-                        <div>
-                            <p class="text-sm font-semibold text-gray-900">{{ __('common.nav.partners') }}</p>
-                            <p class="text-xs text-gray-500">{{ __('common.mobile_menu.partners_desc') }}</p>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-base font-bold text-gray-900 mb-0.5">{{ __('common.nav.partners') }}</p>
+                            <p class="text-xs text-gray-500 leading-relaxed">{{ __('common.mobile_menu.partners_desc') }}</p>
                         </div>
                     </div>
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    <svg class="w-5 h-5 text-gray-400 flex-shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
                     </svg>
                 </a>
 
-                <a href="{{ route('public.how-it-works') }}" class="flex items-center justify-between px-4 py-3 rounded-2xl bg-gray-50 hover:bg-orange-50 transition duration-200">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                <!-- How It Works Card -->
+                <a href="{{ route('public.how-it-works') }}" onclick="closeMobileMenu()" class="mobile-menu-item flex items-center justify-between px-5 py-4 rounded-2xl bg-white border border-gray-100 hover:border-green-200 hover:bg-green-50/50 transition-all duration-300 shadow-sm hover:shadow-md">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-green-50 border-2 border-green-200 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                             </svg>
                         </div>
-                        <div>
-                            <p class="text-sm font-semibold text-gray-900">{{ __('common.nav.how_it_works') }}</p>
-                            <p class="text-xs text-gray-500">{{ __('common.mobile_menu.how_it_works_desc') }}</p>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-base font-bold text-gray-900 mb-0.5">{{ __('common.nav.how_it_works') }}</p>
+                            <p class="text-xs text-gray-500 leading-relaxed">{{ __('common.mobile_menu.how_it_works_desc') }}</p>
                         </div>
                     </div>
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    <svg class="w-5 h-5 text-gray-400 flex-shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
                     </svg>
                 </a>
             </div>
@@ -477,15 +540,76 @@
                 });
             }
             
-            // Mobile hamburger menu toggle
+            // Mobile hamburger menu toggle with slow motion animation
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
             
             if (mobileMenuButton && mobileMenu) {
-                mobileMenuButton.addEventListener('click', function() {
-                    mobileMenu.classList.toggle('hidden');
+                mobileMenuButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isHidden = mobileMenu.classList.contains('hidden');
+                    
+                    if (isHidden) {
+                        // Open menu with slow motion
+                        if (mobileMenuOverlay) {
+                            mobileMenuOverlay.classList.remove('hidden');
+                            mobileMenuOverlay.style.animation = 'fadeIn 0.6s ease-out';
+                        }
+                        mobileMenu.classList.remove('hidden');
+                        mobileMenu.style.animation = 'slideDownSlow 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+                        document.body.style.overflow = 'hidden';
+                        
+                        // Animate menu items with stagger
+                        const menuItems = mobileMenu.querySelectorAll('.mobile-menu-item');
+                        menuItems.forEach((item, index) => {
+                            item.style.opacity = '0';
+                            item.style.transform = 'translateY(20px)';
+                            setTimeout(() => {
+                                item.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+                                item.style.opacity = '1';
+                                item.style.transform = 'translateY(0)';
+                            }, 200 + (index * 100));
+                        });
+                    } else {
+                        // Close menu
+                        closeMobileMenu();
+                    }
+                });
+                
+                // Close menu when clicking overlay
+                if (mobileMenuOverlay) {
+                    mobileMenuOverlay.addEventListener('click', function() {
+                        closeMobileMenu();
+                    });
+                }
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target) && !mobileMenu.classList.contains('hidden')) {
+                        closeMobileMenu();
+                    }
                 });
             }
+            
+            function closeMobileMenu() {
+                const mobileMenu = document.getElementById('mobile-menu');
+                const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+                
+                if (mobileMenu && mobileMenuOverlay) {
+                    mobileMenu.style.animation = 'slideUpSlow 0.4s ease-in';
+                    mobileMenuOverlay.style.animation = 'fadeOut 0.3s ease-in';
+                    
+                    setTimeout(() => {
+                        mobileMenu.classList.add('hidden');
+                        mobileMenuOverlay.classList.add('hidden');
+                        document.body.style.overflow = '';
+                    }, 400);
+                }
+            }
+            
+            // Make closeMobileMenu globally accessible
+            window.closeMobileMenu = closeMobileMenu;
         });
     </script>
 </body>
