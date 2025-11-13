@@ -194,7 +194,7 @@
                 <div id="create-wishlist-form" class="hidden mb-4">
                     <input type="text" id="wishlist-name" placeholder="{{ __('wishlists.actions.name_placeholder') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none">
                     <div class="flex gap-2 mt-3">
-                        <button onclick="createWishlist()" class="flex-1 bg-[#0F3B63] hover:bg-[#0d3456] text-white py-2.5 rounded-lg font-medium transition">
+                        <button id="save-wishlist-btn" onclick="createWishlist(event)" class="flex-1 bg-[#0F3B63] hover:bg-[#0d3456] text-white py-2.5 rounded-lg font-medium transition">
                             {{ __('wishlists.actions.save') }}
                         </button>
                         <button onclick="hideCreateForm()" class="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
@@ -434,11 +434,23 @@
         closeCreateWishlistModal();
     }
 
-    function createWishlist() {
+    function createWishlist(event) {
+        if (event) {
+            event.preventDefault();
+        }
+        
         const name = document.getElementById('wishlist-name').value.trim();
         if (!name) {
             alert('{{ __('wishlists.actions.name_placeholder') }}');
             return;
+        }
+
+        // Show loading state
+        const saveButton = document.getElementById('save-wishlist-btn');
+        const originalText = saveButton ? saveButton.textContent : '{{ __('wishlists.actions.save') }}';
+        if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.textContent = '{{ __('common.loading') }}...';
         }
 
         fetch('{{ url('client/wishlists') }}', {
@@ -450,17 +462,40 @@
             },
             body: JSON.stringify({ name: name })
         })
-        .then(response => response.json())
+        .then(async response => {
+            const contentType = response.headers.get('content-type');
+            if (!response.ok) {
+                if (contentType && contentType.includes('application/json')) {
+                    const err = await response.json();
+                    throw new Error(err.message || err.error || 'Error creating wishlist');
+                } else {
+                    throw new Error('Error creating wishlist. Please try again.');
+                }
+            }
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            }
+            throw new Error('Invalid response from server');
+        })
         .then(data => {
-            if (data.id) {
+            if (data && (data.id || data.name)) {
+                // Success - reload page
                 location.reload();
             } else {
                 alert('Error creating wishlist');
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.textContent = originalText;
+                }
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred. Please try again.');
+            alert(error.message || 'An error occurred. Please try again.');
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.textContent = originalText;
+            }
         });
     }
 </script>

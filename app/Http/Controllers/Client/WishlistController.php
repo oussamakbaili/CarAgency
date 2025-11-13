@@ -25,18 +25,31 @@ class WishlistController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+            ]);
 
-        $wishlist = Auth::user()->wishlists()->create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'is_public' => $request->is_public ?? false,
-        ]);
+            $wishlist = Auth::user()->wishlists()->create([
+                'name' => $request->name,
+                'description' => $request->description,
+                'is_public' => $request->is_public ?? false,
+            ]);
 
-        return response()->json($wishlist, 201);
+            return response()->json($wishlist, 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error creating wishlist: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error creating wishlist. Please try again.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
