@@ -14,6 +14,24 @@
     footer {
         display: none;
     }
+
+    #wishlist-intro-modal {
+        backdrop-filter: blur(10px);
+    }
+
+    #wishlist-intro-modal .modal-card {
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        box-shadow: 0 25px 45px rgba(15, 59, 99, 0.15);
+    }
+
+    #wishlist-intro-modal .modal-illustration {
+        background: linear-gradient(135deg, #f97316 0%, #fb923c 50%, #f97316 100%);
+        box-shadow: 0 15px 30px rgba(249, 115, 22, 0.25);
+    }
+
+    body.modal-open {
+        overflow: hidden;
+    }
 </style>
 @endpush
 
@@ -21,7 +39,35 @@
 <div class="min-h-screen bg-white pb-20 md:pb-0">
     <!-- Header -->
     <div class="text-center py-6 sm:py-8 md:py-10 reveal-section">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Wishlists</h1>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ __('wishlists.page_title') }}</h1>
+    </div>
+
+    <!-- Intro Modal (First Time Mobile Users) -->
+    <div id="wishlist-intro-modal" class="hidden md:hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-gray-900/50"></div>
+        <div class="relative flex items-center justify-center min-h-screen px-6">
+            <div class="modal-card relative w-full max-w-sm rounded-[28px] overflow-hidden">
+                <button id="wishlist-intro-close" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition" aria-label="Close">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+                <div class="px-7 pt-8 pb-7 text-center space-y-6">
+                    <div class="modal-illustration mx-auto w-28 h-28 rounded-3xl flex items-center justify-center">
+                        <div class="bg-white/95 w-24 h-24 rounded-2xl flex items-center justify-center shadow-inner">
+                            <svg class="w-10 h-10 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12.1 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41.81 4.5 2.09C12.09 4.81 13.76 4 15.5 4 18 4 20 6 20 8.5c0 3.78-3.4 6.86-8.55 11.54l-.35.31z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <h2 class="text-xl font-semibold text-gray-900">{{ __('wishlists.intro.title') }}</h2>
+                        <p class="text-sm text-gray-500 leading-relaxed">{{ __('wishlists.intro.subtitle') }}</p>
+                    </div>
+                    <button id="wishlist-intro-confirm" class="w-full bg-[#0F3B63] hover:bg-[#0d3456] text-white py-3.5 rounded-2xl font-semibold text-sm transition">{{ __('wishlists.intro.button') }}</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -147,6 +193,7 @@
             @endif
         @endguest
     </div>
+    @include('components.mobile-bottom-nav')
 </div>
 
 @auth
@@ -177,55 +224,45 @@
 @endif
 @endauth
 
-<!-- Bottom Navigation Bar - Mobile Only -->
-<div id="bottom-nav" class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg md:hidden">
-    <div class="flex items-center justify-around h-16 px-2">
-        <!-- Explore Button -->
-        <a href="{{ route('public.home') }}" class="flex flex-col items-center justify-center flex-1 h-full">
-            <svg class="w-6 h-6 mb-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-            <span class="text-xs font-medium text-gray-500">Explore</span>
-        </a>
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('wishlist-intro-modal');
+            if (!modal) return;
 
-        <!-- Wishlists Button (Active) -->
-        <a href="{{ route('public.wishlists') }}" class="flex flex-col items-center justify-center flex-1 h-full">
-            <svg class="w-6 h-6 mb-1 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-            </svg>
-            <span class="text-xs font-semibold text-pink-500">Wishlists</span>
-        </a>
+            const storageKey = 'toubcar_wishlist_intro_shown_v1';
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
-        <!-- Log in Button -->
-        @auth
-            <a href="{{ route('client.dashboard') }}" class="flex flex-col items-center justify-center flex-1 h-full">
-                <svg class="w-6 h-6 mb-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-                <span class="text-xs font-medium text-gray-500">Account</span>
-            </a>
-        @else
-            <a href="{{ route('login') }}" class="flex flex-col items-center justify-center flex-1 h-full">
-                <svg class="w-6 h-6 mb-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-                <span class="text-xs font-medium text-gray-500">Log in</span>
-            </a>
-        @endauth
-    </div>
-</div>
+            function closeModal() {
+                modal.classList.add('hidden');
+                document.body.classList.remove('modal-open');
+                localStorage.setItem(storageKey, '1');
+            }
 
-<style>
-    #bottom-nav {
-        transform: translateY(0);
-        transition: transform 2.5s cubic-bezier(0.16, 1, 0.3, 1);
-        will-change: transform;
-    }
-    
-    #bottom-nav.hidden {
-        transform: translateY(100%);
-        transition: transform 0.3s ease-in-out;
-    }
-</style>
+            const closeBtn = document.getElementById('wishlist-intro-close');
+            const confirmBtn = document.getElementById('wishlist-intro-confirm');
+
+            if (isMobile && !localStorage.getItem(storageKey)) {
+                modal.classList.remove('hidden');
+                document.body.classList.add('modal-open');
+            }
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeModal);
+            }
+
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', closeModal);
+            }
+
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+@endpush
+
 @endsection
 
