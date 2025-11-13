@@ -320,15 +320,20 @@ class PublicController extends Controller
     {
         $wishlists = collect([]);
         
-        if (auth()->check() && auth()->user()->isClient()) {
-            $wishlists = auth()->user()->wishlists()
-                ->withCount('items')
-                ->with(['items' => function($query) {
-                    $query->with(['car' => function($q) {
-                        $q->with('agency');
-                    }]);
-                }])
-                ->get();
+        try {
+            if (auth()->check() && auth()->user()->isClient()) {
+                $wishlists = auth()->user()->wishlists()
+                    ->withCount('items')
+                    ->with(['items' => function($query) {
+                        $query->with(['car' => function($q) {
+                            $q->with('agency');
+                        }]);
+                    }])
+                    ->get();
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error loading wishlists: ' . $e->getMessage());
+            $wishlists = collect([]);
         }
         
         return view('public.wishlists', compact('wishlists'));

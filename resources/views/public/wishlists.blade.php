@@ -252,7 +252,10 @@
                                                 <p class="text-sm text-gray-600 mb-2">{{ $wishlist->description }}</p>
                                             @endif
                                             <p class="text-xs sm:text-sm text-gray-500">
-                                                {{ trans_choice('wishlists.items.count', $wishlist->items_count, ['count' => $wishlist->items_count]) }}
+                                                @php
+                                                    $itemsCount = $wishlist->items_count ?? $wishlist->items->count() ?? 0;
+                                                @endphp
+                                                {{ trans_choice('wishlists.items.count', $itemsCount, ['count' => $itemsCount]) }}
                                                 @if($wishlist->updated_at)
                                                     • {{ $wishlist->updated_at->diffForHumans() }}
                                                 @endif
@@ -272,7 +275,7 @@
                                     <div class="p-4 sm:p-6">
                                         <div class="wishlist-card-grid">
                                             @foreach($wishlist->items->take(4) as $item)
-                                                @if($item->car)
+                                                @if($item->car && $item->car->agency)
                                                     <div onclick="window.location='{{ route('public.car.show', [$item->car->agency, $item->car]) }}'" 
                                                          class="wishlist-image cursor-pointer group relative overflow-hidden rounded-lg bg-gray-100">
                                                         @if($item->car->image_url)
@@ -291,11 +294,14 @@
                                             @endforeach
                                         </div>
                                         
-                                        @if($wishlist->items_count > 4)
+                                        @php
+                                            $itemsCount = $wishlist->items_count ?? $wishlist->items->count() ?? 0;
+                                        @endphp
+                                        @if($itemsCount > 4)
                                             <div class="mt-4 text-center">
                                                 <a href="{{ route('public.wishlists') }}?wishlist={{ $wishlist->id }}" 
                                                    class="inline-block text-sm text-orange-600 hover:text-orange-700 font-medium">
-                                                    {{ __('wishlists.items.view_all', ['count' => $wishlist->items_count]) }}
+                                                    {{ __('wishlists.items.view_all', ['count' => $itemsCount]) }}
                                                 </a>
                                             </div>
                                         @endif
