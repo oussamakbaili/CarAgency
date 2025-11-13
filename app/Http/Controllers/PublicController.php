@@ -340,6 +340,91 @@ class PublicController extends Controller
     }
 
     /**
+     * Show messages page (public version without sidebar)
+     */
+    public function messages()
+    {
+        if (!auth()->check() || !auth()->user()->isClient()) {
+            return redirect()->route('login')
+                ->with('message', 'Veuillez vous connecter pour accéder à vos messages.');
+        }
+
+        $user = auth()->user();
+        $client = $user->client;
+        
+        // Récupérer les réservations actives avec messages
+        $rentals = \App\Models\Rental::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->with(['car', 'agency.user', 'messages' => function($query) use ($user) {
+                $query->where('receiver_id', $user->id)
+                      ->where('receiver_type', $user->getMessageType())
+                      ->orderBy('created_at', 'desc');
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Compter les messages non lus pour chaque réservation
+        foreach ($rentals as $rental) {
+            $rental->unread_count = $rental->getUnreadMessagesCountForUser($user->id, $user->getMessageType());
+            $rental->last_message = $rental->messages->first();
+            $rental->conversation_type = 'rental';
+        }
+
+        // Récupérer UNIQUEMENT les tickets de support créés par ce client
+        $supportTickets = \App\Models\SupportTicket::where('client_id', $client->id)
+            ->whereNull('agency_id')
+            ->with(['messages' => function($query) use ($client) {
+                $query->where('recipient_id', $client->id)
+                      ->where('recipient_type', 'App\Models\Client')
+                      ->orderBy('created_at', 'desc');
+            }])
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        // Compter les messages non lus pour chaque ticket
+        foreach ($supportTickets as $ticket) {
+            $ticket->unread_count = $ticket->getUnreadMessagesCount($client);
+            $ticket->last_message = $ticket->messages->first();
+            $ticket->conversation_type = 'support';
+        }
+
+        // Combiner et trier toutes les conversations par date de dernière activité
+        $allConversations = collect()
+            ->merge($rentals->map(function($rental) {
+                return (object) [
+                    'id' => 'rental_' . $rental->id,
+                    'type' => 'rental',
+                    'title' => $rental->car->brand . ' ' . $rental->car->model,
+                    'subtitle' => $rental->agency->agency_name . ' • ' . $rental->start_date->format('d/m/Y') . ' - ' . $rental->end_date->format('d/m/Y'),
+                    'unread_count' => $rental->unread_count,
+                    'last_message' => $rental->last_message,
+                    'last_activity' => $rental->last_message ? $rental->last_message->created_at : $rental->created_at,
+                    'status' => 'active',
+                    'image' => $rental->car->image_url,
+                    'original' => $rental
+                ];
+            }))
+            ->merge($supportTickets->map(function($ticket) {
+                return (object) [
+                    'id' => 'support_' . $ticket->id,
+                    'type' => 'support',
+                    'title' => $ticket->subject,
+                    'subtitle' => 'Support • Ticket #' . $ticket->ticket_number . ' • ' . $ticket->created_at->format('d/m/Y'),
+                    'unread_count' => $ticket->unread_count,
+                    'last_message' => $ticket->last_message,
+                    'last_activity' => $ticket->last_message ? $ticket->last_message->created_at : $ticket->created_at,
+                    'status' => $ticket->status,
+                    'image' => null,
+                    'original' => $ticket
+                ];
+            }))
+            ->sortByDesc('last_activity')
+            ->values();
+
+        return view('public.messages.index', compact('allConversations', 'rentals', 'supportTickets'));
+    }
+
+    /**
      * Redirect to login when trying to book without authentication
      */
     public function requireLogin(Request $request)

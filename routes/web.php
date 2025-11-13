@@ -594,6 +594,7 @@ Route::get('/agencies', [App\Http\Controllers\PublicController::class, 'agencies
 Route::get('/about', [App\Http\Controllers\PublicController::class, 'about'])->name('public.about');
 Route::get('/how-it-works', [App\Http\Controllers\PublicController::class, 'howItWorks'])->name('public.how-it-works');
 Route::get('/wishlists', [App\Http\Controllers\PublicController::class, 'wishlists'])->name('public.wishlists');
+Route::get('/messages', [App\Http\Controllers\PublicController::class, 'messages'])->name('public.messages');
 Route::get('/search', [App\Http\Controllers\PublicController::class, 'search'])->name('public.search');
 Route::get('/cars/search', [App\Http\Controllers\PublicController::class, 'searchCars'])->name('public.cars.search');
 Route::get('/agencies/{agency}', [App\Http\Controllers\PublicController::class, 'showAgency'])->name('public.agency.show');
