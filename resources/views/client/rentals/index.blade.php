@@ -114,12 +114,13 @@
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"/>
                 </svg>
-                Filtres
+                <span class="md:hidden">Filtres</span>
+                <span class="hidden md:inline">Afficher/Masquer</span>
             </button>
         </div>
 
         <form method="GET" action="{{ route('client.rentals.index') }}" class="space-y-3 sm:space-y-4" id="rentalsFiltersForm">
-            <div id="filtersGrid" class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            <div id="filtersGrid" class="hidden md:grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                         <!-- Status Filter -->
                         <div>
                     <label for="status" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Statut</label>
@@ -148,155 +149,166 @@
                     </div>
 
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-200">
-                <div class="text-xs sm:text-sm text-gray-600">
-                            {{ $rentals->total() }} location(s) trouvée(s)
-                        </div>
-                <div class="flex flex-wrap gap-2 sm:gap-3">
-                            <a href="{{ route('client.rentals.index') }}" 
-                       class="px-4 sm:px-6 py-2 sm:py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium">
-                                Réinitialiser
-                            </a>
-                            <button type="submit" 
-                            class="px-4 sm:px-6 py-2 sm:py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium text-xs sm:text-sm">
-                                Appliquer
-                            </button>
-                        </div>
-                    </div>
+                <div class="text-xs sm:text-sm text-gray-600 w-full sm:w-auto">
+                    {{ $rentals->total() }} location(s) trouvée(s)
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                    <a href="{{ route('client.rentals.index') }}" 
+                       class="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium text-center">
+                        Réinitialiser
+                    </a>
+                    <button type="submit" 
+                            class="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium text-xs sm:text-sm">
+                        Appliquer
+                    </button>
+                </div>
+            </div>
                 </form>
             </div>
         </div>
 
 <!-- Rentals List -->
 @if($rentals->count() > 0)
-<div class="space-y-4">
+<div class="space-y-3 sm:space-y-4">
     @foreach($rentals as $rental)
     <div class="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow border border-gray-200">
-                <div class="p-6">
-                    <div class="flex items-start justify-between">
-                        <!-- Car Image and Info -->
-                        <div class="flex items-start space-x-4">
-                            <div class="flex-shrink-0">
-                                @if($rental->car->image)
-                                    <img src="{{ $rental->car->image_url }}" 
-                                         alt="{{ $rental->car->brand }} {{ $rental->car->model }}" 
-                                         class="w-20 h-20 object-cover rounded-lg">
-                                @else
-                                    <div class="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                        </svg>
-                                    </div>
+        <div class="p-4 sm:p-6">
+            <!-- Mobile Layout: Stack vertically -->
+            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                <!-- Car Image and Info -->
+                <div class="flex items-start space-x-3 sm:space-x-4 flex-1 min-w-0">
+                    <div class="flex-shrink-0">
+                        @if($rental->car->image)
+                            <img src="{{ $rental->car->image_url }}" 
+                                 alt="{{ $rental->car->brand }} {{ $rental->car->model }}" 
+                                 class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg">
+                        @else
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <!-- Title and Status -->
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-3 mb-2 sm:mb-3 gap-2">
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                {{ $rental->car->brand }} {{ $rental->car->model }}
+                            </h3>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full self-start
+                                @switch($rental->status)
+                                    @case('approved')
+                                        bg-green-100 text-green-800
+                                        @break
+                                    @case('pending')
+                                        bg-orange-100 text-orange-800
+                                        @break
+                                    @case('completed')
+                                        bg-blue-100 text-blue-800
+                                        @break
+                                    @case('cancelled')
+                                        bg-gray-100 text-gray-800
+                                        @break
+                                    @case('rejected')
+                                        bg-red-100 text-red-800
+                                        @break
+                                    @default
+                                        bg-gray-100 text-gray-800
+                                @endswitch">
+                                @if($rental->status === 'approved') Active
+                                @elseif($rental->status === 'pending') En attente
+                                @elseif($rental->status === 'completed') Terminée
+                                @elseif($rental->status === 'cancelled') Annulée
+                                @elseif($rental->status === 'rejected') Rejetée
+                                @else {{ ucfirst($rental->status) }}
                                 @endif
-                            </div>
-
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center space-x-3 mb-2">
-                                    <h3 class="text-lg font-semibold text-gray-900">
-                                        {{ $rental->car->brand }} {{ $rental->car->model }}
-                                    </h3>
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full
-                                        @switch($rental->status)
-                                            @case('approved')
-                                                bg-green-100 text-green-800
-                                                @break
-                                            @case('pending')
-                                                bg-orange-100 text-orange-800
-                                                @break
-                                            @case('completed')
-                                                bg-blue-100 text-blue-800
-                                                @break
-                                            @case('cancelled')
-                                                bg-gray-100 text-gray-800
-                                                @break
-                                            @case('rejected')
-                                                bg-red-100 text-red-800
-                                                @break
-                                            @default
-                                                bg-gray-100 text-gray-800
-                                        @endswitch">
-                                        {{ ucfirst($rental->status) }}
-                                    </span>
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-                                    <div class="space-y-1">
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                            </svg>
-                                            <span>{{ $rental->start_date->format('d/m/Y') }} - {{ $rental->end_date->format('d/m/Y') }}</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            </svg>
-                                            <span>{{ $rental->car->agency->user->name ?? 'N/A' }}</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                            </svg>
-                                            <span>{{ $rental->car->registration_number }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="space-y-1">
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                                            </svg>
-                                            <span>{{ number_format($rental->total_price, 0) }}€</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            <span>{{ $rental->start_date->diffInDays($rental->end_date) + 1 }} jour(s)</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                            </svg>
-                                            <span>Créée le {{ $rental->created_at->format('d/m/Y') }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            </span>
                         </div>
 
-                        <!-- Actions -->
-                        <div class="flex flex-col items-end space-y-2">
-                            <div class="text-right">
-                                <div class="text-2xl font-bold text-orange-600">
-                                    {{ number_format($rental->total_price, 0) }} MAD
+                        <!-- Details Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-4">
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="truncate">{{ $rental->start_date->format('d/m/Y') }} - {{ $rental->end_date->format('d/m/Y') }}</span>
                                 </div>
-                                <div class="text-sm text-gray-500">
-                                    {{ number_format($rental->total_price / ($rental->start_date->diffInDays($rental->end_date) + 1), 0) }} MAD/jour
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                    <span class="truncate">{{ $rental->car->agency->user->name ?? 'N/A' }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    <span class="truncate">{{ $rental->car->registration_number }}</span>
                                 </div>
                             </div>
-                            
-                            <div class="flex space-x-2">
-                                <a href="{{ route('client.rentals.show', $rental) }}" 
-                                   class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium">
-                                    Voir détails
-                                </a>
-                                
-                                @if($rental->status === 'active')
-                                    <a href="{{ route('client.messages.show', $rental) }}" 
-                                       class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium flex items-center">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                                        </svg>
-                                        Contacter
-                                    </a>
-                                @endif
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                                    </svg>
+                                    <span>{{ number_format($rental->total_price, 0) }} MAD</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span>{{ $rental->start_date->diffInDays($rental->end_date) + 1 }} jour(s)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span>Créée le {{ $rental->created_at->format('d/m/Y') }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Actions and Price - Mobile: Full width, Desktop: Right side -->
+                <div class="flex flex-col md:items-end md:justify-between gap-3 sm:gap-4 md:ml-4 md:flex-shrink-0">
+                    <!-- Price -->
+                    <div class="text-left md:text-right">
+                        <div class="text-xl sm:text-2xl font-bold text-orange-600">
+                            {{ number_format($rental->total_price, 0) }} MAD
+                        </div>
+                        <div class="text-xs sm:text-sm text-gray-500">
+                            {{ number_format($rental->total_price / ($rental->start_date->diffInDays($rental->end_date) + 1), 0) }} MAD/jour
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                        <a href="{{ route('client.rentals.show', $rental) }}" 
+                           class="flex-1 sm:flex-none px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium text-center">
+                            Voir détails
+                        </a>
+                        
+                        @if($rental->status === 'approved' || $rental->status === 'active')
+                            <a href="{{ route('client.messages.index') }}" 
+                               class="flex-1 sm:flex-none px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                </svg>
+                                Contacter
+                            </a>
+                        @endif
+                    </div>
+                </div>
             </div>
-            @endforeach
         </div>
+    </div>
+    @endforeach
+</div>
 
 <!-- Pagination -->
 <div class="bg-white overflow-hidden shadow-sm rounded-lg">
@@ -335,7 +347,15 @@
 <script>
 function toggleFilters() {
     const filtersGrid = document.getElementById('filtersGrid');
-    filtersGrid.classList.toggle('hidden');
+    if (window.innerWidth < 768) {
+        // Mobile: Toggle visibility
+        filtersGrid.classList.toggle('hidden');
+        filtersGrid.classList.toggle('grid');
+    } else {
+        // Desktop: Always visible, just toggle for consistency
+        filtersGrid.classList.remove('hidden');
+        filtersGrid.classList.add('grid');
+    }
 }
 
 function clearFilters() {
