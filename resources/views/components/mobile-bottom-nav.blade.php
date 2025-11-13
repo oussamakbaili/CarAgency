@@ -1,4 +1,4 @@
-@guest
+@unless(request()->routeIs('client.dashboard') || request()->routeIs('agence.dashboard') || request()->routeIs('admin.dashboard'))
 <div id="bottom-nav" class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg md:hidden">
     <div class="flex items-center justify-around h-16 px-2">
         <!-- Explore Button -->
@@ -105,4 +105,4 @@
         </script>
     @endpush
 @endonce
-@endguest
+@endunless
