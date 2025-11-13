@@ -7,10 +7,10 @@
     <div class="relative bg-gray-50 py-10 sm:py-16 reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
-                <h1 class="text-5xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
+                <h1 class="text-5xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6 sm:mb-8">
                     À Propos de <span class="text-orange-600">ToubCar</span>
                 </h1>
-                <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">
+                <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
                     La plateforme de location de voitures la plus innovante au Maroc
                 </p>
             </div>
@@ -21,16 +21,18 @@
     <div class="py-10 sm:py-16 bg-white reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12 items-center">
-                <div>
-                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
+                <div class="space-y-6 sm:space-y-8">
+                    <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
                         Notre <span class="text-orange-600">Mission</span>
                     </h2>
-                    <p class="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6 leading-relaxed">
-                        ToubCar est la plateforme de location de voitures la plus innovante au Maroc. Nous connectons les voyageurs avec une large sélection de véhicules de qualité, tout en offrant aux propriétaires une opportunité unique de monétiser leurs véhicules.
-                    </p>
-                    <p class="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 leading-relaxed">
-                        Notre mission est de rendre la location de voiture simple, sécurisée et accessible à tous, tout en créant une communauté de confiance entre propriétaires et locataires.
-                    </p>
+                    <div class="space-y-1">
+                        <p class="text-base sm:text-lg text-gray-600 leading-relaxed font-normal">
+                            ToubCar est la plateforme de location de voitures la plus innovante au Maroc. Nous connectons les voyageurs avec une large sélection de véhicules de qualité, tout en offrant aux propriétaires une opportunité unique de monétiser leurs véhicules.
+                        </p>
+                        <p class="text-base sm:text-lg text-gray-600 leading-relaxed font-normal">
+                            Notre mission est de rendre la location de voiture simple, sécurisée et accessible à tous, tout en créant une communauté de confiance entre propriétaires et locataires.
+                        </p>
+                    </div>
                     
                     <!-- Stats -->
                     <div class="grid grid-cols-3 gap-3 sm:gap-6">
@@ -76,8 +78,8 @@
     <!-- Values Section -->
     <div class="py-10 sm:py-16 bg-gray-50 reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-8 sm:mb-12">
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
+            <div class="text-center mb-6 sm:mb-8">
+                <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
                     Nos <span class="text-orange-600">Valeurs</span>
                 </h2>
                 <p class="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
@@ -92,8 +94,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                         </svg>
                     </div>
-                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Sécurité</h3>
-                    <p class="text-sm sm:text-base text-gray-600 leading-relaxed">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Sécurité</h3>
+                    <p class="text-base sm:text-lg text-gray-600 leading-relaxed font-normal">
                         La sécurité de nos clients et partenaires est notre priorité absolue. Tous nos véhicules sont vérifiés et assurés.
                     </p>
                 </div>
@@ -104,8 +106,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
                     </div>
-                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Innovation</h3>
-                    <p class="text-sm sm:text-base text-gray-600 leading-relaxed">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Innovation</h3>
+                    <p class="text-base sm:text-lg text-gray-600 leading-relaxed font-normal">
                         Nous utilisons les dernières technologies pour offrir une expérience de location moderne et intuitive.
                     </p>
                 </div>
@@ -116,8 +118,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
                     </div>
-                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">Communauté</h3>
-                    <p class="text-sm sm:text-base text-gray-600 leading-relaxed">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Communauté</h3>
+                    <p class="text-base sm:text-lg text-gray-600 leading-relaxed font-normal">
                         Nous créons une communauté de confiance entre locataires et propriétaires, basée sur le respect mutuel.
                     </p>
                 </div>
@@ -154,4 +156,3 @@
     </div>
     @include('components.mobile-bottom-nav')
 @endsection
-
