@@ -2,16 +2,28 @@
 
 @section('title', 'Voitures de ' . $agency->agency_name)
 
+@push('styles')
+<style>
+    .scrollbar-hide {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+</style>
+@endpush
+
 @section('content')
     <!-- Hero Section -->
     <div class="relative bg-orange-50 py-10 sm:py-16 reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-2 sm:mb-4">
-                        Voitures de <span class="text-[#C2410C]">{{ $agency->agency_name }}</span>
+                    <h1 class="text-5xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-6 sm:mb-8">
+                        Voitures de <span class="text-orange-600">{{ $agency->agency_name }}</span>
                     </h1>
-                    <p class="text-sm sm:text-base md:text-lg text-gray-600">{{ $cars->total() }} voitures disponibles</p>
+                    <p class="text-base sm:text-lg text-gray-600 leading-relaxed">{{ $cars->total() }} voitures disponibles</p>
                 </div>
                 <a href="{{ route('public.agency.show', $agency) }}" 
                    class="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-3 border-2 border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white rounded-xl font-semibold text-sm sm:text-base transition-all duration-200">
@@ -25,7 +37,7 @@
     </div>
 
     <!-- Filters Section -->
-    <div class="sticky top-0 z-40 bg-white shadow-md border-b border-gray-200">
+    <div class="md:sticky md:top-0 z-40 bg-white shadow-md border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
             <form method="GET" action="{{ route('public.agency.cars', $agency) }}" class="space-y-3 sm:space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-3 sm:gap-4">
@@ -66,19 +78,80 @@
         </div>
     </div>
 
-    <!-- Cars Grid -->
+    <!-- Cars Section -->
     <div class="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 reveal-section">
         @if($cars->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            <!-- Mobile: Horizontal Scroll -->
+            <div class="md:hidden mb-6 sm:mb-8">
+                <div class="flex items-center justify-between mb-1 sm:mb-2">
+                    <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">{{ $cars->total() }} voitures</h2>
+                </div>
+                <div class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
+                    @foreach($cars as $car)
+                        <div onclick="window.location='{{ route('public.car.show', [$agency, $car]) }}'" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer">
+                            <!-- Car Image -->
+                            <div class="car-card-image relative h-[240px] bg-gray-100 overflow-hidden">
+                                @if($car->image_url)
+                                    <img src="{{ $car->image_url }}" alt="{{ $car->brand }} {{ $car->model }}" 
+                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                @else
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                        </svg>
+                                    </div>
+                                @endif
+                                
+                                <!-- Rating Badge -->
+                                <div class="absolute bottom-3 left-3 flex items-center gap-1 px-2 py-1 rounded-md bg-white/95 backdrop-blur-sm shadow-sm">
+                                    <svg class="w-4 h-4 text-orange-600 fill-current" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                    <span class="text-sm font-semibold text-gray-900">4.8</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Car Details -->
+                            <div class="p-4">
+                                <div class="mb-3">
+                                    <h3 class="text-base font-semibold text-gray-900 truncate">{{ $car->brand }} {{ $car->model }}</h3>
+                                    <p class="text-sm text-gray-500 mt-1">{{ $car->year }} • {{ $car->fuel_type }}</p>
+                                </div>
+                                
+                                <!-- Price + CTA -->
+                                <div class="flex items-center justify-between mt-3">
+                                    <div class="flex items-baseline gap-1">
+                                        <span class="text-lg font-bold text-gray-900">{{ number_format($car->client_price_per_day, 0) }}</span>
+                                        <span class="text-sm text-gray-600">MAD</span>
+                                        <span class="text-sm text-gray-500">/jour</span>
+                                    </div>
+                                    <a href="{{ route('public.car.show', [$agency, $car]) }}" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 bg-[#C2410C] hover:bg-[#9A3412] text-white px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm">
+                                        Détails
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Desktop: Grid Layout -->
+            <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 @foreach($cars as $car)
                     <div onclick="window.location='{{ route('public.car.show', [$agency, $car]) }}'" class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer">
                         <!-- Car Image -->
                         <div class="relative h-56 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <svg class="w-20 h-20 text-gray-300 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
-                                </svg>
-                            </div>
+                            @if($car->image_url)
+                                <img src="{{ $car->image_url }}" alt="{{ $car->brand }} {{ $car->model }}" 
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            @else
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <svg class="w-20 h-20 text-gray-300 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
+                                    </svg>
+                                </div>
+                            @endif
                             <!-- Rating Badge -->
                             <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-1.5 flex items-center gap-1.5 shadow-lg">
                                 <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -162,11 +235,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
                     </svg>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">Aucune voiture trouvée</h3>
-                <p class="text-gray-600 mb-8">Essayez de modifier vos critères de recherche.</p>
+                <h3 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Aucune voiture trouvée</h3>
+                <p class="text-base sm:text-lg text-gray-600 leading-relaxed mb-6 sm:mb-8">Essayez de modifier vos critères de recherche.</p>
                 <a href="{{ route('public.agency.cars', $agency) }}" 
-                   class="inline-flex items-center gap-2 bg-[#C2410C] hover:bg-[#9A3412] text-white px-8 py-4 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="inline-flex items-center gap-1.5 sm:gap-2 bg-[#C2410C] hover:bg-[#9A3412] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base shadow-lg hover:shadow-xl">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                     </svg>
                     Réinitialiser les filtres
@@ -174,4 +247,5 @@
             </div>
         @endif
     </div>
+    @include('components.mobile-bottom-nav')
 @endsection
