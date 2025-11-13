@@ -6,7 +6,8 @@
 <div class="min-h-screen bg-gray-100">
     <div class="max-w-7xl mx-auto h-screen flex">
         <!-- Left Sidebar - Conversations List -->
-        <div class="w-1/3 bg-white border-r border-gray-200 flex flex-col">
+        <!-- Mobile: Full width, Desktop: 1/3 width -->
+        <div id="conversations-list" class="w-full md:w-1/3 bg-white border-r border-gray-200 flex flex-col">
             <!-- Header -->
             <div class="p-4 border-b border-gray-200 bg-gray-50">
                 <div class="flex items-center justify-between mb-4">
@@ -164,7 +165,8 @@
                 </div>
 
         <!-- Right Content Area - Chat View -->
-        <div class="flex-1 bg-white flex flex-col">
+        <!-- Mobile: Hidden by default, shown when conversation selected. Desktop: Always visible -->
+        <div id="chat-view" class="hidden md:flex flex-1 bg-white flex flex-col">
             <!-- Welcome Screen (Default) -->
             <div id="welcome-screen" class="flex-1 flex items-center justify-center bg-gray-50">
                 <div class="text-center">
@@ -185,6 +187,13 @@
                 <!-- Chat Header -->
                 <div id="chat-header" class="p-4 border-b border-gray-200 bg-gray-50">
                     <div class="flex items-center space-x-3">
+                        <!-- Back Button (Mobile only) -->
+                        <button id="back-to-conversations" onclick="backToConversations()" class="md:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors" title="Retour aux conversations">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        
                         <!-- Avatar -->
                         <div id="chat-avatar" class="flex-shrink-0">
                             <!-- Avatar will be loaded here -->
@@ -202,17 +211,17 @@
 
                         <!-- Actions -->
                         <div class="flex items-center space-x-2">
-                            <button onclick="exitConversation()" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors" title="Fermer la conversation (Échap)">
+                            <button onclick="exitConversation()" class="hidden md:block p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors" title="Fermer la conversation (Échap)">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
                             </button>
                         </div>
-    </div>
-</div>
+                    </div>
+                </div>
 
                 <!-- Messages Area -->
-                <div id="messages-container" class="flex-1 overflow-y-auto p-4 bg-gray-50" style="max-height: calc(100vh - 300px); min-height: 0;">
+                <div id="messages-container" class="flex-1 overflow-y-auto p-3 md:p-4 bg-gray-50" style="max-height: calc(100vh - 200px); min-height: 0;">
                     <!-- Messages will be loaded here -->
                     <div class="text-center text-gray-500 mt-8">
                         <p>Chargement des messages...</p>
@@ -220,7 +229,7 @@
                 </div>
 
                 <!-- Message Input -->
-                <div class="p-4 border-t border-gray-200 bg-white">
+                <div class="p-3 md:p-4 border-t border-gray-200 bg-white">
                     <!-- Keyboard Language Selector -->
                     <div class="flex items-center justify-end mb-2 space-x-2">
                         <span class="text-xs text-gray-500">Clavier:</span>
@@ -333,9 +342,23 @@ function selectConversation(type, id, conversationData) {
             console.error('❌ Conversation element not found!');
         }
         
-        // Show chat interface and hide welcome screen
+        // Mobile: Hide conversations list and show chat view
+        const conversationsList = document.getElementById('conversations-list');
+        const chatView = document.getElementById('chat-view');
         const welcomeScreen = document.getElementById('welcome-screen');
         const chatInterface = document.getElementById('chat-interface');
+        
+        // Check if mobile (screen width < 768px)
+        const isMobile = window.innerWidth < 768;
+        
+        if (isMobile) {
+            // Mobile: Hide conversations list, show chat view
+            if (conversationsList) conversationsList.classList.add('hidden');
+            if (chatView) {
+                chatView.classList.remove('hidden');
+                chatView.classList.add('flex');
+            }
+        }
         
         console.log('🔍 Welcome screen element:', welcomeScreen);
         console.log('🔍 Chat interface element:', chatInterface);
@@ -1116,12 +1139,31 @@ function exitConversation() {
         el.classList.remove('bg-orange-50', 'border-r-orange-500');
     });
     
-    // Show welcome screen and hide chat interface
-    document.getElementById('welcome-screen').classList.remove('hidden');
-    document.getElementById('chat-interface').classList.add('hidden');
+    // Check if mobile
+    const isMobile = window.innerWidth < 768;
+    
+    if (isMobile) {
+        // Mobile: Show conversations list, hide chat view
+        const conversationsList = document.getElementById('conversations-list');
+        const chatView = document.getElementById('chat-view');
+        if (conversationsList) conversationsList.classList.remove('hidden');
+        if (chatView) {
+            chatView.classList.add('hidden');
+            chatView.classList.remove('flex');
+        }
+    } else {
+        // Desktop: Show welcome screen and hide chat interface
+        document.getElementById('welcome-screen').classList.remove('hidden');
+        document.getElementById('chat-interface').classList.add('hidden');
+    }
     
     // Clear messages container
     document.getElementById('messages-container').innerHTML = '';
+}
+
+// Function to go back to conversations list (Mobile only)
+function backToConversations() {
+    exitConversation();
 }
 
 // Filter conversations by type
