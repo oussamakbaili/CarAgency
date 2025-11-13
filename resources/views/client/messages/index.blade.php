@@ -185,7 +185,7 @@
             <!-- Chat Interface (Hidden by default) -->
             <div id="chat-interface" class="flex-1 flex flex-col hidden relative" style="min-height: 0; max-height: 100vh; overflow: hidden;">
                 <!-- Chat Header -->
-                <div id="chat-header" class="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
+                <div id="chat-header" class="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 z-10">
                     <div class="flex items-center space-x-3">
                         <!-- Back Button (Mobile only) -->
                         <button id="back-to-conversations" onclick="backToConversations()" class="md:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors" title="Retour aux conversations">
@@ -220,18 +220,18 @@
                     </div>
                 </div>
 
-                <!-- Messages Area -->
-                <div id="messages-container" class="flex-1 overflow-y-auto p-3 md:p-4 bg-gray-50 pb-32 md:pb-4" style="min-height: 0;">
+                <!-- Messages Area - Scrollable -->
+                <div id="messages-container" class="flex-1 overflow-y-auto p-3 md:p-4 bg-gray-50" style="min-height: 0; padding-bottom: 180px;">
                     <!-- Messages will be loaded here -->
                     <div class="text-center text-gray-500 mt-8">
                         <p>Chargement des messages...</p>
                     </div>
                 </div>
 
-                <!-- Message Input -->
-                <div class="p-3 md:p-4 border-t border-gray-200 bg-white absolute bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto">
-                    <!-- Keyboard Language Selector -->
-                    <div class="flex items-center justify-end mb-2 space-x-2">
+                <!-- Message Input - Fixed at bottom (Mobile) / Relative (Desktop) -->
+                <div id="message-input-container" class="fixed md:relative bottom-0 left-0 right-0 p-3 md:p-4 border-t border-gray-200 bg-white z-20">
+                    <!-- Keyboard Language Selector (Mobile only) -->
+                    <div class="flex items-center justify-end mb-2 space-x-2 md:hidden">
                         <span class="text-xs text-gray-500">Clavier:</span>
                         <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
                             <button id="keyboard-fr" data-keyboard="fr" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors bg-white text-gray-700 shadow-sm" title="Français">
@@ -245,8 +245,23 @@
                             </button>
                         </div>
                     </div>
+                    <!-- Keyboard Language Selector (Desktop only) -->
+                    <div class="hidden md:flex items-center justify-end mb-2 space-x-2">
+                        <span class="text-xs text-gray-500">Clavier:</span>
+                        <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+                            <button id="keyboard-fr-desktop" data-keyboard="fr" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors bg-white text-gray-700 shadow-sm" title="Français">
+                                FR
+                            </button>
+                            <button id="keyboard-ar-desktop" data-keyboard="ar" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors text-gray-500 hover:bg-gray-200" title="العربية">
+                                AR
+                            </button>
+                            <button id="keyboard-en-desktop" data-keyboard="en" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors text-gray-500 hover:bg-gray-200" title="English">
+                                EN
+                            </button>
+                        </div>
+                    </div>
                     <!-- Preview des fichiers sélectionnés -->
-                    <div id="file-preview-container" class="hidden flex flex-wrap gap-2 mb-2 px-4"></div>
+                    <div id="file-preview-container" class="hidden flex flex-wrap gap-2 mb-2"></div>
                     
                     <div class="flex items-center space-x-3">
                         <!-- File Input (caché) -->
@@ -1591,10 +1606,17 @@ window.changeKeyboard = function(lang) {
         btn.classList.add('text-gray-500', 'hover:bg-gray-200');
     });
     
+    // Update mobile button
     const activeBtn = document.getElementById(`keyboard-${lang}`);
     if (activeBtn) {
         activeBtn.classList.add('bg-white', 'text-gray-700', 'shadow-sm');
         activeBtn.classList.remove('text-gray-500', 'hover:bg-gray-200');
+    }
+    // Update desktop button
+    const activeBtnDesktop = document.getElementById(`keyboard-${lang}-desktop`);
+    if (activeBtnDesktop) {
+        activeBtnDesktop.classList.add('bg-white', 'text-gray-700', 'shadow-sm');
+        activeBtnDesktop.classList.remove('text-gray-500', 'hover:bg-gray-200');
     }
     
     // Changer la direction du texte et le placeholder
