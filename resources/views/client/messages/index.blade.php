@@ -221,7 +221,7 @@
                 </div>
 
                 <!-- Messages Area -->
-                <div id="messages-container" class="flex-1 overflow-y-auto p-3 md:p-4 bg-gray-50" style="max-height: calc(100vh - 200px); min-height: 0;">
+                <div id="messages-container" class="flex-1 overflow-y-auto p-3 md:p-4 bg-gray-50 pb-24 md:pb-4" style="max-height: calc(100vh - 200px); min-height: 0;">
                     <!-- Messages will be loaded here -->
                     <div class="text-center text-gray-500 mt-8">
                         <p>Chargement des messages...</p>
@@ -229,7 +229,7 @@
                 </div>
 
                 <!-- Message Input -->
-                <div class="p-3 md:p-4 border-t border-gray-200 bg-white">
+                <div class="p-3 md:p-4 border-t border-gray-200 bg-white fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto">
                     <!-- Keyboard Language Selector -->
                     <div class="flex items-center justify-end mb-2 space-x-2">
                         <span class="text-xs text-gray-500">Clavier:</span>
