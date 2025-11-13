@@ -183,9 +183,9 @@
             </div>
 
             <!-- Chat Interface (Hidden by default) -->
-            <div id="chat-interface" class="flex-1 flex flex-col hidden" style="min-height: 0; max-height: 100vh; overflow: hidden;">
+            <div id="chat-interface" class="flex-1 flex flex-col hidden relative" style="min-height: 0; max-height: 100vh; overflow: hidden;">
                 <!-- Chat Header -->
-                <div id="chat-header" class="p-4 border-b border-gray-200 bg-gray-50">
+                <div id="chat-header" class="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0">
                     <div class="flex items-center space-x-3">
                         <!-- Back Button (Mobile only) -->
                         <button id="back-to-conversations" onclick="backToConversations()" class="md:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors" title="Retour aux conversations">
@@ -221,7 +221,7 @@
                 </div>
 
                 <!-- Messages Area -->
-                <div id="messages-container" class="flex-1 overflow-y-auto p-3 md:p-4 bg-gray-50 pb-24 md:pb-4" style="max-height: calc(100vh - 200px); min-height: 0;">
+                <div id="messages-container" class="flex-1 overflow-y-auto p-3 md:p-4 bg-gray-50 pb-32 md:pb-4" style="min-height: 0;">
                     <!-- Messages will be loaded here -->
                     <div class="text-center text-gray-500 mt-8">
                         <p>Chargement des messages...</p>
@@ -229,7 +229,7 @@
                 </div>
 
                 <!-- Message Input -->
-                <div class="p-3 md:p-4 border-t border-gray-200 bg-white fixed bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto">
+                <div class="p-3 md:p-4 border-t border-gray-200 bg-white absolute bottom-0 left-0 right-0 md:relative md:bottom-auto md:left-auto md:right-auto">
                     <!-- Keyboard Language Selector -->
                     <div class="flex items-center justify-end mb-2 space-x-2">
                         <span class="text-xs text-gray-500">Clavier:</span>
