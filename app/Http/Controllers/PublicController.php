@@ -318,7 +318,25 @@ class PublicController extends Controller
      */
     public function wishlists()
     {
-        return view('public.wishlists');
+        return response('<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wishlists - ToubCar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen py-10 px-4">
+        <div class="max-w-5xl mx-auto">
+            <h1 class="text-3xl font-bold text-gray-900 mb-8">Wishlists</h1>
+            <div class="bg-white rounded-lg shadow p-8 text-center">
+                <p class="text-gray-600 mb-4">Page is working!</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>', 200)->header('Content-Type', 'text/html');
     }
 
     /**
