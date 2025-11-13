@@ -301,6 +301,9 @@ function selectConversation(type, id, conversationData) {
     console.log('🎯 selectConversation called with:', { type, id, conversationData });
     
     try {
+        // Check if mobile (screen width < 768px)
+        const isMobile = window.innerWidth < 768;
+        
         selectedConversationId = `${type}_${id}`;
         
         // Parse conversation data safely
