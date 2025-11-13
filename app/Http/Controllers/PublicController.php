@@ -318,20 +318,28 @@ class PublicController extends Controller
      */
     public function wishlists()
     {
-        $wishlists = collect([]);
-        
-        if (auth()->check() && auth()->user()->isClient()) {
-            $wishlists = auth()->user()->wishlists()
-                ->withCount('items')
-                ->with(['items' => function($query) {
-                    $query->with(['car' => function($q) {
-                        $q->with('agency');
-                    }]);
-                }])
-                ->get();
+        try {
+            $wishlists = collect([]);
+            
+            if (auth()->check() && auth()->user()->isClient()) {
+                $wishlists = auth()->user()->wishlists()
+                    ->withCount('items')
+                    ->with(['items' => function($query) {
+                        $query->with(['car' => function($q) {
+                            $q->with('agency');
+                        }]);
+                    }])
+                    ->get();
+            }
+            
+            return view('public.wishlists', compact('wishlists'));
+        } catch (\Exception $e) {
+            \Log::error('Wishlists page error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            $wishlists = collect([]);
+            return view('public.wishlists', compact('wishlists'));
         }
-        
-        return view('public.wishlists', compact('wishlists'));
     }
 
     /**

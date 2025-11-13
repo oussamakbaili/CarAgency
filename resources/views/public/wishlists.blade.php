@@ -114,8 +114,8 @@
                 </a>
             </div>
         @else
-            @if(auth()->user()->isClient())
-                @if($wishlists->isEmpty())
+            @if(auth()->check() && auth()->user()->isClient())
+                @if(isset($wishlists) && $wishlists->isEmpty())
                     <div class="mt-16 bg-white rounded-3xl shadow-xl shadow-blue-900/10 px-8 py-12 text-center">
                         <div class="w-20 h-20 rounded-3xl bg-orange-50 border border-orange-200 mx-auto flex items-center justify-center mb-6">
                             <svg class="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -129,7 +129,7 @@
                             <a href="{{ route('public.home') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition">{{ __('wishlists.empty_state.button') }}</a>
                         </div>
                     </div>
-                @else
+                @elseif(isset($wishlists) && $wishlists->isNotEmpty())
                     <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         <button onclick="openPageWishlistModal()" class="relative group overflow-hidden rounded-3xl border-2 border-dashed border-gray-300 bg-white px-6 py-8 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 hover:border-orange-400 hover:bg-orange-50/30 transition">
                             <div class="w-16 h-16 rounded-2xl bg-orange-100 border border-orange-200 flex items-center justify-center mb-4">
@@ -172,7 +172,7 @@
                                     <div class="flex items-start justify-between gap-3">
                                         <div>
                                             <h3 class="text-lg font-semibold text-gray-900 truncate">{{ $wishlist->name }}</h3>
-                                            <p class="text-xs text-gray-500 mt-1">{{ __('wishlists.items.saved', ['count' => $wishlist->items_count]) }}</p>
+                                            <p class="text-xs text-gray-500 mt-1">{{ __('wishlists.items.saved', ['count' => $wishlist->items_count ?? 0]) }}</p>
                                             @if($updatedTime)
                                                 <p class="text-xs text-gray-400 mt-1">{{ __('wishlists.cards.last_updated', ['time' => $updatedTime]) }}</p>
                                             @endif
