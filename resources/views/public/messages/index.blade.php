@@ -6,7 +6,8 @@
 <div class="min-h-screen bg-gray-100">
     <div class="max-w-7xl mx-auto h-screen flex">
         <!-- Left Sidebar - Conversations List -->
-        <div class="w-1/3 bg-white border-r border-gray-200 flex flex-col">
+        <!-- Mobile: Full width, Desktop: 1/3 width -->
+        <div id="conversations-list" class="w-full md:w-1/3 bg-white border-r border-gray-200 flex flex-col">
             <!-- Header -->
             <div class="p-4 border-b border-gray-200 bg-gray-50">
                 <div class="flex items-center justify-between mb-4">
@@ -163,7 +164,8 @@
         </div>
 
         <!-- Right Content Area - Chat View -->
-        <div class="flex-1 bg-white flex flex-col">
+        <!-- Mobile: Hidden by default, shown when conversation selected. Desktop: Always visible -->
+        <div id="chat-view" class="hidden md:flex flex-1 bg-white flex flex-col">
             <!-- Welcome Screen (Default) -->
             <div id="welcome-screen" class="flex-1 flex items-center justify-center bg-gray-50">
                 <div class="text-center">
@@ -180,10 +182,17 @@
             </div>
 
             <!-- Chat Interface (Hidden by default) -->
-            <div id="chat-interface" class="flex-1 flex flex-col hidden" style="min-height: 0; max-height: 100vh; overflow: hidden;">
+            <div id="chat-interface" class="flex-1 flex flex-col hidden relative" style="min-height: 0; max-height: 100vh; overflow: hidden;">
                 <!-- Chat Header -->
-                <div id="chat-header" class="p-4 border-b border-gray-200 bg-gray-50">
+                <div id="chat-header" class="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 z-10">
                     <div class="flex items-center space-x-3">
+                        <!-- Back Button (Mobile only) -->
+                        <button id="back-to-conversations" onclick="backToConversations()" class="md:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors" title="Retour aux conversations">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        
                         <!-- Avatar -->
                         <div id="chat-avatar" class="flex-shrink-0">
                             <!-- Avatar will be loaded here -->
@@ -210,18 +219,18 @@
                     </div>
                 </div>
 
-                <!-- Messages Area -->
-                <div id="messages-container" class="flex-1 overflow-y-auto p-4 bg-gray-50" style="max-height: calc(100vh - 300px); min-height: 0;">
+                <!-- Messages Area - Scrollable -->
+                <div id="messages-container" class="flex-1 overflow-y-auto p-3 md:p-4 bg-gray-50" style="min-height: 0; padding-bottom: 180px;">
                     <!-- Messages will be loaded here -->
                     <div class="text-center text-gray-500 mt-8">
                         <p>Chargement des messages...</p>
                     </div>
                 </div>
 
-                <!-- Message Input -->
-                <div class="p-4 border-t border-gray-200 bg-white">
-                    <!-- Keyboard Language Selector -->
-                    <div class="flex items-center justify-end mb-2 space-x-2">
+                <!-- Message Input - Fixed at bottom (Mobile) / Relative (Desktop) -->
+                <div id="message-input-container" class="fixed md:relative bottom-0 left-0 right-0 p-3 md:p-4 border-t border-gray-200 bg-white z-20">
+                    <!-- Keyboard Language Selector (Mobile only) -->
+                    <div class="flex items-center justify-end mb-2 space-x-2 md:hidden">
                         <span class="text-xs text-gray-500">Clavier:</span>
                         <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
                             <button id="keyboard-fr" data-keyboard="fr" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors bg-white text-gray-700 shadow-sm" title="Français">
@@ -235,8 +244,23 @@
                             </button>
                         </div>
                     </div>
+                    <!-- Keyboard Language Selector (Desktop only) -->
+                    <div class="hidden md:flex items-center justify-end mb-2 space-x-2">
+                        <span class="text-xs text-gray-500">Clavier:</span>
+                        <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+                            <button id="keyboard-fr-desktop" data-keyboard="fr" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors bg-white text-gray-700 shadow-sm" title="Français">
+                                FR
+                            </button>
+                            <button id="keyboard-ar-desktop" data-keyboard="ar" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors text-gray-500 hover:bg-gray-200" title="العربية">
+                                AR
+                            </button>
+                            <button id="keyboard-en-desktop" data-keyboard="en" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors text-gray-500 hover:bg-gray-200" title="English">
+                                EN
+                            </button>
+                        </div>
+                    </div>
                     <!-- Preview des fichiers sélectionnés -->
-                    <div id="file-preview-container" class="hidden flex flex-wrap gap-2 mb-2 px-4"></div>
+                    <div id="file-preview-container" class="hidden flex flex-wrap gap-2 mb-2"></div>
                     
                     <div class="flex items-center space-x-3">
                         <!-- File Input (caché) -->
@@ -336,13 +360,28 @@ function selectConversation(type, id, conversationData) {
         // Show chat interface and hide welcome screen
         const welcomeScreen = document.getElementById('welcome-screen');
         const chatInterface = document.getElementById('chat-interface');
+        const conversationsList = document.getElementById('conversations-list');
+        const chatView = document.getElementById('chat-view');
         
         console.log('🔍 Welcome screen element:', welcomeScreen);
         console.log('🔍 Chat interface element:', chatInterface);
         
+        // Check if mobile (screen width < 768px)
+        const isMobile = window.innerWidth < 768;
+        
         if (welcomeScreen && chatInterface) {
-            welcomeScreen.classList.add('hidden');
-            chatInterface.classList.remove('hidden');
+            if (isMobile) {
+                // Mobile: Hide conversations list, show chat view
+                if (conversationsList) conversationsList.classList.add('hidden');
+                if (chatView) {
+                    chatView.classList.remove('hidden');
+                    chatView.classList.add('flex');
+                }
+            } else {
+                // Desktop: Show chat interface, hide welcome screen
+                welcomeScreen.classList.add('hidden');
+                chatInterface.classList.remove('hidden');
+            }
             console.log('✅ UI switched to chat interface');
             
             // Initialiser le clavier après l'affichage du chat
@@ -1092,6 +1131,9 @@ async function sendRentalMessage(message, filesToSend = null) {
 
 // Function to exit conversation (like WhatsApp)
 function exitConversation() {
+    // Check if mobile (screen width < 768px)
+    const isMobile = window.innerWidth < 768;
+    
     // Clear selection
     selectedConversationId = null;
     selectedConversationData = null;
@@ -1101,12 +1143,32 @@ function exitConversation() {
         el.classList.remove('bg-orange-50', 'border-r-orange-500');
     });
     
-    // Show welcome screen and hide chat interface
-    document.getElementById('welcome-screen').classList.remove('hidden');
-    document.getElementById('chat-interface').classList.add('hidden');
+    const conversationsList = document.getElementById('conversations-list');
+    const chatView = document.getElementById('chat-view');
+    const welcomeScreen = document.getElementById('welcome-screen');
+    const chatInterface = document.getElementById('chat-interface');
+    
+    if (isMobile) {
+        // Mobile: Show conversations list, hide chat view
+        if (conversationsList) conversationsList.classList.remove('hidden');
+        if (chatView) {
+            chatView.classList.add('hidden');
+            chatView.classList.remove('flex');
+        }
+    } else {
+        // Desktop: Show welcome screen and hide chat interface
+        if (welcomeScreen) welcomeScreen.classList.remove('hidden');
+        if (chatInterface) chatInterface.classList.add('hidden');
+    }
     
     // Clear messages container
-    document.getElementById('messages-container').innerHTML = '';
+    const messagesContainer = document.getElementById('messages-container');
+    if (messagesContainer) messagesContainer.innerHTML = '';
+}
+
+// Function to go back to conversations list (mobile only)
+function backToConversations() {
+    exitConversation();
 }
 
 // Filter conversations by type
@@ -1160,10 +1222,17 @@ window.changeKeyboard = function(lang) {
         btn.classList.add('text-gray-500', 'hover:bg-gray-200');
     });
     
+    // Update mobile button
     const activeBtn = document.getElementById(`keyboard-${lang}`);
     if (activeBtn) {
         activeBtn.classList.add('bg-white', 'text-gray-700', 'shadow-sm');
         activeBtn.classList.remove('text-gray-500', 'hover:bg-gray-200');
+    }
+    // Update desktop button
+    const activeBtnDesktop = document.getElementById(`keyboard-${lang}-desktop`);
+    if (activeBtnDesktop) {
+        activeBtnDesktop.classList.add('bg-white', 'text-gray-700', 'shadow-sm');
+        activeBtnDesktop.classList.remove('text-gray-500', 'hover:bg-gray-200');
     }
     
     // Changer la direction du texte et le placeholder
