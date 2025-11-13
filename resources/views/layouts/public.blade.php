@@ -273,22 +273,62 @@
         </div>
 
         <!-- Mobile Menu Dropdown -->
-        <div id="mobile-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
-            <div class="px-4 py-4 space-y-3">
-                <a href="{{ route('public.about') }}" class="block text-gray-700 hover:text-orange-600 font-medium py-2">{{ __('common.nav.about') }}</a>
-                <a href="{{ route('public.agencies') }}" class="block text-gray-700 hover:text-orange-600 font-medium py-2">{{ __('common.nav.partners') }}</a>
-                <a href="{{ route('public.how-it-works') }}" class="block text-gray-700 hover:text-orange-600 font-medium py-2">{{ __('common.nav.how_it_works') }}</a>
-                
-                @guest
-                    <div class="pt-4 space-y-2 border-t border-gray-200">
-                        <a href="{{ route('login') }}" class="block bg-gray-200 hover:bg-gray-300 text-gray-900 px-6 py-2.5 rounded-full font-medium text-center transition duration-200">
-                            {{ __('common.login') }}
-                        </a>
-                        <a href="{{ route('register') }}" class="block bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-full font-medium text-center transition duration-200">
-                            {{ __('common.register') }}
-                        </a>
+        <div id="mobile-menu" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 py-4 z-50">
+            <div class="px-5 space-y-4">
+                <a href="{{ route('public.about') }}" class="flex items-center justify-between px-4 py-3 rounded-2xl bg-gray-50 hover:bg-orange-50 transition duration-200">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 3v4M8 3v4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-900">{{ __('common.nav.about') }}</p>
+                            <p class="text-xs text-gray-500">{{ __('common.mobile_menu.about_desc') }}</p>
+                        </div>
                     </div>
-                @endguest
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+
+                <a href="{{ route('public.agencies') }}" class="flex items-center justify-between px-4 py-3 rounded-2xl bg-gray-50 hover:bg-orange-50 transition duration-200">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                                <circle cx="9" cy="7" r="4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21v-2a4 4 0 00-3-3.87"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 3.13a4 4 0 010 7.75"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-900">{{ __('common.nav.partners') }}</p>
+                            <p class="text-xs text-gray-500">{{ __('common.mobile_menu.partners_desc') }}</p>
+                        </div>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+
+                <a href="{{ route('public.how-it-works') }}" class="flex items-center justify-between px-4 py-3 rounded-2xl bg-gray-50 hover:bg-orange-50 transition duration-200">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-900">{{ __('common.nav.how_it_works') }}</p>
+                            <p class="text-xs text-gray-500">{{ __('common.mobile_menu.how_it_works_desc') }}</p>
+                        </div>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
             </div>
         </div>
     </nav>

@@ -185,4 +185,5 @@
             </a>
         </div>
     </div>
+    @include('components.mobile-bottom-nav')
 @endsection

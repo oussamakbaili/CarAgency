@@ -49,6 +49,17 @@ return [
         'all_rights_reserved' => 'All rights reserved',
         'language' => 'Language',
     ],
+    'mobile_nav' => [
+        'explore' => 'Explore',
+        'wishlists' => 'Wishlists',
+        'login' => 'Log in',
+        'account' => 'Account',
+    ],
+    'mobile_menu' => [
+        'about_desc' => 'Discover our story and mission',
+        'partners_desc' => 'Meet our trusted partner agencies',
+        'how_it_works_desc' => 'Understand how ToubCar works',
+    ],
     'car' => [
         'per_day' => 'per day',
         'view_details' => 'View Details',

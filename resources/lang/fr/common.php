@@ -49,6 +49,17 @@ return [
         'all_rights_reserved' => 'Tous droits réservés',
         'language' => 'Langue',
     ],
+    'mobile_nav' => [
+        'explore' => 'Explorer',
+        'wishlists' => 'Favoris',
+        'login' => 'Se connecter',
+        'account' => 'Mon compte',
+    ],
+    'mobile_menu' => [
+        'about_desc' => 'Découvrez notre histoire et notre mission',
+        'partners_desc' => 'Rencontrez nos agences partenaires',
+        'how_it_works_desc' => 'Comprenez les étapes de location',
+    ],
     'car' => [
         'per_day' => 'par jour',
         'view_details' => 'Voir les détails',
