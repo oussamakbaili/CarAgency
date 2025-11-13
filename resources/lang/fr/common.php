@@ -71,5 +71,13 @@ return [
         'french' => 'Français',
         'english' => 'Anglais',
     ],
+    'desktop_menu' => [
+        'wishlists' => 'Favoris',
+        'messages' => 'Messages',
+        'profile' => 'Profil',
+        'account_settings' => 'Paramètres du compte',
+        'languages' => 'Langues et devise',
+        'logout' => 'Déconnexion',
+    ],
 ];
 

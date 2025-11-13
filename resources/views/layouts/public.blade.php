@@ -175,7 +175,7 @@
                     <a href="{{ route('public.how-it-works') }}" class="text-gray-700 hover:text-orange-600 font-medium transition duration-200">{{ __('common.nav.how_it_works') }}</a>
                 </div>
 
-                <!-- Auth Buttons - Right -->
+                <!-- Desktop Menu - Right -->
                 <div class="flex items-center space-x-3">
                     <!-- Language Selector -->
                     <div class="relative group">
@@ -243,120 +243,120 @@
                         </div>
                     </div>
                     
-                    <!-- Desktop Account Menu -->
-                    <div class="relative hidden md:block">
-                        <button type="button" id="desktop-menu-button" class="flex items-center gap-2 px-3 py-2 rounded-full border border-gray-200 text-gray-700 hover:border-gray-300 hover:text-gray-900 transition bg-white shadow-sm">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h12"/>
+                    <!-- Hamburger Menu Button -->
+                    <div class="relative">
+                        <button type="button" id="desktop-menu-button" class="flex items-center space-x-2 px-3 py-2 rounded-lg border border-gray-300 hover:shadow-md transition-all">
+                            <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
                             </svg>
-                        </button>
-                        <div id="desktop-menu" class="hidden absolute right-0 mt-3 w-72 bg-white rounded-3xl shadow-2xl border border-gray-100 py-4 z-50">
-                            @guest
-                                <div class="px-5 space-y-3">
-                                    <a href="{{ route('login') }}" class="flex items-center justify-between px-4 py-3 rounded-2xl border border-gray-100 hover:border-[#0F3B63]/30 hover:bg-[#0F3B63]/5 transition">
-                                        <span class="text-sm font-semibold text-gray-800">{{ __('common.login') }}</span>
-                                        <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                                        </svg>
-                                    </a>
-                                    <a href="{{ route('register') }}" class="flex items-center justify-between px-4 py-3 rounded-2xl bg-[#0F3B63] text-white font-semibold hover:bg-[#0d3456] transition">
-                                        <span class="text-sm">{{ __('common.register') }}</span>
-                                        <svg class="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                                        </svg>
-                                    </a>
+                            @auth
+                                <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+                                    <span class="text-sm font-medium text-gray-700">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
                                 </div>
-                            @else
-                                @php($role = auth()->user()->role)
-                                <div class="px-5 space-y-3 text-sm text-gray-700">
-                                    @if($role === 'client')
-                                        <a href="{{ route('public.wishlists') }}" class="flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-gray-50 transition">
-                                            <div class="flex items-center gap-3">
-                                                <span class="w-8 h-8 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                                                    </svg>
-                                                </span>
-                                                <div>
-                                                    <p class="font-semibold">{{ __('wishlists.page_title') }}</p>
-                                                    <p class="text-xs text-gray-400">
-                                                        @php
-                                                            $wishlistCount = auth()->user()->wishlists()->count();
-                                                        @endphp
-                                                        {{ __('wishlists.items.saved', ['count' => $wishlistCount]) }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                            @endauth
+                        </button>
+                        
+                        <!-- Desktop Menu Dropdown -->
+                        <div id="desktop-menu-dropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50 overflow-hidden">
+                            @auth
+                                @if(auth()->user()->role === 'client')
+                                    <!-- Client Menu -->
+                                    <div class="px-4 py-3 border-b border-gray-100">
+                                        <p class="text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</p>
+                                        <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                                    </div>
+                                    
+                                    <div class="py-2">
+                                        <a href="{{ route('public.wishlists') }}" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                                            <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                             </svg>
+                                            <span class="text-sm font-medium text-gray-700">{{ __('common.desktop_menu.wishlists') }}</span>
                                         </a>
-                                        <a href="{{ route('client.messages.index') }}" class="flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-gray-50 transition">
-                                            <div class="flex items-center gap-3">
-                                                <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h6m5-6h.01M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                                    </svg>
-                                                </span>
-                                                <p class="font-semibold">Messages</p>
-                                            </div>
-                                            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                        
+                                        <a href="{{ route('client.messages.index') }}" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                                            <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                                             </svg>
+                                            <span class="text-sm font-medium text-gray-700">{{ __('common.desktop_menu.messages') }}</span>
                                         </a>
-                                        <a href="{{ route('client.profile.index') }}" class="flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-gray-50 transition">
-                                            <div class="flex items-center gap-3">
-                                                <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                                    </svg>
-                                                </span>
-                                                <p class="font-semibold">Profile</p>
-                                            </div>
-                                            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                        
+                                        <a href="{{ route('client.profile.index') }}" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                                            <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                                             </svg>
+                                            <span class="text-sm font-medium text-gray-700">{{ __('common.desktop_menu.profile') }}</span>
                                         </a>
-                                        <a href="{{ route('client.profile.index') }}#settings" class="flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-gray-50 transition">
-                                            <div class="flex items-center gap-3">
-                                                <span class="w-8 h-8 rounded-xl bg-gray-100 text-gray-600 flex items-center justify-center">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.99.604 2.297.21 2.572-1.065z"/>
-                                                    </svg>
-                                                </span>
-                                                <p class="font-semibold">Account settings</p>
-                                            </div>
-                                            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                        
+                                        <a href="{{ route('client.profile.index') }}" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                                            <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             </svg>
+                                            <span class="text-sm font-medium text-gray-700">{{ __('common.desktop_menu.account_settings') }}</span>
                                         </a>
-                                        <div class="border-t border-gray-100 pt-3 mt-3">
-                                            <p class="text-xs uppercase tracking-wide text-gray-400 px-4 mb-2">{{ __('common.footer.language') }}</p>
-                                            <div class="flex items-center gap-2 px-4">
-                                                <a href="{{ route('lang.switch', 'fr') }}" class="flex-1 px-3 py-2 text-xs font-medium rounded-lg border {{ app()->getLocale() === 'fr' ? 'border-[#0F3B63] text-[#0F3B63]' : 'border-gray-200 text-gray-600 hover:border-[#0F3B63]/40 hover:text-[#0F3B63]' }} transition">FR</a>
-                                                <a href="{{ route('lang.switch', 'en') }}" class="flex-1 px-3 py-2 text-xs font-medium rounded-lg border {{ app()->getLocale() === 'en' ? 'border-[#0F3B63] text-[#0F3B63]' : 'border-gray-200 text-gray-600 hover:border-[#0F3B63]/40 hover:text-[#0F3B63]' }} transition">EN</a>
-                                            </div>
-                                        </div>
-                                    @else
-                                        <div class="px-4 text-sm text-gray-500">
-                                            <p class="font-semibold text-gray-800 mb-2">{{ __('common.nav.dashboard') }}</p>
-                                            <a href="{{ auth()->user()->role === 'agency' ? route('agency.dashboard') : route('admin.dashboard') }}" class="block px-4 py-2 rounded-xl hover:bg-gray-50 transition">Dashboard</a>
-                                        </div>
-                                    @endif
-
-                                    <div class="border-t border-gray-100 pt-3 mt-3 px-4">
-                                        <form method="POST" action="{{ route('logout') }}">
-                                            @csrf
-                                            <button type="submit" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition">
-                                                <span>{{ __('common.logout') }}</span>
-                                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-9V5"/>
+                                        
+                                        <div class="border-t border-gray-100 my-2"></div>
+                                        
+                                        <div class="px-4 py-2">
+                                            <button type="button" onclick="toggleLanguageDropdown()" class="flex items-center space-x-3 w-full text-left hover:bg-gray-50 px-2 py-2 rounded-lg transition-colors">
+                                                <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 002 2h2.945M15 15v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3m0 0V9a2 2 0 012-2h2.945M9 9H7a2 2 0 00-2 2v1a2 2 0 002 2h2m4-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                 </svg>
+                                                <span class="text-sm font-medium text-gray-700">{{ __('common.desktop_menu.languages') }}</span>
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="border-t border-gray-100 my-2"></div>
+                                        
+                                        <form method="POST" action="{{ route('logout') }}" class="px-4 py-2">
+                                            @csrf
+                                            <button type="submit" class="flex items-center space-x-3 w-full text-left hover:bg-gray-50 px-2 py-2 rounded-lg transition-colors">
+                                                <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                                </svg>
+                                                <span class="text-sm font-medium text-gray-700">{{ __('common.desktop_menu.logout') }}</span>
+                                            </button>
+                                        </form>
+                                @else
+                                    <!-- Agency/Admin Menu -->
+                                    <div class="px-4 py-3 border-b border-gray-100">
+                                        <p class="text-sm font-semibold text-gray-900">{{ auth()->user()->name }}</p>
+                                    </div>
+                                    
+                                    <div class="py-2">
+                                        @if(auth()->user()->role === 'agency')
+                                            <a href="{{ route('agency.dashboard') }}" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                                                <span class="text-sm font-medium text-gray-700">{{ __('common.nav.dashboard') }}</span>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                                                <span class="text-sm font-medium text-gray-700">{{ __('common.nav.admin') }}</span>
+                                            </a>
+                                        @endif
+                                        
+                                        <div class="border-t border-gray-100 my-2"></div>
+                                        
+                                        <form method="POST" action="{{ route('logout') }}" class="px-4 py-2">
+                                            @csrf
+                                            <button type="submit" class="flex items-center space-x-3 w-full text-left hover:bg-gray-50 px-2 py-2 rounded-lg transition-colors">
+                                                <span class="text-sm font-medium text-gray-700">{{ __('common.desktop_menu.logout') }}</span>
                                             </button>
                                         </form>
                                     </div>
+                                @endif
+                            @else
+                                <!-- Guest Menu -->
+                                <div class="py-2">
+                                    <a href="{{ route('login') }}" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                                        <span class="text-sm font-medium text-gray-700">{{ __('common.login') }}</span>
+                                    </a>
+                                    
+                                    <a href="{{ route('register') }}" class="flex items-center space-x-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+                                        <span class="text-sm font-medium text-gray-700">{{ __('common.register') }}</span>
+                                    </a>
                                 </div>
-                            @endguest
+                            @endauth
                         </div>
                     </div>
                 </div>
@@ -628,38 +628,6 @@
                 });
             }
             
-            // Desktop menu toggle
-            const desktopMenuButton = document.getElementById('desktop-menu-button');
-            const desktopMenu = document.getElementById('desktop-menu');
-            
-            if (desktopMenuButton && desktopMenu) {
-                desktopMenuButton.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const isHidden = desktopMenu.classList.contains('hidden');
-                    closeDesktopMenu();
-                    if (isHidden) {
-                        desktopMenu.classList.remove('hidden');
-                        desktopMenu.style.animation = 'slideDownSlow 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
-                    }
-                });
-                
-                document.addEventListener('click', function(e) {
-                    if (!desktopMenu.contains(e.target) && !desktopMenuButton.contains(e.target)) {
-                        closeDesktopMenu();
-                    }
-                });
-            }
-            
-            function closeDesktopMenu() {
-                const menu = document.getElementById('desktop-menu');
-                if (menu && !menu.classList.contains('hidden')) {
-                    menu.style.animation = 'slideUpSlow 0.3s ease-in';
-                    setTimeout(() => {
-                        menu.classList.add('hidden');
-                    }, 250);
-                }
-            }
-            
             // Mobile hamburger menu toggle with slow motion animation
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
@@ -671,7 +639,6 @@
                     const isHidden = mobileMenu.classList.contains('hidden');
                     
                     if (isHidden) {
-                        closeDesktopMenu();
                         // Open menu with slow motion
                         if (mobileMenuOverlay) {
                             mobileMenuOverlay.classList.remove('hidden');
@@ -729,9 +696,34 @@
                 }
             }
             
-            // Make close functions globally accessible
+            // Make closeMobileMenu globally accessible
             window.closeMobileMenu = closeMobileMenu;
-            window.closeDesktopMenu = closeDesktopMenu;
+            
+            // Desktop hamburger menu toggle
+            const desktopMenuButton = document.getElementById('desktop-menu-button');
+            const desktopMenuDropdown = document.getElementById('desktop-menu-dropdown');
+            
+            if (desktopMenuButton && desktopMenuDropdown) {
+                desktopMenuButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    desktopMenuDropdown.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!desktopMenuButton.contains(e.target) && !desktopMenuDropdown.contains(e.target)) {
+                        desktopMenuDropdown.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Toggle language dropdown in desktop menu
+            window.toggleLanguageDropdown = function() {
+                const languageDropdown = document.getElementById('language-dropdown');
+                if (languageDropdown) {
+                    languageDropdown.classList.toggle('hidden');
+                }
+            };
         });
     </script>
 </body>
