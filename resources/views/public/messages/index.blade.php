@@ -373,9 +373,6 @@ window.selectConversation = function selectConversation(type, id, conversationDa
         // Check if mobile (screen width < 768px)
         const isMobile = window.innerWidth < 768;
         
-        // Check if mobile (screen width < 768px)
-        const isMobile = window.innerWidth < 768;
-        
         if (isMobile) {
             // Mobile: Hide conversations list, show chat view
             if (conversationsList) conversationsList.classList.add('hidden');
