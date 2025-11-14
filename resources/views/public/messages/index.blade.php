@@ -297,7 +297,8 @@
 let selectedConversationId = null;
 let selectedConversationData = null;
 
-function selectConversation(type, id, conversationData) {
+// Make selectConversation globally accessible
+window.selectConversation = function selectConversation(type, id, conversationData) {
     console.log('🎯 selectConversation called with:', { type, id, conversationData });
     
     try {
@@ -372,20 +373,26 @@ function selectConversation(type, id, conversationData) {
         // Check if mobile (screen width < 768px)
         const isMobile = window.innerWidth < 768;
         
-        if (welcomeScreen && chatInterface) {
-            if (isMobile) {
-                // Mobile: Hide conversations list, show chat view
-                if (conversationsList) conversationsList.classList.add('hidden');
-                if (chatView) {
-                    chatView.classList.remove('hidden');
-                    chatView.classList.add('flex');
-                }
-            } else {
-                // Desktop: Show chat interface, hide welcome screen
-                welcomeScreen.classList.add('hidden');
-                chatInterface.classList.remove('hidden');
+        // Check if mobile (screen width < 768px)
+        const isMobile = window.innerWidth < 768;
+        
+        if (isMobile) {
+            // Mobile: Hide conversations list, show chat view
+            if (conversationsList) conversationsList.classList.add('hidden');
+            if (chatView) {
+                chatView.classList.remove('hidden');
+                chatView.classList.add('flex');
             }
-            console.log('✅ UI switched to chat interface');
+            // Also hide welcome screen and show chat interface in mobile
+            if (welcomeScreen) welcomeScreen.classList.add('hidden');
+            if (chatInterface) chatInterface.classList.remove('hidden');
+        } else {
+            // Desktop: Show chat interface, hide welcome screen
+            if (welcomeScreen) welcomeScreen.classList.add('hidden');
+            if (chatInterface) chatInterface.classList.remove('hidden');
+        }
+        
+        console.log('✅ UI switched to chat interface');
             
             // Initialiser le clavier après l'affichage du chat
             setTimeout(function() {
