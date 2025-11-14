@@ -37,6 +37,7 @@
                         </svg>
                     </div>
                     <input type="text" 
+                           id="conversation-search"
                            placeholder="Rechercher une conversation..." 
                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                 </div>
@@ -49,8 +50,10 @@
                     <div class="conversation-item border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
                          data-type="{{ $conversation->type }}"
                          data-conversation-id="{{ $conversation->type }}_{{ $conversation->id }}"
+                         data-conversation-title="{{ strtolower($conversation->title) }}"
+                         data-conversation-subtitle="{{ strtolower($conversation->subtitle) }}"
                          data-conversation-data="{{ htmlspecialchars(json_encode($conversation), ENT_QUOTES, 'UTF-8') }}"
-                         onclick="selectConversation('{{ $conversation->type }}', '{{ $conversation->id }}', this.getAttribute('data-conversation-data'))">
+                         onclick="window.selectConversation('{{ $conversation->type }}', '{{ $conversation->id }}', this.getAttribute('data-conversation-data'))">
                         <div class="p-4">
                             <div class="flex items-center space-x-3">
                                 <!-- Avatar -->
@@ -1179,30 +1182,53 @@ function backToConversations() {
 }
 
 // Filter conversations by type
-function filterConversations(filterType) {
+window.filterConversations = function filterConversations(filterType) {
     const conversations = document.querySelectorAll('.conversation-item');
     
     conversations.forEach(conversation => {
         const conversationType = conversation.getAttribute('data-type');
         
         if (filterType === 'all' || conversationType === filterType) {
-            conversation.style.display = 'block';
+            conversation.classList.remove('hidden');
+            conversation.style.display = '';
         } else {
+            conversation.classList.add('hidden');
             conversation.style.display = 'none';
         }
     });
     
+    // Also apply search filter if there's a search term
+    const searchInput = document.getElementById('conversation-search');
+    if (searchInput && searchInput.value.trim()) {
+        searchConversations(searchInput.value.trim());
+    }
+    
     // Update selected conversation if it's hidden
     if (selectedConversationId) {
         const selectedElement = document.querySelector(`[data-conversation-id="${selectedConversationId}"]`);
-        if (selectedElement && selectedElement.style.display === 'none') {
+        if (selectedElement && (selectedElement.classList.contains('hidden') || selectedElement.style.display === 'none')) {
             // Clear selection if current conversation is filtered out
             selectedConversationId = null;
             selectedConversationData = null;
             
             // Show welcome screen
-            document.getElementById('welcome-screen').classList.remove('hidden');
-            document.getElementById('chat-interface').classList.add('hidden');
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const chatInterface = document.getElementById('chat-interface');
+            const conversationsList = document.getElementById('conversations-list');
+            const chatView = document.getElementById('chat-view');
+            
+            const isMobile = window.innerWidth < 768;
+            
+            if (isMobile) {
+                if (conversationsList) conversationsList.classList.remove('hidden');
+                if (chatView) {
+                    chatView.classList.add('hidden');
+                    chatView.classList.remove('flex');
+                }
+            } else {
+                if (welcomeScreen) welcomeScreen.classList.remove('hidden');
+                if (chatInterface) chatInterface.classList.add('hidden');
+            }
             
             // Remove selection styling
             document.querySelectorAll('.bg-orange-50').forEach(el => {
@@ -1210,6 +1236,42 @@ function filterConversations(filterType) {
             });
         }
     }
+}
+
+// Search conversations by name/title
+window.searchConversations = function searchConversations(searchTerm) {
+    const conversations = document.querySelectorAll('.conversation-item');
+    const term = searchTerm.toLowerCase().trim();
+    
+    if (!term) {
+        // If search is empty, show all conversations (respecting type filter)
+        const filterType = document.getElementById('conversation-filter')?.value || 'all';
+        filterConversations(filterType);
+        return;
+    }
+    
+    conversations.forEach(conversation => {
+        const title = conversation.getAttribute('data-conversation-title') || '';
+        const subtitle = conversation.getAttribute('data-conversation-subtitle') || '';
+        
+        // Check if search term matches title or subtitle
+        if (title.includes(term) || subtitle.includes(term)) {
+            // Check if conversation should be visible based on type filter
+            const filterType = document.getElementById('conversation-filter')?.value || 'all';
+            const conversationType = conversation.getAttribute('data-type');
+            
+            if (filterType === 'all' || conversationType === filterType) {
+                conversation.classList.remove('hidden');
+                conversation.style.display = '';
+            } else {
+                conversation.classList.add('hidden');
+                conversation.style.display = 'none';
+            }
+        } else {
+            conversation.classList.add('hidden');
+            conversation.style.display = 'none';
+        }
+    });
 }
 
 // Fonction pour changer le clavier (FR/AR/EN) - Version globale
