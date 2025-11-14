@@ -357,7 +357,7 @@
     </nav>
 
     <!-- Mobile Navigation - Minimal: Only Globe Icon and Hamburger -->
-    <nav id="mobile-top-nav" class="md:hidden fixed top-4 right-4 z-50 transition-transform duration-300 ease-in-out">
+    <nav class="md:hidden fixed top-4 right-4 z-50">
         <div class="flex items-center space-x-3">
             <!-- Language Selector Mobile - 3D Globe Icon -->
             <div class="relative">
@@ -716,28 +716,6 @@
                     languageDropdown.classList.toggle('hidden');
                 }
             };
-            
-            // Mobile navbar scroll behavior (hide on scroll down, show on scroll up)
-            let lastScrollTop = 0;
-            const mobileTopNav = document.getElementById('mobile-top-nav');
-            
-            if (mobileTopNav) {
-                window.addEventListener('scroll', function() {
-                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                    
-                    if (scrollTop > lastScrollTop && scrollTop > 100) {
-                        // Scrolling down - hide navbar
-                        mobileTopNav.style.transform = 'translateY(-100px)';
-                        mobileTopNav.style.opacity = '0';
-                    } else {
-                        // Scrolling up - show navbar
-                        mobileTopNav.style.transform = 'translateY(0)';
-                        mobileTopNav.style.opacity = '1';
-                    }
-                    
-                    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-                }, false);
-            }
         });
     </script>
 </body>

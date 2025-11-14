@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="min-h-screen bg-gray-100">
-    <div class="max-w-7xl mx-auto h-screen flex">
+    <div class="max-w-7xl mx-auto h-screen flex flex-col md:flex-row">
         <!-- Left Sidebar - Conversations List -->
         <!-- Mobile: Full width, Desktop: 1/3 width -->
         <div id="conversations-list" class="w-full md:w-1/3 bg-white border-r border-gray-200 flex flex-col">
@@ -37,7 +37,6 @@
                         </svg>
                     </div>
                     <input type="text" 
-                           id="conversation-search"
                            placeholder="Rechercher une conversation..." 
                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                 </div>
@@ -50,10 +49,8 @@
                     <div class="conversation-item border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
                          data-type="{{ $conversation->type }}"
                          data-conversation-id="{{ $conversation->type }}_{{ $conversation->id }}"
-                         data-conversation-title="{{ strtolower($conversation->title) }}"
-                         data-conversation-subtitle="{{ strtolower($conversation->subtitle) }}"
                          data-conversation-data="{{ htmlspecialchars(json_encode($conversation), ENT_QUOTES, 'UTF-8') }}"
-                         onclick="window.selectConversation('{{ $conversation->type }}', '{{ $conversation->id }}', this.getAttribute('data-conversation-data'))">
+                         onclick="selectConversation('{{ $conversation->type }}', '{{ $conversation->id }}', this.getAttribute('data-conversation-data'))">
                         <div class="p-4">
                             <div class="flex items-center space-x-3">
                                 <!-- Avatar -->
@@ -187,7 +184,7 @@
             <!-- Chat Interface (Hidden by default) -->
             <div id="chat-interface" class="flex-1 flex flex-col hidden relative" style="min-height: 0; max-height: 100vh; overflow: hidden;">
                 <!-- Chat Header -->
-                <div id="chat-header" class="p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 z-10">
+                <div id="chat-header" class="p-3 md:p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 z-10">
                     <div class="flex items-center space-x-3">
                         <!-- Back Button (Mobile only) -->
                         <button id="back-to-conversations" onclick="backToConversations()" class="md:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors" title="Retour aux conversations">
@@ -203,17 +200,17 @@
 
                         <!-- Chat Info -->
                         <div class="flex-1 min-w-0">
-                            <h2 id="chat-title" class="text-lg font-semibold text-gray-900 truncate">
+                            <h2 id="chat-title" class="text-base md:text-lg font-semibold text-gray-900 truncate">
                                 <!-- Title will be loaded here -->
                             </h2>
-                            <p id="chat-subtitle" class="text-sm text-gray-500">
+                            <p id="chat-subtitle" class="text-xs md:text-sm text-gray-500">
                                 <!-- Subtitle will be loaded here -->
                             </p>
                         </div>
 
                         <!-- Actions -->
                         <div class="flex items-center space-x-2">
-                            <button onclick="exitConversation()" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors" title="Fermer la conversation (Échap)">
+                            <button onclick="exitConversation()" class="hidden md:block p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors" title="Fermer la conversation (Échap)">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
@@ -247,23 +244,8 @@
                             </button>
                         </div>
                     </div>
-                    <!-- Keyboard Language Selector (Desktop only) -->
-                    <div class="hidden md:flex items-center justify-end mb-2 space-x-2">
-                        <span class="text-xs text-gray-500">Clavier:</span>
-                        <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
-                            <button id="keyboard-fr-desktop" data-keyboard="fr" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors bg-white text-gray-700 shadow-sm" title="Français">
-                                FR
-                            </button>
-                            <button id="keyboard-ar-desktop" data-keyboard="ar" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors text-gray-500 hover:bg-gray-200" title="العربية">
-                                AR
-                            </button>
-                            <button id="keyboard-en-desktop" data-keyboard="en" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors text-gray-500 hover:bg-gray-200" title="English">
-                                EN
-                            </button>
-                        </div>
-                    </div>
                     <!-- Preview des fichiers sélectionnés -->
-                    <div id="file-preview-container" class="hidden flex flex-wrap gap-2 mb-2"></div>
+                    <div id="file-preview-container" class="hidden flex flex-wrap gap-2 mb-2 px-4"></div>
                     
                     <div class="flex items-center space-x-3">
                         <!-- File Input (caché) -->
@@ -300,14 +282,10 @@
 let selectedConversationId = null;
 let selectedConversationData = null;
 
-// Make selectConversation globally accessible
-window.selectConversation = function selectConversation(type, id, conversationData) {
+function selectConversation(type, id, conversationData) {
     console.log('🎯 selectConversation called with:', { type, id, conversationData });
     
     try {
-        // Check if mobile (screen width < 768px)
-        const isMobile = window.innerWidth < 768;
-        
         selectedConversationId = `${type}_${id}`;
         
         // Parse conversation data safely
@@ -364,30 +342,31 @@ window.selectConversation = function selectConversation(type, id, conversationDa
             console.error('❌ Conversation element not found!');
         }
         
-        // Mobile: Hide conversations list and show chat view
-        const conversationsList = document.getElementById('conversations-list');
-        const chatView = document.getElementById('chat-view');
+        // Show chat interface and hide welcome screen
         const welcomeScreen = document.getElementById('welcome-screen');
         const chatInterface = document.getElementById('chat-interface');
-        
-        // Check if mobile (screen width < 768px)
-        const isMobile = window.innerWidth < 768;
-        
-        if (isMobile) {
-            // Mobile: Hide conversations list, show chat view
-            if (conversationsList) conversationsList.classList.add('hidden');
-            if (chatView) {
-                chatView.classList.remove('hidden');
-                chatView.classList.add('flex');
-            }
-        }
+        const chatView = document.getElementById('chat-view');
+        const conversationsList = document.getElementById('conversations-list');
         
         console.log('🔍 Welcome screen element:', welcomeScreen);
         console.log('🔍 Chat interface element:', chatInterface);
         
+        // Check if mobile (screen width < 768px)
+        const isMobile = window.innerWidth < 768;
+        
         if (welcomeScreen && chatInterface) {
-            welcomeScreen.classList.add('hidden');
-            chatInterface.classList.remove('hidden');
+            if (isMobile) {
+                // Mobile: Hide conversations list and show chat view
+                if (conversationsList) conversationsList.classList.add('hidden');
+                if (chatView) {
+                    chatView.classList.remove('hidden');
+                    chatView.classList.add('flex');
+                }
+            } else {
+                // Desktop: Show chat interface and hide welcome screen
+                welcomeScreen.classList.add('hidden');
+                chatInterface.classList.remove('hidden');
+            }
             console.log('✅ UI switched to chat interface');
             
             // Initialiser le clavier après l'affichage du chat
@@ -1146,13 +1125,15 @@ function exitConversation() {
         el.classList.remove('bg-orange-50', 'border-r-orange-500');
     });
     
-    // Check if mobile
+    // Check if mobile (screen width < 768px)
     const isMobile = window.innerWidth < 768;
+    const conversationsList = document.getElementById('conversations-list');
+    const chatView = document.getElementById('chat-view');
+    const welcomeScreen = document.getElementById('welcome-screen');
+    const chatInterface = document.getElementById('chat-interface');
     
     if (isMobile) {
-        // Mobile: Show conversations list, hide chat view
-        const conversationsList = document.getElementById('conversations-list');
-        const chatView = document.getElementById('chat-view');
+        // Mobile: Show conversations list and hide chat view
         if (conversationsList) conversationsList.classList.remove('hidden');
         if (chatView) {
             chatView.classList.add('hidden');
@@ -1160,21 +1141,21 @@ function exitConversation() {
         }
     } else {
         // Desktop: Show welcome screen and hide chat interface
-        document.getElementById('welcome-screen').classList.remove('hidden');
-        document.getElementById('chat-interface').classList.add('hidden');
+        if (welcomeScreen) welcomeScreen.classList.remove('hidden');
+        if (chatInterface) chatInterface.classList.add('hidden');
     }
     
     // Clear messages container
     document.getElementById('messages-container').innerHTML = '';
 }
 
-// Function to go back to conversations list (mobile only)
+// Function to go back to conversations list (Mobile only)
 function backToConversations() {
     exitConversation();
 }
 
 // Filter conversations by type
-window.filterConversations = function filterConversations(filterType) {
+function filterConversations(filterType) {
     const conversations = document.querySelectorAll('.conversation-item');
     
     conversations.forEach(conversation => {
@@ -1186,12 +1167,6 @@ window.filterConversations = function filterConversations(filterType) {
             conversation.style.display = 'none';
         }
     });
-    
-    // Also apply search filter if there's a search term
-    const searchInput = document.getElementById('conversation-search');
-    if (searchInput && searchInput.value.trim()) {
-        searchConversations(searchInput.value.trim());
-    }
     
     // Update selected conversation if it's hidden
     if (selectedConversationId) {
@@ -1211,39 +1186,6 @@ window.filterConversations = function filterConversations(filterType) {
             });
         }
     }
-}
-
-// Search conversations by name/title
-window.searchConversations = function searchConversations(searchTerm) {
-    const conversations = document.querySelectorAll('.conversation-item');
-    const term = searchTerm.toLowerCase().trim();
-    
-    if (!term) {
-        // If search is empty, show all conversations (respecting type filter)
-        const filterType = document.getElementById('conversation-filter')?.value || 'all';
-        filterConversations(filterType);
-        return;
-    }
-    
-    conversations.forEach(conversation => {
-        const title = conversation.getAttribute('data-conversation-title') || '';
-        const subtitle = conversation.getAttribute('data-conversation-subtitle') || '';
-        
-        // Check if search term matches title or subtitle
-        if (title.includes(term) || subtitle.includes(term)) {
-            // Check if conversation should be visible based on type filter
-            const filterType = document.getElementById('conversation-filter')?.value || 'all';
-            const conversationType = conversation.getAttribute('data-type');
-            
-            if (filterType === 'all' || conversationType === filterType) {
-                conversation.style.display = 'block';
-            } else {
-                conversation.style.display = 'none';
-            }
-        } else {
-            conversation.style.display = 'none';
-        }
-    });
 }
 
 // Fonction pour changer le clavier (FR/AR/EN) - Version globale
@@ -1387,21 +1329,6 @@ document.addEventListener('DOMContentLoaded', function() {
         messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = this.scrollHeight + 'px';
-        });
-    }
-    
-    // Search functionality
-    const searchInput = document.getElementById('conversation-search');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.trim();
-            if (searchTerm) {
-                searchConversations(searchTerm);
-            } else {
-                // If search is empty, show all conversations (respecting type filter)
-                const filterType = document.getElementById('conversation-filter')?.value || 'all';
-                filterConversations(filterType);
-            }
         });
     }
     
