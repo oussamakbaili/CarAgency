@@ -167,7 +167,7 @@
         <!-- Mobile: Hidden by default, shown when conversation selected. Desktop: Always visible -->
         <div id="chat-view" class="hidden md:flex flex-1 bg-white flex flex-col">
             <!-- Welcome Screen (Default) -->
-            <div id="welcome-screen" class="flex-1 flex items-center justify-center bg-gray-50">
+            <div id="welcome-screen" class="flex-1 flex items-center justify-center bg-gray-50 relative z-0">
                 <div class="text-center">
                     <div class="w-24 h-24 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
                         <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,7 +182,7 @@
             </div>
 
             <!-- Chat Interface (Hidden by default) -->
-            <div id="chat-interface" class="flex-1 flex flex-col hidden relative" style="min-height: 0; max-height: 100vh; overflow: hidden;">
+            <div id="chat-interface" class="flex-1 flex flex-col hidden relative z-10" style="min-height: 0; max-height: 100vh; overflow: hidden;">
                 <!-- Chat Header -->
                 <div id="chat-header" class="p-3 md:p-4 border-b border-gray-200 bg-gray-50 flex-shrink-0 z-10">
                     <div class="flex items-center space-x-3">
@@ -220,7 +220,7 @@
                 </div>
 
                 <!-- Messages Area - Scrollable -->
-                <div id="messages-container" class="flex-1 overflow-y-auto p-3 md:p-4 bg-gray-50" style="min-height: 0; padding-bottom: 180px;">
+                <div id="messages-container" class="flex-1 overflow-y-auto p-3 md:p-4 bg-gray-50 relative z-0" style="min-height: 0; padding-bottom: 180px;">
                     <!-- Messages will be loaded here -->
                     <div class="text-center text-gray-500 mt-8">
                         <p>Chargement des messages...</p>
@@ -362,6 +362,9 @@ function selectConversation(type, id, conversationData) {
                     chatView.classList.remove('hidden');
                     chatView.classList.add('flex');
                 }
+                // Mobile: Also hide welcome screen and show chat interface
+                welcomeScreen.classList.add('hidden');
+                chatInterface.classList.remove('hidden');
             } else {
                 // Desktop: Show chat interface and hide welcome screen
                 welcomeScreen.classList.add('hidden');
