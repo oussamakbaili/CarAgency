@@ -1418,6 +1418,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Search functionality
+    const searchInput = document.getElementById('conversation-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.trim();
+            if (searchTerm) {
+                searchConversations(searchTerm);
+            } else {
+                // If search is empty, show all conversations (respecting type filter)
+                const filterType = document.getElementById('conversation-filter')?.value || 'all';
+                filterConversations(filterType);
+            }
+        });
+    }
+    
     // Apply initial filter from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const filterParam = urlParams.get('filter');
