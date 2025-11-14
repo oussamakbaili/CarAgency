@@ -364,14 +364,11 @@ window.selectConversation = function selectConversation(type, id, conversationDa
             console.error('❌ Conversation element not found!');
         }
         
-        // Show chat interface and hide welcome screen
-        const welcomeScreen = document.getElementById('welcome-screen');
-        const chatInterface = document.getElementById('chat-interface');
+        // Mobile: Hide conversations list and show chat view
         const conversationsList = document.getElementById('conversations-list');
         const chatView = document.getElementById('chat-view');
-        
-        console.log('🔍 Welcome screen element:', welcomeScreen);
-        console.log('🔍 Chat interface element:', chatInterface);
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const chatInterface = document.getElementById('chat-interface');
         
         // Check if mobile (screen width < 768px)
         const isMobile = window.innerWidth < 768;
@@ -383,16 +380,15 @@ window.selectConversation = function selectConversation(type, id, conversationDa
                 chatView.classList.remove('hidden');
                 chatView.classList.add('flex');
             }
-            // Also hide welcome screen and show chat interface in mobile
-            if (welcomeScreen) welcomeScreen.classList.add('hidden');
-            if (chatInterface) chatInterface.classList.remove('hidden');
-        } else {
-            // Desktop: Show chat interface, hide welcome screen
-            if (welcomeScreen) welcomeScreen.classList.add('hidden');
-            if (chatInterface) chatInterface.classList.remove('hidden');
         }
         
-        console.log('✅ UI switched to chat interface');
+        console.log('🔍 Welcome screen element:', welcomeScreen);
+        console.log('🔍 Chat interface element:', chatInterface);
+        
+        if (welcomeScreen && chatInterface) {
+            welcomeScreen.classList.add('hidden');
+            chatInterface.classList.remove('hidden');
+            console.log('✅ UI switched to chat interface');
             
             // Initialiser le clavier après l'affichage du chat
             setTimeout(function() {
@@ -1141,9 +1137,6 @@ async function sendRentalMessage(message, filesToSend = null) {
 
 // Function to exit conversation (like WhatsApp)
 function exitConversation() {
-    // Check if mobile (screen width < 768px)
-    const isMobile = window.innerWidth < 768;
-    
     // Clear selection
     selectedConversationId = null;
     selectedConversationData = null;
@@ -1153,13 +1146,13 @@ function exitConversation() {
         el.classList.remove('bg-orange-50', 'border-r-orange-500');
     });
     
-    const conversationsList = document.getElementById('conversations-list');
-    const chatView = document.getElementById('chat-view');
-    const welcomeScreen = document.getElementById('welcome-screen');
-    const chatInterface = document.getElementById('chat-interface');
+    // Check if mobile
+    const isMobile = window.innerWidth < 768;
     
     if (isMobile) {
         // Mobile: Show conversations list, hide chat view
+        const conversationsList = document.getElementById('conversations-list');
+        const chatView = document.getElementById('chat-view');
         if (conversationsList) conversationsList.classList.remove('hidden');
         if (chatView) {
             chatView.classList.add('hidden');
@@ -1167,13 +1160,12 @@ function exitConversation() {
         }
     } else {
         // Desktop: Show welcome screen and hide chat interface
-        if (welcomeScreen) welcomeScreen.classList.remove('hidden');
-        if (chatInterface) chatInterface.classList.add('hidden');
+        document.getElementById('welcome-screen').classList.remove('hidden');
+        document.getElementById('chat-interface').classList.add('hidden');
     }
     
     // Clear messages container
-    const messagesContainer = document.getElementById('messages-container');
-    if (messagesContainer) messagesContainer.innerHTML = '';
+    document.getElementById('messages-container').innerHTML = '';
 }
 
 // Function to go back to conversations list (mobile only)
@@ -1189,10 +1181,8 @@ window.filterConversations = function filterConversations(filterType) {
         const conversationType = conversation.getAttribute('data-type');
         
         if (filterType === 'all' || conversationType === filterType) {
-            conversation.classList.remove('hidden');
-            conversation.style.display = '';
+            conversation.style.display = 'block';
         } else {
-            conversation.classList.add('hidden');
             conversation.style.display = 'none';
         }
     });
@@ -1206,29 +1196,14 @@ window.filterConversations = function filterConversations(filterType) {
     // Update selected conversation if it's hidden
     if (selectedConversationId) {
         const selectedElement = document.querySelector(`[data-conversation-id="${selectedConversationId}"]`);
-        if (selectedElement && (selectedElement.classList.contains('hidden') || selectedElement.style.display === 'none')) {
+        if (selectedElement && selectedElement.style.display === 'none') {
             // Clear selection if current conversation is filtered out
             selectedConversationId = null;
             selectedConversationData = null;
             
             // Show welcome screen
-            const welcomeScreen = document.getElementById('welcome-screen');
-            const chatInterface = document.getElementById('chat-interface');
-            const conversationsList = document.getElementById('conversations-list');
-            const chatView = document.getElementById('chat-view');
-            
-            const isMobile = window.innerWidth < 768;
-            
-            if (isMobile) {
-                if (conversationsList) conversationsList.classList.remove('hidden');
-                if (chatView) {
-                    chatView.classList.add('hidden');
-                    chatView.classList.remove('flex');
-                }
-            } else {
-                if (welcomeScreen) welcomeScreen.classList.remove('hidden');
-                if (chatInterface) chatInterface.classList.add('hidden');
-            }
+            document.getElementById('welcome-screen').classList.remove('hidden');
+            document.getElementById('chat-interface').classList.add('hidden');
             
             // Remove selection styling
             document.querySelectorAll('.bg-orange-50').forEach(el => {
@@ -1261,14 +1236,11 @@ window.searchConversations = function searchConversations(searchTerm) {
             const conversationType = conversation.getAttribute('data-type');
             
             if (filterType === 'all' || conversationType === filterType) {
-                conversation.classList.remove('hidden');
-                conversation.style.display = '';
+                conversation.style.display = 'block';
             } else {
-                conversation.classList.add('hidden');
                 conversation.style.display = 'none';
             }
         } else {
-            conversation.classList.add('hidden');
             conversation.style.display = 'none';
         }
     });
