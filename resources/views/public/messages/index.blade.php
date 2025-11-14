@@ -1142,6 +1142,9 @@ function exitConversation() {
             chatView.classList.add('hidden');
             chatView.classList.remove('flex');
         }
+        // Mobile: Also hide chat interface and show welcome screen
+        if (chatInterface) chatInterface.classList.add('hidden');
+        if (welcomeScreen) welcomeScreen.classList.remove('hidden');
     } else {
         // Desktop: Show welcome screen and hide chat interface
         if (welcomeScreen) welcomeScreen.classList.remove('hidden');
