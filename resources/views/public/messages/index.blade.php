@@ -3,8 +3,8 @@
 @section('title', 'Messages')
 
 @section('content')
-<div class="min-h-screen bg-gray-100">
-    <div class="max-w-7xl mx-auto h-screen flex flex-col md:flex-row">
+<div class="min-h-screen bg-gray-100" style="height: 100vh; overflow: hidden;">
+    <div class="max-w-7xl mx-auto h-full flex flex-col md:flex-row">
         <!-- Left Sidebar - Conversations List -->
         <!-- Mobile: Full width, Desktop: 1/3 width -->
         <div id="conversations-list" class="w-full md:w-1/3 bg-white border-r border-gray-200 flex flex-col">
