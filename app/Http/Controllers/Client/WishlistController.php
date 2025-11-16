@@ -26,28 +26,68 @@ class WishlistController extends Controller
     public function store(Request $request)
     {
         try {
+            // Vérifier que l'utilisateur est authentifié
+            if (!Auth::check()) {
+                return response()->json([
+                    'message' => 'Vous devez être connecté pour créer une wishlist.',
+                    'error' => 'Unauthenticated'
+                ], 401);
+            }
+
+            // Vérifier que l'utilisateur est un client
+            if (!Auth::user()->isClient()) {
+                return response()->json([
+                    'message' => 'Seuls les clients peuvent créer des wishlists.',
+                    'error' => 'Unauthorized'
+                ], 403);
+            }
+
             $request->validate([
                 'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
+                'description' => 'nullable|string|max:1000',
             ]);
 
-            $wishlist = Auth::user()->wishlists()->create([
+            $user = Auth::user();
+            
+            // Vérifier que la relation wishlists existe
+            if (!method_exists($user, 'wishlists')) {
+                \Log::error('User model does not have wishlists relationship');
+                return response()->json([
+                    'message' => 'Erreur système. Veuillez réessayer.',
+                    'error' => 'Model relationship not found'
+                ], 500);
+            }
+
+            $wishlist = $user->wishlists()->create([
                 'name' => $request->name,
-                'description' => $request->description,
+                'description' => $request->description ?? null,
                 'is_public' => $request->is_public ?? false,
             ]);
 
-            return response()->json($wishlist, 201);
+            return response()->json([
+                'id' => $wishlist->id,
+                'name' => $wishlist->name,
+                'description' => $wishlist->description,
+                'is_public' => $wishlist->is_public,
+                'message' => 'Wishlist créée avec succès'
+            ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'message' => 'Validation error',
+                'message' => 'Erreur de validation',
                 'errors' => $e->errors()
             ], 422);
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Log::error('Database error creating wishlist: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Erreur de base de données. Veuillez réessayer.',
+                'error' => config('app.debug') ? $e->getMessage() : 'Database error'
+            ], 500);
         } catch (\Exception $e) {
             \Log::error('Error creating wishlist: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json([
-                'message' => 'Error creating wishlist. Please try again.',
-                'error' => $e->getMessage()
+                'message' => 'Erreur lors de la création de la wishlist. Veuillez réessayer.',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
     }

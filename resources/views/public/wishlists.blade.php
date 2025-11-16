@@ -453,45 +453,63 @@
             saveButton.textContent = '{{ __('common.loading') }}...';
         }
 
-        fetch('{{ url('client/wishlists') }}', {
+        fetch('{{ route('client.wishlists.store') }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify({ name: name })
+            body: JSON.stringify({ 
+                name: name,
+                description: null,
+                is_public: false
+            })
         })
         .then(async response => {
             const contentType = response.headers.get('content-type');
+            let errorData = null;
+            
             if (!response.ok) {
                 if (contentType && contentType.includes('application/json')) {
-                    const err = await response.json();
-                    throw new Error(err.message || err.error || 'Error creating wishlist');
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        console.error('Error parsing error response:', e);
+                    }
+                }
+                
+                // Gérer les erreurs spécifiques
+                if (response.status === 401) {
+                    throw new Error('Vous devez être connecté pour créer une wishlist.');
+                } else if (response.status === 403) {
+                    throw new Error('Vous n\'avez pas la permission de créer une wishlist.');
+                } else if (response.status === 422 && errorData && errorData.errors) {
+                    // Erreur de validation
+                    const firstError = Object.values(errorData.errors)[0];
+                    throw new Error(Array.isArray(firstError) ? firstError[0] : firstError);
                 } else {
-                    throw new Error('Error creating wishlist. Please try again.');
+                    throw new Error(errorData?.message || errorData?.error || 'Erreur lors de la création de la wishlist. Veuillez réessayer.');
                 }
             }
+            
             if (contentType && contentType.includes('application/json')) {
                 return response.json();
             }
-            throw new Error('Invalid response from server');
+            throw new Error('Réponse invalide du serveur');
         })
         .then(data => {
             if (data && (data.id || data.name)) {
                 // Success - reload page
                 location.reload();
             } else {
-                alert('Error creating wishlist');
-                if (saveButton) {
-                    saveButton.disabled = false;
-                    saveButton.textContent = originalText;
-                }
+                throw new Error('Réponse invalide du serveur');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert(error.message || 'An error occurred. Please try again.');
+            console.error('Error creating wishlist:', error);
+            alert(error.message || 'Une erreur est survenue. Veuillez réessayer.');
             if (saveButton) {
                 saveButton.disabled = false;
                 saveButton.textContent = originalText;
