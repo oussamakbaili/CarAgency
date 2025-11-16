@@ -94,7 +94,16 @@ class SupportMessageController extends Controller
      */
     public function getUnreadCount()
     {
+        // Vérifier que l'utilisateur est authentifié et est un client
+        if (!auth()->check() || !auth()->user()->isClient()) {
+            return response()->json(['count' => 0], 401);
+        }
+        
         $client = auth()->user()->client;
+        
+        if (!$client) {
+            return response()->json(['count' => 0], 404);
+        }
         
         $count = SupportMessage::whereHas('supportTicket', function($query) use ($client) {
                 $query->where('client_id', $client->id);

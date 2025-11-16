@@ -27,22 +27,40 @@
     <script>
     // Update support messages notification badge
     async function updateSupportMessagesBadge() {
-        try {
-            const response = await fetch('/client/support/unread-count');
-            const data = await response.json();
-            
-            const badge = document.getElementById('support-messages-badge');
-            if (badge) {
-                if (data.count > 0) {
-                    badge.textContent = data.count;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
+        // Vérifier que l'utilisateur est authentifié avant de faire la requête
+        @auth
+            @if(auth()->check() && auth()->user()->isClient())
+                try {
+                    const response = await fetch('/client/support/unread-count');
+                    
+                    // Vérifier si la réponse est OK
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) {
+                            // Utilisateur non authentifié, ne rien faire
+                            return;
+                        }
+                        throw new Error('Network response was not ok');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    const badge = document.getElementById('support-messages-badge');
+                    if (badge) {
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.classList.remove('hidden');
+                        } else {
+                            badge.classList.add('hidden');
+                        }
+                    }
+                } catch (error) {
+                    // Ignorer les erreurs silencieusement pour les utilisateurs non authentifiés
+                    if (error.message !== 'Network response was not ok') {
+                        console.error('Error updating support messages badge:', error);
+                    }
                 }
-            }
-        } catch (error) {
-            console.error('Error updating support messages badge:', error);
-        }
+            @endif
+        @endauth
     }
     
     // Update badge on page load
