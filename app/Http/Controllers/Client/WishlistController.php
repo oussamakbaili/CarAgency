@@ -8,6 +8,7 @@ use App\Models\WishlistItem;
 use App\Models\Car;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class WishlistController extends Controller
 {
@@ -78,6 +79,26 @@ class WishlistController extends Controller
             ], 422);
         } catch (\Illuminate\Database\QueryException $e) {
             \Log::error('Database error creating wishlist: ' . $e->getMessage());
+            \Log::error('SQL State: ' . $e->getSqlState());
+            \Log::error('SQL: ' . $e->getSql());
+            \Log::error('Bindings: ' . json_encode($e->getBindings()));
+            
+            // Vérifier si la table existe
+            if (str_contains($e->getMessage(), "doesn't exist") || str_contains($e->getMessage(), "Base table or view not found")) {
+                return response()->json([
+                    'message' => 'La table wishlists n\'existe pas. Veuillez exécuter les migrations.',
+                    'error' => config('app.debug') ? $e->getMessage() : 'Table not found'
+                ], 500);
+            }
+            
+            // Vérifier les contraintes de clé étrangère
+            if (str_contains($e->getMessage(), "foreign key constraint") || str_contains($e->getMessage(), "Cannot add or update a child row")) {
+                return response()->json([
+                    'message' => 'Erreur de contrainte de base de données. Veuillez contacter le support.',
+                    'error' => config('app.debug') ? $e->getMessage() : 'Foreign key constraint error'
+                ], 500);
+            }
+            
             return response()->json([
                 'message' => 'Erreur de base de données. Veuillez réessayer.',
                 'error' => config('app.debug') ? $e->getMessage() : 'Database error'
