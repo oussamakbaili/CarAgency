@@ -59,11 +59,26 @@ class WishlistController extends Controller
                 ], 500);
             }
 
-            $wishlist = $user->wishlists()->create([
-                'name' => $request->name,
-                'description' => $request->description ?? null,
-                'is_public' => $request->is_public ?? false,
-            ]);
+            // Vérifier que la table existe avant de créer
+            if (!Schema::hasTable('wishlists')) {
+                \Log::error('Table wishlists does not exist');
+                return response()->json([
+                    'message' => 'La table wishlists n\'existe pas. Veuillez exécuter les migrations de base de données.',
+                    'error' => 'Table not found'
+                ], 500);
+            }
+
+            try {
+                $wishlist = $user->wishlists()->create([
+                    'name' => $request->name,
+                    'description' => $request->description ?? null,
+                    'is_public' => $request->is_public ?? false,
+                ]);
+            } catch (\Illuminate\Database\QueryException $dbException) {
+                \Log::error('Error in wishlist creation query: ' . $dbException->getMessage());
+                \Log::error('User ID: ' . $user->id);
+                throw $dbException; // Re-throw pour être capturé par le catch externe
+            }
 
             return response()->json([
                 'id' => $wishlist->id,
