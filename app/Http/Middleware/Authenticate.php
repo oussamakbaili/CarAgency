@@ -19,12 +19,7 @@ class Authenticate extends Middleware
         // Store the intended URL for redirect after login
         session(['url.intended' => $request->fullUrl()]);
         
-        // If the request is for client routes, redirect to home page
-        if (str_starts_with($request->path(), 'client/')) {
-            return route('public.home');
-        }
-        
-        // For other routes, redirect to login
+        // Always redirect to login page for unauthenticated users
         return route('login');
     }
 }
