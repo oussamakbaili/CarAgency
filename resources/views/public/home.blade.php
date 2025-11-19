@@ -1399,6 +1399,83 @@
             opacity: 0;
             transform: translateY(30px);
         }
+
+        .wishlist-modal {
+            transition: opacity 0.3s ease;
+        }
+
+        .wishlist-modal .wishlist-overlay {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .wishlist-modal.show .wishlist-overlay {
+            opacity: 1;
+        }
+
+        .wishlist-sheet {
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .wishlist-modal.show .wishlist-sheet {
+            transform: translateY(0);
+        }
+
+        .wishlist-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 1.25rem;
+            padding: 0.85rem 1rem;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            width: 100%;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .wishlist-card:hover {
+            border-color: #cbd5f5;
+        }
+
+        .wishlist-card.active {
+            border-color: #0F3B63;
+            background: #f8fafc;
+            box-shadow: 0 12px 30px rgba(15, 59, 99, 0.15);
+        }
+
+        .wishlist-card-thumb {
+            width: 64px;
+            height: 64px;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #f97316, #fb923c);
+        }
+
+        .wishlist-card-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .wishlist-card-check {
+            width: 36px;
+            height: 36px;
+            border-radius: 9999px;
+            border: 2px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            transition: all 0.2s ease;
+        }
+
+        .wishlist-card.active .wishlist-card-check {
+            background: #0F3B63;
+            border-color: #0F3B63;
+            color: #fff;
+        }
     </style>
 
     <script>
@@ -1661,67 +1738,79 @@
         </div>
     </div>
 
-    <!-- Wishlist Modal -->
-    <div id="wishlistModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen px-4">
-            <div class="fixed inset-0 bg-black bg-opacity-50" onclick="closeWishlistModal()"></div>
-            <div class="relative bg-white rounded-2xl w-full max-w-md shadow-2xl">
-                <!-- Close Button -->
-                <button onclick="closeWishlistModal()" class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
+    <!-- Wishlist Bottom Sheet -->
+    <div id="wishlistModal" class="wishlist-modal hidden fixed inset-0 z-50 flex flex-col justify-end px-4 pb-6 sm:pb-10">
+        <div class="wishlist-overlay absolute inset-0 bg-black/60" onclick="closeWishlistModal()"></div>
+        <div class="wishlist-sheet relative w-full max-w-xl mx-auto bg-white rounded-t-[32px] shadow-2xl overflow-hidden">
+            <div class="flex justify-center pt-4 pb-2">
+                <span class="block w-16 h-1.5 rounded-full bg-gray-200"></span>
+            </div>
+            <div class="px-6 pb-6 space-y-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.4em] text-gray-400 mb-1">Wishlist</p>
+                        <h2 class="text-2xl font-semibold text-gray-900">Save to wishlist</h2>
+                    </div>
+                    <button onclick="closeWishlistModal()" class="text-gray-400 hover:text-gray-600 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div id="wishlistsList" class="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+                    <!-- Wishlists injected here -->
+                </div>
+
+                <div id="createWishlistForm" class="hidden space-y-3">
+                    <input type="text" id="wishlistName" placeholder="Name your wishlist" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <div class="flex gap-3">
+                        <button id="saveWishlistBtn" onclick="createWishlist()" 
+                                class="flex-1 bg-[#0F3B63] text-white py-3 rounded-2xl font-semibold hover:bg-[#0d3456] transition">
+                            Save
+                        </button>
+                        <button onclick="hideCreateWishlistForm()" 
+                                class="px-5 py-3 rounded-2xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+
+                <button id="createWishlistTrigger" onclick="showCreateWishlistForm()" 
+                        class="w-full border-2 border-dashed border-gray-300 rounded-2xl py-3 font-medium text-gray-700 hover:border-orange-400 hover:text-orange-500 transition">
+                    + Create new wishlist
                 </button>
-                
-                <!-- Header -->
-                <div class="px-6 pt-8 pb-4 border-b border-gray-200">
-                    <h2 class="text-xl font-semibold text-gray-900">Save to wishlist</h2>
-                </div>
-                
-                <!-- Content -->
-                <div class="px-6 py-6">
-                    <div id="wishlistsList" class="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                        <!-- Wishlists will be loaded here -->
-                    </div>
-                    
-                    <!-- Create New Wishlist -->
-                    <div class="border-t border-gray-200 pt-4 mt-4">
-                        <button onclick="showCreateWishlistForm()" 
-                                class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-700 hover:border-orange-500 hover:text-orange-500 transition-colors font-medium">
-                            + Create new wishlist
-                        </button>
-                    </div>
-                    
-                    <!-- Create Form (Hidden by default) -->
-                    <div id="createWishlistForm" class="hidden mt-4">
-                        <input type="text" id="wishlistName" placeholder="Name your wishlist" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent mb-3">
-                        <div class="flex gap-2">
-                            <button onclick="createWishlist()" 
-                                    class="flex-1 bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors font-medium">
-                                Create
-                            </button>
-                            <button onclick="hideCreateWishlistForm()" 
-                                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Done Button -->
-                    <div class="mt-6 pt-4 border-t border-gray-200">
-                        <button onclick="closeWishlistModal()" 
-                                class="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-semibold">
-                            Done
-                        </button>
-                    </div>
-                </div>
+
+                <button onclick="closeWishlistModal()" 
+                        class="w-full bg-gray-900 text-white py-3 rounded-2xl font-semibold hover:bg-gray-800 transition">
+                    Done
+                </button>
             </div>
         </div>
     </div>
 
     <script>
+        const wishlistPlaceholderImage = "{{ asset('images/black-sedan-car-driving-bridge-road.png') }}";
         let currentCarId = null;
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function openWishlistModal() {
+            const modal = document.getElementById('wishlistModal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => modal.classList.add('show'));
+            document.body.style.overflow = 'hidden';
+        }
         
         function handleFavoriteClick(carId, event) {
             event.stopPropagation();
@@ -1730,8 +1819,9 @@
             @auth
                 // User is logged in, show wishlist modal
                 loadWishlists();
-                document.getElementById('wishlistModal').classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
+                // Delay modal opening slightly to avoid the initial tap being interpreted
+                // as a click on the overlay (which would close it instantly on mobile).
+                setTimeout(() => openWishlistModal(), 50);
             @else
                 // User is not logged in, show login modal
                 document.getElementById('loginModal').classList.remove('hidden');
@@ -1745,16 +1835,25 @@
         }
         
         function closeWishlistModal() {
-            document.getElementById('wishlistModal').classList.add('hidden');
+            const modal = document.getElementById('wishlistModal');
+            if (!modal) return;
+            modal.classList.remove('show');
             document.body.style.overflow = '';
+            setTimeout(() => modal.classList.add('hidden'), 250);
             currentCarId = null;
+            hideCreateWishlistForm();
         }
         
         function loadWishlists() {
-            if (!currentCarId) return;
+            if (!currentCarId) return Promise.resolve();
+
+            const container = document.getElementById('wishlistsList');
+            if (container) {
+                container.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">Loading your wishlists...</p>';
+            }
             
             // Load wishlists and check which ones contain this car
-            Promise.all([
+            return Promise.all([
                 fetch('{{ route("client.wishlists.index") }}', {
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -1769,45 +1868,60 @@
                 }).then(r => r.json())
             ])
             .then(([wishlists, checkData]) => {
-                const container = document.getElementById('wishlistsList');
-                container.innerHTML = '';
+                const listContainer = document.getElementById('wishlistsList');
+                if (!listContainer) return;
+                listContainer.innerHTML = '';
                 
                 const inWishlists = checkData.in_wishlists || [];
                 
                 if (wishlists.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">No wishlists yet. Create one!</p>';
+                    listContainer.innerHTML = '<div class="text-center py-8"><p class="text-gray-500 text-sm">No wishlists yet. Create one to start saving cars.</p></div>';
                 } else {
                     wishlists.forEach(wishlist => {
                         const isInWishlist = inWishlists.includes(wishlist.id);
-                        const item = document.createElement('div');
-                        item.className = 'flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-orange-500 cursor-pointer';
-                        item.innerHTML = `
-                            <div class="flex-1" onclick="toggleWishlistCheckbox(${wishlist.id})">
-                                <h3 class="font-medium text-gray-900">${wishlist.name}</h3>
-                                <p class="text-sm text-gray-500">${wishlist.items_count || 0} cars</p>
+                        const card = document.createElement('button');
+                        const previewImage = wishlist.preview_image || wishlistPlaceholderImage;
+                        const savedLabel = wishlist.items_count === 1 ? '1 saved' : `${wishlist.items_count || 0} saved`;
+                        const previewLabel = wishlist.preview_label ? escapeHtml(wishlist.preview_label) : 'Start saving cars';
+
+                        card.type = 'button';
+                        card.className = `wishlist-card ${isInWishlist ? 'active' : ''}`;
+                        card.innerHTML = `
+                            <div class="wishlist-card-thumb">
+                                <img src="${previewImage}" alt="${escapeHtml(wishlist.name)} preview" loading="lazy">
                             </div>
-                            <input type="checkbox" class="w-5 h-5 text-orange-600 rounded focus:ring-orange-500" 
-                                   ${isInWishlist ? 'checked' : ''}
-                                   onchange="toggleWishlist(${wishlist.id}, this.checked)">
+                            <div class="flex-1 text-left">
+                                <p class="text-base font-semibold text-gray-900">${escapeHtml(wishlist.name)}</p>
+                                <p class="text-sm text-gray-500">${savedLabel}</p>
+                                <p class="text-xs text-gray-400 truncate">${previewLabel}</p>
+                            </div>
+                            <div class="wishlist-card-check">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </div>
                         `;
-                        container.appendChild(item);
+                        card.addEventListener('click', () => handleWishlistCardClick(wishlist.id, card));
+                        listContainer.appendChild(card);
                     });
                 }
             })
             .catch(error => {
                 console.error('Error loading wishlists:', error);
+                const listContainer = document.getElementById('wishlistsList');
+                if (listContainer) {
+                    listContainer.innerHTML = '<p class="text-sm text-red-500 text-center py-4">Unable to load wishlists.</p>';
+                }
             });
         }
         
-        function toggleWishlistCheckbox(wishlistId) {
-            const checkbox = document.querySelector(`input[onchange*="${wishlistId}"]`);
-            if (checkbox) {
-                checkbox.checked = !checkbox.checked;
-                toggleWishlist(wishlistId, checkbox.checked);
-            }
+        function handleWishlistCardClick(wishlistId, cardElement) {
+            const shouldAdd = !cardElement.classList.contains('active');
+            cardElement.classList.toggle('active', shouldAdd);
+            toggleWishlist(wishlistId, shouldAdd, cardElement);
         }
         
-        function toggleWishlist(wishlistId, add) {
+        function toggleWishlist(wishlistId, add, cardElement = null) {
             if (!currentCarId) return;
             
             const url = add 
@@ -1824,7 +1938,13 @@
                 },
                 body: add ? JSON.stringify({ car_id: currentCarId }) : null
             })
-            .then(response => response.json())
+            .then(async response => {
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.message || 'Something went wrong');
+                }
+                return data;
+            })
             .then(data => {
                 updateFavoriteButton(currentCarId, add);
                 // Don't close modal immediately, let user add to multiple wishlists
@@ -1834,24 +1954,47 @@
             })
             .catch(error => {
                 console.error('Error:', error);
+                if (cardElement) {
+                    cardElement.classList.toggle('active', !add);
+                }
                 alert('An error occurred. Please try again.');
             });
         }
         
         function showCreateWishlistForm() {
-            document.getElementById('createWishlistForm').classList.remove('hidden');
+            const form = document.getElementById('createWishlistForm');
+            const trigger = document.getElementById('createWishlistTrigger');
+            if (form) form.classList.remove('hidden');
+            if (trigger) trigger.classList.add('hidden');
+            const input = document.getElementById('wishlistName');
+            if (input) {
+                input.focus();
+            }
         }
         
         function hideCreateWishlistForm() {
-            document.getElementById('createWishlistForm').classList.add('hidden');
-            document.getElementById('wishlistName').value = '';
+            const form = document.getElementById('createWishlistForm');
+            const trigger = document.getElementById('createWishlistTrigger');
+            if (form) form.classList.add('hidden');
+            if (trigger) trigger.classList.remove('hidden');
+            const input = document.getElementById('wishlistName');
+            if (input) input.value = '';
         }
         
         function createWishlist() {
-            const name = document.getElementById('wishlistName').value.trim();
+            const nameInput = document.getElementById('wishlistName');
+            if (!nameInput) return;
+            const name = nameInput.value.trim();
             if (!name) {
                 alert('Please enter a wishlist name');
                 return;
+            }
+
+            const saveButton = document.getElementById('saveWishlistBtn');
+            const originalText = saveButton ? saveButton.textContent : '';
+            if (saveButton) {
+                saveButton.disabled = true;
+                saveButton.textContent = 'Saving...';
             }
             
             fetch('{{ route("client.wishlists.store") }}', {
@@ -1863,9 +2006,16 @@
                 },
                 body: JSON.stringify({ name: name })
             })
-            .then(response => response.json())
+            .then(async response => {
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data.message || 'Unable to create wishlist');
+                }
+                return data;
+            })
             .then(data => {
                 hideCreateWishlistForm();
+                nameInput.value = '';
                 loadWishlists();
                 // Automatically add car to new wishlist
                 if (currentCarId) {
@@ -1876,6 +2026,13 @@
             })
             .catch(error => {
                 console.error('Error creating wishlist:', error);
+                alert(error.message || 'Unable to create wishlist. Please try again.');
+            })
+            .finally(() => {
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.textContent = originalText;
+                }
             });
         }
         

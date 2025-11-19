@@ -30,6 +30,11 @@ class Wishlist extends Model
         return $this->hasMany(WishlistItem::class);
     }
 
+    public function latestItem()
+    {
+        return $this->hasOne(WishlistItem::class)->latestOfMany();
+    }
+
     public function cars()
     {
         return $this->hasManyThrough(Car::class, WishlistItem::class, 'wishlist_id', 'id', 'id', 'car_id');

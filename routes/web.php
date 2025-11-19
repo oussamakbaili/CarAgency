@@ -515,9 +515,11 @@ Route::prefix('client')->middleware(['auth', 'verified', 'client'])->name('clien
             Route::get('/', [App\Http\Controllers\Client\WishlistController::class, 'index'])->name('index');
             Route::post('/', [App\Http\Controllers\Client\WishlistController::class, 'store'])->name('store');
             Route::delete('/{id}', [App\Http\Controllers\Client\WishlistController::class, 'destroy'])->name('destroy');
+            Route::patch('/{wishlist}', [App\Http\Controllers\Client\WishlistController::class, 'update'])->name('update');
             Route::post('/{wishlistId}/cars', [App\Http\Controllers\Client\WishlistController::class, 'addCar'])->name('add-car');
             Route::delete('/{wishlistId}/cars/{carId}', [App\Http\Controllers\Client\WishlistController::class, 'removeCar'])->name('remove-car');
             Route::get('/check/{carId}', [App\Http\Controllers\Client\WishlistController::class, 'checkCar'])->name('check-car');
+            Route::get('/{wishlist}', [App\Http\Controllers\Client\WishlistController::class, 'show'])->name('show');
         });
 });
 

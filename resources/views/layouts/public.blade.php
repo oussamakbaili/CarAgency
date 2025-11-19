@@ -151,6 +151,17 @@
             opacity: 0;
             transform: translateY(20px);
         }
+
+        #mobile-top-actions {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            will-change: transform, opacity;
+        }
+
+        #mobile-top-actions.top-actions-hidden {
+            transform: translateY(-140%);
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
     @stack('styles')
 </head>
@@ -357,7 +368,7 @@
     </nav>
 
     <!-- Mobile Navigation - Minimal: Only Globe Icon and Hamburger -->
-    <nav class="md:hidden fixed top-4 right-4 z-50">
+    <nav id="mobile-top-actions" class="md:hidden fixed top-4 right-4 z-50">
         <div class="flex items-center space-x-3">
             <!-- Language Selector Mobile - 3D Globe Icon -->
             <div class="relative">
@@ -718,6 +729,21 @@
                     languageDropdown.classList.toggle('hidden');
                 }
             };
+
+            // Hide/show floating mobile actions on scroll (like bottom nav behavior)
+            const mobileTopActions = document.getElementById('mobile-top-actions');
+            if (mobileTopActions) {
+                let lastScrollTop = 0;
+                window.addEventListener('scroll', function() {
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    if (scrollTop > lastScrollTop && scrollTop > 120) {
+                        mobileTopActions.classList.add('top-actions-hidden');
+                    } else {
+                        mobileTopActions.classList.remove('top-actions-hidden');
+                    }
+                    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+                }, { passive: true });
+            }
         });
     </script>
 </body>

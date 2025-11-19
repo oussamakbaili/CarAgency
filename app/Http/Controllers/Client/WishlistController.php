@@ -17,7 +17,14 @@ class WishlistController extends Controller
      */
     public function index()
     {
-        $wishlists = Auth::user()->wishlists()->withCount('items')->get();
+        $wishlists = Auth::user()
+            ->wishlists()
+            ->withCount('items')
+            ->with(['latestItem.car'])
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn ($wishlist) => $this->formatWishlistResponse($wishlist));
+
         return response()->json($wishlists);
     }
 
@@ -193,5 +200,79 @@ class WishlistController extends Controller
         $wishlist->delete();
 
         return response()->json(['message' => 'Wishlist deleted successfully'], 200);
+    }
+
+    /**
+     * Show wishlist detail page.
+     */
+    public function show(Wishlist $wishlist)
+    {
+        $user = Auth::user();
+
+        if (!$user || !$user->isClient()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $wishlist = $user->wishlists()
+            ->with(['items.car.agency'])
+            ->findOrFail($wishlist->id);
+
+        $cars = $wishlist->items
+            ->map(function ($item) {
+                return $item->car;
+            })
+            ->filter();
+
+        return view('public.wishlists.show', [
+            'wishlist' => $wishlist,
+            'cars' => $cars,
+        ]);
+    }
+
+    /**
+     * Update wishlist (rename / description).
+     */
+    public function update(Request $request, Wishlist $wishlist)
+    {
+        $user = Auth::user();
+
+        if (!$user || !$user->isClient()) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $wishlist = $user->wishlists()->findOrFail($wishlist->id);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        $wishlist->update($data);
+
+        return response()->json([
+            'message' => 'Wishlist updated successfully',
+            'wishlist' => $this->formatWishlistResponse($wishlist->fresh('latestItem.car')->loadCount('items'))
+        ]);
+    }
+
+    /**
+     * Transform wishlist for modal consumption.
+     */
+    protected function formatWishlistResponse(Wishlist $wishlist): array
+    {
+        $previewCar = optional($wishlist->latestItem)->car;
+        $placeholder = asset('images/black-sedan-car-driving-bridge-road.png');
+
+        return [
+            'id' => $wishlist->id,
+            'name' => $wishlist->name,
+            'description' => $wishlist->description,
+            'is_public' => (bool) $wishlist->is_public,
+            'items_count' => $wishlist->items_count ?? $wishlist->items()->count(),
+            'preview_label' => $previewCar ? trim($previewCar->brand . ' ' . $previewCar->model) : null,
+            'preview_image' => $previewCar && $previewCar->image_url ? $previewCar->image_url : $placeholder,
+        ];
     }
 }
