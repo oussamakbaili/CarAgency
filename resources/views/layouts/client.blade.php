@@ -219,6 +219,7 @@
                 </nav>
 
                 <!-- User Menu - Compact Modern Design -->
+                @auth
                 <div class="border-t border-gray-200 p-4">
                     <!-- User Profile Card - Compact Design -->
                     <div class="bg-white rounded-xl p-3 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
@@ -277,6 +278,21 @@
                         </form>
                     </div>
                 </div>
+                @else
+                <!-- Guest User Section -->
+                <div class="border-t border-gray-200 p-4">
+                    <div class="bg-white rounded-xl p-3 border border-gray-200 shadow-sm">
+                        <div class="text-center">
+                            <a href="{{ route('login', ['return_url' => url()->current()]) }}" class="block w-full bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold transition duration-200 text-sm mb-2">
+                                Se connecter
+                            </a>
+                            <a href="{{ route('register.client') }}" class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold transition duration-200 text-sm">
+                                S'inscrire
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                @endauth
             </div>
         </div>
 

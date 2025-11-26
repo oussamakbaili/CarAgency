@@ -602,6 +602,7 @@ Route::get('/cars/search', [App\Http\Controllers\PublicController::class, 'searc
 Route::get('/agencies/{agency}', [App\Http\Controllers\PublicController::class, 'showAgency'])->name('public.agency.show');
 Route::get('/agencies/{agency}/cars', [App\Http\Controllers\PublicController::class, 'agencyCars'])->name('public.agency.cars');
 Route::get('/agencies/{agency}/cars/{car}', [App\Http\Controllers\PublicController::class, 'showCar'])->name('public.car.show');
+Route::get('/agencies/{agency}/cars/{car}/details', [App\Http\Controllers\PublicController::class, 'getCarDetails'])->name('public.car.details');
 Route::get('/require-login', [App\Http\Controllers\PublicController::class, 'requireLogin'])->name('public.require-login');
 
 // Test cancellation system

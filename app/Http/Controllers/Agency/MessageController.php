@@ -137,6 +137,14 @@ class MessageController extends Controller
             'attachments.*' => 'file|max:10240|mimes:jpeg,jpg,png,gif,pdf,doc,docx,txt',
         ]);
 
+        // Vérifier qu'il y a soit un message, soit des fichiers
+        if (empty($request->message) && !$request->hasFile('attachments')) {
+            return response()->json([
+                'success' => false,
+                'errors' => ['message' => ['Le message est requis ou vous devez joindre un fichier.']]
+            ], 422);
+        }
+
         // Gérer l'upload des fichiers
         $attachments = [];
         if ($request->hasFile('attachments')) {
@@ -174,14 +182,19 @@ class MessageController extends Controller
             $messageType = $hasImage ? 'image' : 'document';
         }
 
-        // Créer le message
+        // Créer le message - s'assurer qu'il y a au moins un message ou des attachments
+        $messageText = $request->message ?? '';
+        if (empty($messageText) && empty($attachments)) {
+            $messageText = 'Fichier joint'; // Message par défaut si seulement des fichiers
+        }
+
         $message = Message::create([
             'rental_id' => $rental->id,
             'sender_id' => $user->id,
             'sender_type' => 'agency',
             'receiver_id' => $rental->user_id,
             'receiver_type' => 'client',
-            'message' => $request->message ?? '',
+            'message' => $messageText,
             'message_type' => $request->message_type ?? $messageType,
             'attachments' => !empty($attachments) ? $attachments : null,
         ]);

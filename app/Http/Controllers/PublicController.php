@@ -219,7 +219,77 @@ class PublicController extends Controller
 
         $car->load('agency.user');
 
-        return view('public.car.show', compact('agency', 'car'));
+        // Utiliser la même vue que la page client pour avoir le même design
+        return view('client.cars.show', compact('car'));
+    }
+
+    /**
+     * Get car details as JSON for modal display
+     */
+    public function getCarDetails(Agency $agency, Car $car)
+    {
+        if ($agency->status !== 'approved' || $car->agency_id !== $agency->id) {
+            return response()->json(['error' => 'Voiture non trouvée'], 404);
+        }
+
+        if ($car->status !== 'available') {
+            return response()->json(['error' => 'Cette voiture n\'est pas disponible'], 404);
+        }
+
+        $car->load(['agency.user', 'category']);
+        
+        // Get all images
+        $allImages = [];
+        if ($car->image_url) {
+            $allImages[] = $car->image_url;
+        }
+        if ($car->picture_urls && is_array($car->picture_urls)) {
+            $allImages = array_merge($allImages, $car->picture_urls);
+        }
+        $allImages = array_unique($allImages);
+        
+        // Get ratings data
+        $averageRating = $car->getAverageRating();
+        $totalReviews = $car->getTotalReviews();
+        
+        return response()->json([
+            'success' => true,
+            'car' => [
+                'id' => $car->id,
+                'brand' => $car->brand,
+                'model' => $car->model,
+                'year' => $car->year,
+                'fuel_type' => $car->fuel_type,
+                'transmission' => $car->transmission,
+                'seats' => $car->seats,
+                'doors' => $car->doors,
+                'color' => $car->color,
+                'registration_number' => $car->registration_number,
+                'engine_size' => $car->engine_size,
+                'mileage' => $car->mileage,
+                'description' => $car->description,
+                'features' => $car->features,
+                'client_price_per_day' => $car->client_price_per_day,
+                'status' => $car->status,
+                'images' => $allImages,
+                'main_image' => $allImages[0] ?? null,
+                'other_images' => array_slice($allImages, 1, 4),
+                'average_rating' => $averageRating,
+                'total_reviews' => $totalReviews,
+                'agency' => [
+                    'id' => $car->agency->id,
+                    'agency_name' => $car->agency->agency_name,
+                    'city' => $car->agency->city,
+                    'address' => $car->agency->address,
+                    'phone' => $car->agency->phone,
+                    'email' => $car->agency->email,
+                ],
+                'category' => $car->category ? [
+                    'id' => $car->category->id,
+                    'name' => $car->category->name,
+                ] : null,
+            ],
+        ]);
     }
 
     /**

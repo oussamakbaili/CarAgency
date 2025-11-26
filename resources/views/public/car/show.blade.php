@@ -1,6 +1,7 @@
-@extends('layouts.public')
+@extends('layouts.client')
 
 @section('title', $car->brand . ' ' . $car->model . ' - ' . $agency->agency_name . ' - ToubCar')
+@section('header', $car->brand . ' ' . $car->model)
 
 @section('content')
     <!-- Main Content -->

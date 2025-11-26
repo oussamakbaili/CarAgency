@@ -229,6 +229,10 @@ class SupportTicket extends Model
             'status' => 'resolved',
             'resolved_at' => now(),
         ]);
+        
+        // Fermer automatiquement le ticket après 24 heures de résolution
+        // Pour fermeture immédiate, on ferme directement
+        $this->markAsClosed();
     }
 
     public function markAsClosed()

@@ -15,8 +15,13 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        // Stocker l'URL de retour si fournie
+        if ($request->has('return_url')) {
+            session(['url.intended' => $request->input('return_url')]);
+        }
+        
         return view('auth.login');
     }
 
@@ -49,6 +54,11 @@ class AuthenticatedSessionController extends Controller
 
             return redirect()->intended('/agence/dashboard');
         } elseif ($role === 'client') {
+            // Pour les clients, vérifier s'il y a une URL intended (par exemple depuis la page de réservation)
+            $intendedUrl = session()->pull('url.intended');
+            if ($intendedUrl) {
+                return redirect($intendedUrl);
+            }
             return redirect()->intended('/');
         }
 

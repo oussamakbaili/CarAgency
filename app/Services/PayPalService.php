@@ -123,8 +123,8 @@ class PayPalService
                     'landing_page' => 'BILLING',
                     'shipping_preference' => 'NO_SHIPPING',
                     'user_action' => 'PAY_NOW',
-                    'return_url' => url('/paypal/success'),
-                    'cancel_url' => url('/paypal/cancel'),
+                    'return_url' => $this->getAbsoluteUrl('/paypal/success'),
+                    'cancel_url' => $this->getAbsoluteUrl('/paypal/cancel'),
                 ],
             ];
 
@@ -338,6 +338,22 @@ class PayPalService
                 'error' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Obtenir une URL absolue pour les callbacks PayPal
+     */
+    private function getAbsoluteUrl(string $path): string
+    {
+        $appUrl = config('app.url');
+        
+        // S'assurer que l'URL de base se termine par /
+        $appUrl = rtrim($appUrl, '/');
+        
+        // S'assurer que le chemin commence par /
+        $path = '/' . ltrim($path, '/');
+        
+        return $appUrl . $path;
     }
 
     /**

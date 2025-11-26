@@ -456,8 +456,11 @@ class BookingController extends Controller
             // Stocker l'ID de réservation pour l'étape de confirmation
             session(['booking_data.rental_id' => $rental->id]);
 
-            // Rediriger vers la confirmation
-            return redirect()->route('booking.step5')->with('success', 'Paiement effectué avec succès !');
+            // Nettoyer la session après paiement réussi
+            session()->forget('booking_data');
+
+            // Rediriger vers la page d'accueil après paiement
+            return redirect()->route('public.home')->with('success', 'Paiement effectué avec succès ! Votre réservation est confirmée.');
 
         } catch (\Exception $e) {
             DB::rollBack();

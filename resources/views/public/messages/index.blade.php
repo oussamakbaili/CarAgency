@@ -229,21 +229,6 @@
 
                 <!-- Message Input - Fixed at bottom (Mobile) / Relative (Desktop) -->
                 <div id="message-input-container" class="fixed md:relative bottom-0 left-0 right-0 p-3 md:p-4 border-t border-gray-200 bg-white z-20">
-                    <!-- Keyboard Language Selector (Mobile only) -->
-                    <div class="flex items-center justify-end mb-2 space-x-2 md:hidden">
-                        <span class="text-xs text-gray-500">Clavier:</span>
-                        <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
-                            <button id="keyboard-fr" data-keyboard="fr" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors bg-white text-gray-700 shadow-sm" title="Français">
-                                FR
-                            </button>
-                            <button id="keyboard-ar" data-keyboard="ar" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors text-gray-500 hover:bg-gray-200" title="العربية">
-                                AR
-                            </button>
-                            <button id="keyboard-en" data-keyboard="en" class="keyboard-btn px-2 py-1 text-xs font-medium rounded transition-colors text-gray-500 hover:bg-gray-200" title="English">
-                                EN
-                            </button>
-                        </div>
-                    </div>
                     <!-- Preview des fichiers sélectionnés -->
                     <div id="file-preview-container" class="hidden flex flex-wrap gap-2 mb-2 px-4"></div>
                     

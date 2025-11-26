@@ -2,6 +2,10 @@
 
 @section('title', 'Réserver - ' . $car->brand . ' ' . $car->model)
 
+@push('scripts')
+<script src="https://js.stripe.com/v3/"></script>
+@endpush
+
 @section('content')
 <div class="min-h-screen bg-gray-50">
     <!-- Header -->
@@ -37,9 +41,9 @@
                             <p class="text-sm text-gray-600 mt-1">Connectez-vous pour continuer votre réservation</p>
                         </div>
                         @if(!auth()->check())
-                            <button id="loginBtn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition duration-200">
+                            <a href="{{ route('login', ['return_url' => url()->current()]) }}" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition duration-200 inline-block text-center">
                                 Continuer
-                            </button>
+                            </a>
                         @else
                             <div class="flex items-center text-green-600">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,15 +56,312 @@
                 </div>
 
                 <!-- Step 2: Payment Method -->
-                <div id="step2" class="bg-white rounded-2xl border border-gray-200 p-6 mb-4 opacity-50 pointer-events-none">
-                    <div class="flex items-center justify-between">
+                <div id="step2" class="bg-white rounded-2xl border border-gray-200 p-6 mb-4 {{ auth()->check() ? '' : 'opacity-50 pointer-events-none' }}">
+                    <div class="flex items-center justify-between mb-4">
                         <div>
                             <h2 class="text-lg font-semibold text-gray-900">2. Ajouter une méthode de paiement</h2>
                             <p class="text-sm text-gray-600 mt-1">Sélectionnez votre mode de paiement</p>
                         </div>
-                        <button id="paymentBtn" class="bg-gray-300 text-gray-500 px-6 py-3 rounded-lg font-semibold cursor-not-allowed transition duration-200" disabled>
+                        <button id="paymentBtn" type="button" class="{{ auth()->check() ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed' }} px-6 py-3 rounded-lg font-semibold transition duration-200" {{ auth()->check() ? '' : 'disabled' }}>
                             Suivant
                         </button>
+                    </div>
+                    
+                    <!-- Payment Methods Content (Hidden by default) -->
+                    <div id="paymentMethodsContent" class="hidden mt-6">
+                        <!-- Payment Gateway Selection -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Choisir une passerelle de paiement</label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- Stripe Option -->
+                                <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="stripe">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900">Stripe</h3>
+                                            <p class="text-sm text-gray-600 mt-1">Paiement international</p>
+                                        </div>
+                                        <input type="radio" name="payment_gateway" value="stripe" class="payment-gateway-radio" checked>
+                                    </div>
+                                </div>
+
+                                <!-- CMI Option -->
+                                <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="cmi">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900">CMI</h3>
+                                            <p class="text-sm text-gray-600 mt-1">Paiement Maroc (MAD)</p>
+                                        </div>
+                                        <input type="radio" name="payment_gateway" value="cmi" class="payment-gateway-radio">
+                                    </div>
+                                </div>
+
+                                <!-- PayPal Option -->
+                                <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="paypal">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900">PayPal</h3>
+                                            <p class="text-sm text-gray-600 mt-1">Paiement PayPal (EUR)</p>
+                                        </div>
+                                        <input type="radio" name="payment_gateway" value="paypal" class="payment-gateway-radio">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stripe Payment Form -->
+                        <div id="stripe-payment-form" class="payment-form">
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                        </svg>
+                                        <h3 class="font-semibold text-gray-900">Carte de crédit ou de débit</h3>
+                                    </div>
+                                    <input type="radio" name="payment_gateway" value="stripe" class="w-5 h-5 text-red-600 border-gray-300 focus:ring-red-500" checked>
+                                </div>
+                                <div class="flex items-center gap-2 mb-4">
+                                    <!-- VISA -->
+                                    <div class="flex items-center">
+                                        <div class="w-14 h-8 bg-[#1A1F71] rounded-md shadow-md flex items-center justify-center border border-[#0F2A5C] relative overflow-hidden">
+                                            <div class="absolute inset-0 bg-gradient-to-br from-[#1A1F71] to-[#1434A4] opacity-80"></div>
+                                            <span class="text-white text-[11px] font-bold tracking-wider relative z-10">VISA</span>
+                                        </div>
+                                    </div>
+                                    <!-- Mastercard -->
+                                    <div class="flex items-center">
+                                        <div class="w-14 h-8 rounded-full shadow-md flex items-center justify-center relative overflow-hidden">
+                                            <div class="absolute left-0 top-0 w-1/2 h-full bg-[#EB001B]"></div>
+                                            <div class="absolute right-0 top-0 w-1/2 h-full bg-[#F79E1B]"></div>
+                                            <div class="absolute left-1/2 top-0 w-px h-full bg-white opacity-30 transform -translate-x-1/2"></div>
+                                            <span class="text-white text-[10px] font-bold relative z-10 drop-shadow-md">MC</span>
+                                        </div>
+                                    </div>
+                                    <!-- AMEX -->
+                                    <div class="flex items-center">
+                                        <div class="w-14 h-8 bg-[#006FCF] rounded-md shadow-md flex items-center justify-center border border-[#0052A5] relative overflow-hidden">
+                                            <div class="absolute inset-0 bg-gradient-to-br from-[#006FCF] to-[#0080FF]"></div>
+                                            <span class="text-white text-[10px] font-bold relative z-10">AMEX</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <form id="payment-form">
+                                @csrf
+                                <input type="hidden" name="payment_intent_id" id="payment_intent_id" value="">
+                                <input type="hidden" name="payment_method" value="card">
+                                <input type="hidden" name="payment_gateway" value="stripe">
+
+                                <div class="space-y-5 mb-6">
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <label class="block text-sm font-medium text-gray-700">Card number</label>
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="relative">
+                                            <div id="card-element" class="px-5 py-4 border border-gray-300 rounded-lg bg-white focus-within:border-gray-400 transition-colors text-base">
+                                                <!-- Stripe Elements will create form elements here -->
+                                            </div>
+                                        </div>
+                                        <div id="stripe-card-error" class="text-red-600 text-sm mt-1 hidden"></div>
+                                        <div id="card-errors" role="alert" class="text-red-600 text-sm mt-1"></div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Expiration</label>
+                                            <div id="card-expiry-element" class="px-5 py-4 border border-gray-300 rounded-lg bg-white focus-within:border-gray-400 transition-colors text-base">
+                                                <!-- Stripe Elements will create form elements here -->
+                                            </div>
+                                            <div id="stripe-expiry-error" class="text-red-600 text-sm mt-1 hidden"></div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                                            <div id="card-cvc-element" class="px-5 py-4 border border-gray-300 rounded-lg bg-white focus-within:border-gray-400 transition-colors text-base">
+                                                <!-- Stripe Elements will create form elements here -->
+                                            </div>
+                                            <div id="stripe-cvc-error" class="text-red-600 text-sm mt-1 hidden"></div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">ZIP code</label>
+                                        <input type="text" id="stripe-zip" name="zip_code" placeholder="" 
+                                               class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
+                                        <div id="stripe-zip-error" class="text-red-600 text-sm mt-1 hidden"></div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Country/region</label>
+                                        <div class="relative">
+                                            <select id="stripe-country" name="country" 
+                                                    class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors appearance-none cursor-pointer text-base">
+                                                <option value="MA" selected>Morocco</option>
+                                                <option value="FR">France</option>
+                                                <option value="US">United States</option>
+                                                <option value="GB">United Kingdom</option>
+                                                <option value="DE">Germany</option>
+                                                <option value="ES">Spain</option>
+                                            </select>
+                                            <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-900 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </div>
+                                        <div id="stripe-country-error" class="text-red-600 text-sm mt-1 hidden"></div>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end">
+                                    <button type="button" id="submit-button" class="bg-gray-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <span id="button-text">Suivant</span>
+                                        <span id="spinner" class="hidden">
+                                            <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- PayPal Payment Form -->
+                        <div id="paypal-payment-form" class="payment-form hidden">
+                            <div class="mb-6">
+                                <p class="text-gray-600 text-sm mb-6">
+                                    Connectez-vous à votre compte PayPal pour finaliser votre paiement. Vous serez redirigé vers le site PayPal pour vous connecter.
+                                </p>
+                                
+                                <div class="flex justify-center">
+                                    <button type="button" id="paypal-submit-button" class="bg-[#0070BA] hover:bg-[#005EA6] text-white px-12 py-4 rounded-lg font-semibold transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 shadow-md hover:shadow-lg">
+                                        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.185zm14.146-14.42a.925.925 0 0 0 .144-.05c-.02-.12-.04-.24-.06-.36-.3-1.87-.6-3.14-1.61-4.29-.9-1.03-2.4-1.48-4.4-1.48H5.998c-.52 0-.97.38-1.05.9L2.47 20.597h4.606l1.12-7.185c.082-.518.526-.9 1.05-.9h4.45c3.75 0 6.75-1.5 7.65-6.05.05-.25.09-.5.12-.75z"/>
+                                        </svg>
+                                        <span id="paypal-button-text">Payer avec PayPal</span>
+                                        <span id="paypal-spinner" class="hidden">
+                                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
+                                
+                                <div id="paypal-error" class="text-red-600 text-sm mt-4 text-center hidden"></div>
+                            </div>
+                        </div>
+
+                        <!-- CMI Payment Form -->
+                        <div id="cmi-payment-form" class="payment-form hidden">
+                            <div class="mb-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                        </svg>
+                                        <h3 class="font-semibold text-gray-900">Carte de crédit ou de débit</h3>
+                                    </div>
+                                    <input type="radio" name="payment_gateway" value="cmi" class="w-5 h-5 text-red-600 border-gray-300 focus:ring-red-500">
+                                </div>
+                                <div class="flex items-center gap-2 mb-4 flex-wrap">
+                                    <!-- VISA -->
+                                    <div class="flex items-center">
+                                        <div class="w-14 h-8 bg-[#1A1F71] rounded-md shadow-md flex items-center justify-center border border-[#0F2A5C] relative overflow-hidden">
+                                            <div class="absolute inset-0 bg-gradient-to-br from-[#1A1F71] to-[#1434A4] opacity-80"></div>
+                                            <span class="text-white text-[11px] font-bold tracking-wider relative z-10">VISA</span>
+                                        </div>
+                                    </div>
+                                    <!-- Mastercard -->
+                                    <div class="flex items-center">
+                                        <div class="w-14 h-8 rounded-full shadow-md flex items-center justify-center relative overflow-hidden">
+                                            <div class="absolute left-0 top-0 w-1/2 h-full bg-[#EB001B]"></div>
+                                            <div class="absolute right-0 top-0 w-1/2 h-full bg-[#F79E1B]"></div>
+                                            <div class="absolute left-1/2 top-0 w-px h-full bg-white opacity-30 transform -translate-x-1/2"></div>
+                                            <span class="text-white text-[10px] font-bold relative z-10 drop-shadow-md">MC</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <form id="cmi-form">
+                                @csrf
+                                <input type="hidden" name="payment_gateway" value="cmi">
+                                <input type="hidden" name="payment_method" value="cmi">
+
+                                <div class="space-y-5 mb-6">
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <label class="block text-sm font-medium text-gray-700">Card number</label>
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                            </svg>
+                                        </div>
+                                        <input type="text" id="cmi-card-number" name="card_number" placeholder="" 
+                                               maxlength="19"
+                                               class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
+                                        <div id="cmi-card-error" class="text-red-600 text-sm mt-1 hidden"></div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Expiration</label>
+                                            <input type="text" id="cmi-expiry" name="expiry" placeholder="" 
+                                                   maxlength="5"
+                                                   class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
+                                            <div id="cmi-expiry-error" class="text-red-600 text-sm mt-1 hidden"></div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                                            <input type="text" id="cmi-cvc" name="cvc" placeholder="" 
+                                                   maxlength="4"
+                                                   class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
+                                            <div id="cmi-cvc-error" class="text-red-600 text-sm mt-1 hidden"></div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">ZIP code</label>
+                                        <input type="text" id="cmi-zip" name="zip_code" placeholder="" 
+                                               class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
+                                        <div id="cmi-zip-error" class="text-red-600 text-sm mt-1 hidden"></div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Country/region</label>
+                                        <div class="relative">
+                                            <select id="cmi-country" name="country" 
+                                                    class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors appearance-none cursor-pointer text-base">
+                                                <option value="MA" selected>Morocco</option>
+                                                <option value="FR">France</option>
+                                                <option value="US">United States</option>
+                                                <option value="GB">United Kingdom</option>
+                                                <option value="DE">Germany</option>
+                                                <option value="ES">Spain</option>
+                                            </select>
+                                            <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-900 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </div>
+                                        <div id="cmi-country-error" class="text-red-600 text-sm mt-1 hidden"></div>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end">
+                                    <button type="button" id="cmi-submit-button" class="bg-gray-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <span id="cmi-button-text">Suivant</span>
+                                        <span id="cmi-spinner" class="hidden">
+                                            <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
@@ -474,16 +775,30 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Login Modal
+    // Activer l'étape 2 si l'utilisateur est déjà connecté
+    @if(auth()->check())
+        const step2 = document.getElementById('step2');
+        const paymentBtnInit = document.getElementById('paymentBtn');
+        
+        if (step2 && paymentBtnInit) {
+            // Activer l'étape 2
+            step2.classList.remove('opacity-50', 'pointer-events-none');
+            
+            // Activer le bouton de paiement
+            paymentBtnInit.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
+            paymentBtnInit.classList.add('bg-red-500', 'hover:bg-red-600', 'text-white');
+            paymentBtnInit.disabled = false;
+            paymentBtnInit.textContent = 'Suivant';
+        }
+    @endif
+
+    // Login Modal (pas utilisé si on redirige vers la page de login)
     const loginBtn = document.getElementById('loginBtn');
     const loginModal = document.getElementById('loginModal');
     const closeLoginModal = document.getElementById('closeLoginModal');
 
-    if (loginBtn) {
-        loginBtn.addEventListener('click', function() {
-            loginModal.classList.remove('hidden');
-        });
-    }
+    // Le bouton loginBtn n'existe plus, on utilise maintenant un lien direct vers la page de login
+    // Ce code est conservé pour la compatibilité avec d'autres parties de la page qui pourraient utiliser le modal
 
     closeLoginModal.addEventListener('click', function() {
         loginModal.classList.add('hidden');
@@ -524,20 +839,54 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Payment Modal
-    const paymentBtn = document.getElementById('paymentBtn');
-    const paymentModal = document.getElementById('paymentModal');
-    const closePaymentModal = document.getElementById('closePaymentModal');
+    // Payment Methods Display
+    const paymentBtnHandler = document.getElementById('paymentBtn');
+    const paymentMethodsContent = document.getElementById('paymentMethodsContent');
 
-    if (paymentBtn) {
-        paymentBtn.addEventListener('click', function() {
-            paymentModal.classList.remove('hidden');
+    if (paymentBtnHandler && paymentMethodsContent) {
+        console.log('Payment button and content found, attaching event listener');
+        paymentBtnHandler.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Payment button clicked');
+            
+            // Afficher le contenu des méthodes de paiement
+            paymentMethodsContent.classList.remove('hidden');
+            console.log('Payment methods content shown');
+            
+            // Masquer le bouton "Suivant"
+            paymentBtnHandler.style.display = 'none';
+            
+            // Scroll vers le contenu des méthodes de paiement
+            setTimeout(() => {
+                paymentMethodsContent.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+            
+            // Initialiser Stripe si Stripe est sélectionné par défaut
+            const stripeRadio = document.querySelector('input[name="payment_gateway"][value="stripe"]');
+            if (stripeRadio && stripeRadio.checked) {
+                setTimeout(() => {
+                    if (typeof initStripe === 'function') {
+                        initStripe();
+                    }
+                }, 300);
+            }
+        });
+    } else {
+        console.error('Payment button or content not found:', {
+            button: !!paymentBtnHandler,
+            content: !!paymentMethodsContent
         });
     }
 
-    closePaymentModal.addEventListener('click', function() {
-        paymentModal.classList.add('hidden');
-    });
+    // Payment Modal (si existe)
+    const paymentModal = document.getElementById('paymentModal');
+    const closePaymentModal = document.getElementById('closePaymentModal');
+    if (closePaymentModal && paymentModal) {
+        closePaymentModal.addEventListener('click', function() {
+            paymentModal.classList.add('hidden');
+        });
+    }
 
     // Payment Form Validation and Submission
     const paymentForm = document.getElementById('paymentForm');
@@ -1468,6 +1817,178 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.removeChild(notification);
             }, 300);
         }, 3000);
+    }
+
+    // ========== Payment Gateway Management ==========
+    let stripe = null;
+    let elements = null;
+    let cardElement = null;
+    let cardExpiryElement = null;
+    let cardCvcElement = null;
+    let clientSecret = null;
+    let selectedPaymentGateway = 'stripe';
+
+    // Payment Gateway Selection
+    document.querySelectorAll('.payment-gateway-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const gateway = this.dataset.gateway;
+            const radio = this.querySelector('.payment-gateway-radio');
+            radio.checked = true;
+
+            document.querySelectorAll('.payment-gateway-option').forEach(opt => {
+                opt.classList.remove('border-red-500');
+                opt.classList.add('border-gray-200');
+            });
+            this.classList.remove('border-gray-200');
+            this.classList.add('border-red-500');
+
+            selectedPaymentGateway = gateway;
+            
+            if (gateway === 'stripe') {
+                document.getElementById('stripe-payment-form').classList.remove('hidden');
+                document.getElementById('cmi-payment-form').classList.add('hidden');
+                document.getElementById('paypal-payment-form').classList.add('hidden');
+                setTimeout(() => initStripe(), 100);
+            } else if (gateway === 'cmi') {
+                document.getElementById('stripe-payment-form').classList.add('hidden');
+                document.getElementById('cmi-payment-form').classList.remove('hidden');
+                document.getElementById('paypal-payment-form').classList.add('hidden');
+            } else if (gateway === 'paypal') {
+                document.getElementById('stripe-payment-form').classList.add('hidden');
+                document.getElementById('cmi-payment-form').classList.add('hidden');
+                document.getElementById('paypal-payment-form').classList.remove('hidden');
+            }
+        });
+    });
+
+    // Initialize Stripe
+    function initStripe() {
+        if (!stripe) {
+            const stripeKey = '{{ config('services.stripe.key') }}';
+            if (!stripeKey) {
+                console.error('Stripe key is not configured');
+                return;
+            }
+            stripe = Stripe(stripeKey);
+            elements = stripe.elements();
+        }
+
+        // Unmount existing elements if they exist
+        if (cardElement) {
+            try { cardElement.unmount(); } catch(e) {}
+        }
+        if (cardExpiryElement) {
+            try { cardExpiryElement.unmount(); } catch(e) {}
+        }
+        if (cardCvcElement) {
+            try { cardCvcElement.unmount(); } catch(e) {}
+        }
+        
+        setTimeout(() => {
+            const style = {
+                base: {
+                    fontSize: '16px',
+                    color: '#424770',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    '::placeholder': { color: '#aab7c4' },
+                },
+            };
+
+            cardElement = elements.create('cardNumber', { style });
+            cardElement.mount('#card-element');
+
+            cardExpiryElement = elements.create('cardExpiry', { style });
+            cardExpiryElement.mount('#card-expiry-element');
+
+            cardCvcElement = elements.create('cardCvc', { style });
+            cardCvcElement.mount('#card-cvc-element');
+
+            const displayError = document.getElementById('card-errors');
+            [cardElement, cardExpiryElement, cardCvcElement].forEach(element => {
+                element.on('change', function(event) {
+                    if (event.error) {
+                        displayError.textContent = event.error.message;
+                    } else {
+                        displayError.textContent = '';
+                    }
+                });
+            });
+        }, 100);
+    }
+
+    // PayPal Payment Handler
+    const paypalSubmitButton = document.getElementById('paypal-submit-button');
+    if (paypalSubmitButton) {
+        paypalSubmitButton.addEventListener('click', async function() {
+            const button = this;
+            const buttonText = document.getElementById('paypal-button-text');
+            const spinner = document.getElementById('paypal-spinner');
+            const errorDiv = document.getElementById('paypal-error');
+            
+            button.disabled = true;
+            buttonText.classList.add('hidden');
+            spinner.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+
+            try {
+                const response = await fetch('{{ route("booking.init-paypal-payment") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        car_id: {{ $car->id }},
+                        start_date: '{{ session("booking_data.start_date") }}',
+                        end_date: '{{ session("booking_data.end_date") }}'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.approve_url) {
+                    // Ouvrir PayPal dans une nouvelle fenêtre
+                    const paypalWindow = window.open(data.approve_url, 'paypal', 'width=600,height=700');
+                    
+                    // Écouter les messages de succès
+                    window.addEventListener('message', function(event) {
+                        if (event.data && event.data.type === 'paypal_payment_success') {
+                            paypalWindow.close();
+                            window.location.href = '{{ route("client.rentals.confirm", $car) }}?payment_success=paypal';
+                        }
+                    });
+                } else {
+                    throw new Error(data.error || 'Erreur lors de l\'initialisation du paiement PayPal');
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.classList.remove('hidden');
+                button.disabled = false;
+                buttonText.classList.remove('hidden');
+                spinner.classList.add('hidden');
+            }
+        });
+    }
+
+    // CMI Payment Handler
+    const cmiSubmitButton = document.getElementById('cmi-submit-button');
+    if (cmiSubmitButton) {
+        cmiSubmitButton.addEventListener('click', async function() {
+            // Validation et soumission CMI
+            const cardNumber = document.getElementById('cmi-card-number').value.replace(/\s/g, '');
+            const expiry = document.getElementById('cmi-expiry').value.trim();
+            const cvc = document.getElementById('cmi-cvc').value.trim();
+            const zip = document.getElementById('cmi-zip').value.trim();
+            const country = document.getElementById('cmi-country').value;
+
+            if (!cardNumber || !expiry || !cvc || !zip || !country) {
+                showNotification('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+
+            // Soumettre le formulaire CMI
+            document.getElementById('cmi-form').submit();
+        });
     }
 });
 </script>
