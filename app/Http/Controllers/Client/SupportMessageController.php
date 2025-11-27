@@ -39,8 +39,18 @@ class SupportMessageController extends Controller
     public function sendMessage(Request $request, $ticketId)
     {
         $request->validate([
-            'message' => 'required|string|max:2000',
+            'message' => 'nullable|string|max:2000',
+            'message_type' => 'in:text,image,document',
+            'attachments.*' => 'file|max:10240|mimes:jpeg,jpg,png,gif,pdf,doc,docx,txt',
         ]);
+
+        // Vérifier qu'il y a soit un message, soit des fichiers
+        if (empty($request->message) && !$request->hasFile('attachments')) {
+            return response()->json([
+                'success' => false,
+                'errors' => ['message' => ['Le message est requis ou vous devez joindre un fichier.']]
+            ], 422);
+        }
 
         $client = auth()->user()->client;
         $ticket = SupportTicket::where('id', $ticketId)
@@ -53,8 +63,50 @@ class SupportMessageController extends Controller
             return response()->json(['success' => false, 'message' => 'Aucun administrateur trouvé'], 400);
         }
 
+        // Gérer l'upload des fichiers
+        $attachments = [];
+        if ($request->hasFile('attachments')) {
+            $uploadedFiles = $request->file('attachments');
+            
+            if (is_array($uploadedFiles)) {
+                foreach ($uploadedFiles as $file) {
+                    if ($file && $file->isValid()) {
+                        try {
+                            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                            $path = $file->storeAs('messages/attachments', $filename, 'public');
+                            
+                            $attachments[] = [
+                                'name' => $file->getClientOriginalName(),
+                                'path' => $path,
+                                'size' => $file->getSize(),
+                                'type' => $file->getMimeType(),
+                                'url' => asset('storage/' . $path)
+                            ];
+                        } catch (\Exception $e) {
+                            \Log::error('Erreur lors de l\'upload du fichier: ' . $e->getMessage());
+                        }
+                    }
+                }
+            }
+        }
+
+        // Déterminer le type de message
+        $messageType = 'text';
+        if (!empty($attachments)) {
+            $hasImage = collect($attachments)->contains(function($attachment) {
+                return str_starts_with($attachment['type'], 'image/');
+            });
+            $messageType = $hasImage ? 'image' : 'document';
+        }
+
+        // Créer le message - s'assurer qu'il y a au moins un message ou des attachments
+        $messageText = $request->message ?? '';
+        if (empty($messageText) && empty($attachments)) {
+            $messageText = 'Fichier joint'; // Message par défaut si seulement des fichiers
+        }
+
         // Create the message
-        $message = $ticket->sendMessage($client, $admin, $request->message);
+        $message = $ticket->sendMessage($client, $admin, $messageText, !empty($attachments) ? $attachments : null, $messageType);
 
         // Update ticket status to open if it was closed
         if ($ticket->status === 'closed') {

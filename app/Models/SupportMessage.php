@@ -17,6 +17,8 @@ class SupportMessage extends Model
         'recipient_id',
         'recipient_type',
         'message',
+        'attachments',
+        'message_type',
         'is_read',
         'read_at',
     ];
@@ -24,6 +26,7 @@ class SupportMessage extends Model
     protected $casts = [
         'is_read' => 'boolean',
         'read_at' => 'datetime',
+        'attachments' => 'array',
     ];
 
     /**

@@ -285,7 +285,7 @@ class SupportTicket extends Model
     /**
      * Send a message in this support ticket
      */
-    public function sendMessage($sender, $recipient, $message)
+    public function sendMessage($sender, $recipient, $message, $attachments = null, $messageType = 'text')
     {
         return $this->messages()->create([
             'sender_id' => $sender->id,
@@ -293,6 +293,8 @@ class SupportTicket extends Model
             'recipient_id' => $recipient->id,
             'recipient_type' => get_class($recipient),
             'message' => $message,
+            'attachments' => $attachments,
+            'message_type' => $messageType,
             'is_read' => false,
         ]);
     }
