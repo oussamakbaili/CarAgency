@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\Rental;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class MessageController extends Controller
 {
@@ -157,18 +158,32 @@ class MessageController extends Controller
                 foreach ($uploadedFiles as $file) {
                     if ($file && $file->isValid()) {
                         try {
-                            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                            $path = $file->storeAs('messages/attachments', $filename, 'public');
+                            // S'assurer que le dossier existe
+                            $directory = 'messages/attachments';
+                            if (!Storage::disk('public')->exists($directory)) {
+                                Storage::disk('public')->makeDirectory($directory);
+                            }
                             
-                            $attachments[] = [
-                                'name' => $file->getClientOriginalName(),
-                                'path' => $path,
-                                'size' => $file->getSize(),
-                                'type' => $file->getMimeType(),
-                                'url' => asset('storage/' . $path)
-                            ];
+                            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                            $path = $file->storeAs($directory, $filename, 'public');
+                            
+                            if ($path) {
+                                $attachments[] = [
+                                    'name' => $file->getClientOriginalName(),
+                                    'path' => $path,
+                                    'size' => $file->getSize(),
+                                    'type' => $file->getMimeType(),
+                                    'url' => asset('storage/' . $path)
+                                ];
+                            }
                         } catch (\Exception $e) {
                             \Log::error('Erreur lors de l\'upload du fichier: ' . $e->getMessage());
+                            \Log::error('Stack trace: ' . $e->getTraceAsString());
+                            // Retourner une erreur si l'upload échoue
+                            return response()->json([
+                                'success' => false,
+                                'message' => 'Erreur lors de l\'upload du fichier: ' . $e->getMessage()
+                            ], 500);
                         }
                     }
                 }
@@ -190,24 +205,38 @@ class MessageController extends Controller
             $messageText = 'Fichier joint'; // Message par défaut si seulement des fichiers
         }
 
-        $message = Message::create([
-            'rental_id' => $rental->id,
-            'sender_id' => $user->id,
-            'sender_type' => $user->getMessageType(),
-            'receiver_id' => $rental->agency->user_id,
-            'receiver_type' => 'agency',
-            'message' => $messageText,
-            'message_type' => $request->message_type ?? $messageType,
-            'attachments' => !empty($attachments) ? $attachments : null,
-        ]);
+        try {
+            $message = Message::create([
+                'rental_id' => $rental->id,
+                'sender_id' => $user->id,
+                'sender_type' => $user->getMessageType(),
+                'receiver_id' => $rental->agency->user_id,
+                'receiver_type' => 'agency',
+                'message' => $messageText,
+                'message_type' => $request->message_type ?? $messageType,
+                'attachments' => !empty($attachments) ? $attachments : null,
+            ]);
 
-        // Déclencher l'événement pour les notifications
-        event(new \App\Events\MessageSent($message, $rental->agency->user));
+            // Déclencher l'événement pour les notifications (avec gestion d'erreur)
+            try {
+                event(new \App\Events\MessageSent($message, $rental->agency->user));
+            } catch (\Exception $e) {
+                \Log::warning('Erreur lors de l\'envoi de l\'événement MessageSent: ' . $e->getMessage());
+                // Ne pas bloquer l'envoi du message si l'événement échoue
+            }
 
-        return response()->json([
-            'success' => true,
-            'message' => $message->load('sender'),
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => $message->load('sender'),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de la création du message: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'envoi du message: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

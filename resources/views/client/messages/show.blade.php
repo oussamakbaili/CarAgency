@@ -32,21 +32,7 @@
 
             <!-- Conversations List -->
             <div class="flex-1 overflow-y-auto">
-                <a href="{{ route('client.messages.index') }}" class="block p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                            </svg>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between mb-1">
-                                <h3 class="text-sm font-semibold text-gray-900">Voir toutes les conversations</h3>
-                            </div>
-                            <p class="text-sm text-gray-500">Retour à la liste complète</p>
-                        </div>
-                    </div>
-                </a>
+                <!-- Lien "Voir toutes les conversations" masqué pour une conversation simple -->
             </div>
         </div>
 
@@ -82,24 +68,15 @@
                         <!-- Chat Info -->
                         <div class="flex-1 min-w-0">
                             <h2 class="text-lg font-semibold text-gray-900 truncate">
-                                {{ $rental->car->brand }} {{ $rental->car->model }}
+                                {{ $rental->agency->agency_name ?? 'Agence' }}
                             </h2>
                             <p class="text-sm text-gray-500">
-                                {{ $rental->agency->agency_name ?? 'Agence' }} • 
-                                {{ $rental->start_date->format('d/m/Y') }} - {{ $rental->end_date->format('d/m/Y') }}
+                                Conversation
                             </p>
                         </div>
 
                         <!-- Actions -->
                         <div class="flex items-center space-x-2">
-                            <div class="text-right mr-4">
-                                <p class="text-sm font-semibold text-orange-600">
-                                    {{ number_format($rental->total_price, 0) }} MAD
-                                </p>
-                                <p class="text-xs text-gray-500">
-                                    {{ $rental->start_date->diffInDays($rental->end_date) + 1 }} jour(s)
-                                </p>
-                            </div>
                             <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
                                 {{ ucfirst($rental->status) }}
                             </span>

@@ -8,6 +8,7 @@ use App\Models\Rental;
 use App\Models\SupportTicket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class MessageController extends Controller
 {
@@ -155,18 +156,27 @@ class MessageController extends Controller
                 foreach ($uploadedFiles as $file) {
                     if ($file && $file->isValid()) {
                         try {
-                            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                            $path = $file->storeAs('messages/attachments', $filename, 'public');
+                            // S'assurer que le dossier existe
+                            $directory = 'messages/attachments';
+                            if (!Storage::disk('public')->exists($directory)) {
+                                Storage::disk('public')->makeDirectory($directory);
+                            }
                             
-                            $attachments[] = [
-                                'name' => $file->getClientOriginalName(),
-                                'path' => $path,
-                                'size' => $file->getSize(),
-                                'type' => $file->getMimeType(),
-                                'url' => asset('storage/' . $path)
-                            ];
+                            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                            $path = $file->storeAs($directory, $filename, 'public');
+                            
+                            if ($path) {
+                                $attachments[] = [
+                                    'name' => $file->getClientOriginalName(),
+                                    'path' => $path,
+                                    'size' => $file->getSize(),
+                                    'type' => $file->getMimeType(),
+                                    'url' => asset('storage/' . $path)
+                                ];
+                            }
                         } catch (\Exception $e) {
                             \Log::error('Erreur lors de l\'upload du fichier: ' . $e->getMessage());
+                            \Log::error('Stack trace: ' . $e->getTraceAsString());
                         }
                     }
                 }
