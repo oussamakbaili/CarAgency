@@ -509,8 +509,9 @@ function displayRentalMessages(messages) {
                 const isImage = attachment.type && attachment.type.startsWith('image/');
                 if (isImage) {
                     attachmentsHtml += `
-                        <div class="rounded-lg overflow-hidden">
-                            <img src="${attachment.url}" alt="${attachment.name}" class="max-w-full h-auto rounded-lg cursor-pointer" onclick="window.open('${attachment.url}', '_blank')">
+                        <div class="rounded-lg overflow-hidden max-w-xs lg:max-w-md">
+                            <img src="${attachment.url}" alt="${escapeHtml(attachment.name)}" class="w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity" onclick="window.open('${attachment.url}', '_blank')" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div style="display:none;" class="text-xs text-gray-500 mt-1">Image non disponible</div>
                         </div>
                     `;
                 } else {

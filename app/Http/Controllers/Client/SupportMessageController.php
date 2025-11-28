@@ -94,6 +94,11 @@ class SupportMessageController extends Controller
                         } catch (\Exception $e) {
                             \Log::error('Erreur lors de l\'upload du fichier: ' . $e->getMessage());
                             \Log::error('Stack trace: ' . $e->getTraceAsString());
+                            // Retourner une erreur si l'upload échoue
+                            return response()->json([
+                                'success' => false,
+                                'message' => 'Erreur lors de l\'upload du fichier: ' . $e->getMessage()
+                            ], 500);
                         }
                     }
                 }
