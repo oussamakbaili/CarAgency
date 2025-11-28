@@ -39,44 +39,56 @@ class SupportMessageController extends Controller
      */
     public function sendMessage(Request $request, $ticketId)
     {
-        $request->validate([
-            'message' => 'nullable|string|max:2000',
-            'message_type' => 'in:text,image,document',
-            'attachments.*' => 'file|max:10240|mimes:jpeg,jpg,png,gif,pdf,doc,docx,txt',
-        ]);
+        try {
+            $request->validate([
+                'message' => 'nullable|string|max:2000',
+                'message_type' => 'in:text,image,document',
+                'attachments.*' => 'file|max:10240|mimes:jpeg,jpg,png,gif,pdf,doc,docx,txt',
+            ]);
 
-        // Vérifier qu'il y a soit un message, soit des fichiers
-        if (empty($request->message) && !$request->hasFile('attachments')) {
-            return response()->json([
-                'success' => false,
-                'errors' => ['message' => ['Le message est requis ou vous devez joindre un fichier.']]
-            ], 422);
-        }
+            // Vérifier qu'il y a soit un message, soit des fichiers
+            if (empty($request->message) && !$request->hasFile('attachments')) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => ['message' => ['Le message est requis ou vous devez joindre un fichier.']]
+                ], 422);
+            }
 
-        $agency = auth()->user()->agency;
-        $ticket = SupportTicket::where('id', $ticketId)
-            ->where('agency_id', $agency->id)
-            ->firstOrFail();
+            $agency = auth()->user()->agency;
+            if (!$agency) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Agence non trouvée'
+                ], 400);
+            }
 
-        // Find admin users to send message to
-        $admin = User::where('role', 'admin')->first();
-        if (!$admin) {
-            return response()->json(['success' => false, 'message' => 'Aucun administrateur trouvé'], 400);
-        }
+            $ticket = SupportTicket::where('id', $ticketId)
+                ->where('agency_id', $agency->id)
+                ->firstOrFail();
 
-        // Gérer l'upload des fichiers
-        $attachments = [];
-        if ($request->hasFile('attachments')) {
-            $uploadedFiles = $request->file('attachments');
-            
-            if (is_array($uploadedFiles)) {
+            // Find admin users to send message to
+            $admin = User::where('role', 'admin')->first();
+            if (!$admin) {
+                return response()->json(['success' => false, 'message' => 'Aucun administrateur trouvé'], 400);
+            }
+
+            // Gérer l'upload des fichiers
+            $attachments = [];
+            if ($request->hasFile('attachments')) {
+                $uploadedFiles = $request->file('attachments');
+                
+                // Gérer le cas où c'est un seul fichier ou un tableau
+                if (!is_array($uploadedFiles)) {
+                    $uploadedFiles = [$uploadedFiles];
+                }
+                
                 foreach ($uploadedFiles as $file) {
                     if ($file && $file->isValid()) {
                         try {
                             // S'assurer que le dossier existe
                             $directory = 'messages/attachments';
                             if (!Storage::disk('public')->exists($directory)) {
-                                Storage::disk('public')->makeDirectory($directory);
+                                Storage::disk('public')->makeDirectory($directory, 0755, true);
                             }
                             
                             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
@@ -103,35 +115,56 @@ class SupportMessageController extends Controller
                     }
                 }
             }
+
+            // Déterminer le type de message
+            $messageType = 'text';
+            if (!empty($attachments)) {
+                $hasImage = collect($attachments)->contains(function($attachment) {
+                    return str_starts_with($attachment['type'], 'image/');
+                });
+                $messageType = $hasImage ? 'image' : 'document';
+            }
+
+            // Créer le message - s'assurer qu'il y a au moins un message ou des attachments
+            $messageText = $request->message ?? '';
+            if (empty($messageText) && empty($attachments)) {
+                $messageText = 'Fichier joint'; // Message par défaut si seulement des fichiers
+            }
+
+            // Create the message
+            try {
+                $message = $ticket->sendMessage($agency, $admin, $messageText, !empty($attachments) ? $attachments : null, $messageType);
+            } catch (\Exception $e) {
+                \Log::error('Erreur lors de la création du message: ' . $e->getMessage());
+                \Log::error('Stack trace: ' . $e->getTraceAsString());
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur lors de la création du message: ' . $e->getMessage()
+                ], 500);
+            }
+
+            // Update ticket status to open if it was closed
+            if ($ticket->status === 'closed') {
+                $ticket->reopen();
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $message->load('sender'),
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Erreur dans sendMessage (SupportMessageController): ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur serveur: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Déterminer le type de message
-        $messageType = 'text';
-        if (!empty($attachments)) {
-            $hasImage = collect($attachments)->contains(function($attachment) {
-                return str_starts_with($attachment['type'], 'image/');
-            });
-            $messageType = $hasImage ? 'image' : 'document';
-        }
-
-        // Créer le message - s'assurer qu'il y a au moins un message ou des attachments
-        $messageText = $request->message ?? '';
-        if (empty($messageText) && empty($attachments)) {
-            $messageText = 'Fichier joint'; // Message par défaut si seulement des fichiers
-        }
-
-        // Create the message
-        $message = $ticket->sendMessage($agency, $admin, $messageText, !empty($attachments) ? $attachments : null, $messageType);
-
-        // Update ticket status to open if it was closed
-        if ($ticket->status === 'closed') {
-            $ticket->reopen();
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => $message->load('sender'),
-        ]);
     }
 
     /**

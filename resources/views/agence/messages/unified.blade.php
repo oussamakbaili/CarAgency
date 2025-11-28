@@ -625,13 +625,45 @@ function displaySupportMessages(messages) {
         
         const messageDiv = document.createElement('div');
         messageDiv.className = `flex ${messageAlignment} mb-4`;
+        
+        // Gérer les pièces jointes
+        let attachmentsHtml = '';
+        if (message.attachments && message.attachments.length > 0) {
+            attachmentsHtml = '<div class="mt-2 space-y-2">';
+            message.attachments.forEach(attachment => {
+                const isImage = attachment.type && attachment.type.startsWith('image/');
+                if (isImage) {
+                    attachmentsHtml += `
+                        <div class="rounded-lg overflow-hidden max-w-xs lg:max-w-md">
+                            <img src="${attachment.url}" alt="${escapeHtml(attachment.name)}" class="w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity" onclick="window.open('${attachment.url}', '_blank')" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div style="display:none;" class="text-xs text-gray-500 mt-1">Image non disponible</div>
+                        </div>
+                    `;
+                } else {
+                    attachmentsHtml += `
+                        <a href="${attachment.url}" target="_blank" class="flex items-center gap-2 p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium truncate">${escapeHtml(attachment.name)}</p>
+                                <p class="text-xs text-gray-500">${formatFileSize(attachment.size || 0)}</p>
+                            </div>
+                        </a>
+                    `;
+                }
+            });
+            attachmentsHtml += '</div>';
+        }
+        
         messageDiv.innerHTML = `
-            <div class="${messageBgColor} px-4 py-2 rounded-lg max-w-xs">
+            <div class="${messageBgColor} px-4 py-2 rounded-lg max-w-xs lg:max-w-md">
                 <div class="flex items-center mb-1">
                     <span class="text-xs font-medium ${isFromAgency ? 'text-orange-100' : 'text-gray-600'}">${senderLabel}</span>
                     <span class="ml-2 text-xs ${isFromAgency ? 'text-orange-200' : 'text-gray-500'}">${new Date(message.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
                 </div>
-                <p class="text-sm whitespace-pre-wrap">${message.message}</p>
+                ${message.message ? `<p class="text-sm whitespace-pre-wrap">${escapeHtml(message.message)}</p>` : ''}
+                ${attachmentsHtml}
             </div>
         `;
         
