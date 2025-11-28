@@ -545,16 +545,18 @@ Route::prefix('booking')->name('booking.')->group(function () {
     
     // Steps 3-5: Require authentication
     Route::middleware(['auth', 'client'])->group(function () {
+        // Routes statiques en premier (sans paramètres)
+        Route::get('/step3', [App\Http\Controllers\Client\BookingController::class, 'step3'])->name('step3');
+        Route::get('/step4', [App\Http\Controllers\Client\BookingController::class, 'step4'])->name('step4');
+        Route::get('/step5', [App\Http\Controllers\Client\BookingController::class, 'step5'])->name('step5');
+        Route::post('/init-paypal-payment', [App\Http\Controllers\Client\BookingController::class, 'initPayPalPayment'])->name('init-paypal-payment');
+        Route::post('/process-payment', [App\Http\Controllers\Client\BookingController::class, 'processPayment'])->name('process-payment');
+        Route::post('/cancel', [App\Http\Controllers\Client\BookingController::class, 'cancel'])->name('cancel');
+        
+        // Routes avec paramètres en dernier
         Route::get('/{car}/review', function(\App\Models\Car $car) {
             return view('client.booking.review', compact('car'));
         })->name('review');
-        
-        Route::get('/step3', [App\Http\Controllers\Client\BookingController::class, 'step3'])->name('step3');
-        Route::get('/step4', [App\Http\Controllers\Client\BookingController::class, 'step4'])->name('step4');
-        Route::post('/init-paypal-payment', [App\Http\Controllers\Client\BookingController::class, 'initPayPalPayment'])->name('init-paypal-payment');
-        Route::post('/process-payment', [App\Http\Controllers\Client\BookingController::class, 'processPayment'])->name('process-payment');
-        Route::get('/step5', [App\Http\Controllers\Client\BookingController::class, 'step5'])->name('step5');
-        Route::post('/cancel', [App\Http\Controllers\Client\BookingController::class, 'cancel'])->name('cancel');
     });
 });
 
