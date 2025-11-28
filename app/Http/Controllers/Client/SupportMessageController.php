@@ -88,7 +88,7 @@ class SupportMessageController extends Controller
                                     'path' => $path,
                                     'size' => $file->getSize(),
                                     'type' => $file->getMimeType(),
-                                    'url' => asset('storage/' . $path)
+                                    'url' => Storage::disk('public')->url($path)
                                 ];
                             }
                         } catch (\Exception $e) {

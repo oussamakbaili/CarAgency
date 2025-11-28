@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class SupportMessage extends Model
 {
@@ -124,5 +125,31 @@ class SupportMessage extends Model
             'avatar' => 'S',
             'color' => 'gray'
         ];
+    }
+
+    /**
+     * Accessor pour régénérer les URLs des attachments
+     */
+    public function getAttachmentsAttribute($value)
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        // Le cast 'array' a déjà décodé le JSON, donc $value est déjà un array
+        if (!is_array($value)) {
+            return null;
+        }
+
+        // Régénérer les URLs pour chaque attachment
+        return array_map(function($attachment) {
+            if (isset($attachment['path'])) {
+                // Régénérer l'URL à partir du path
+                $attachment['url'] = Storage::disk('public')->exists($attachment['path']) 
+                    ? Storage::disk('public')->url($attachment['path'])
+                    : asset('storage/' . $attachment['path']);
+            }
+            return $attachment;
+        }, $value);
     }
 }
