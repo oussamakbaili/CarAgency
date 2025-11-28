@@ -264,126 +264,6 @@ class BookingController extends Controller
     }
 
     /**
-     * Initialiser un paiement PayPal
-     */
-    public function initPayPalPayment(Request $request)
-    {
-        try {
-            $bookingData = session('booking_data');
-            
-            if (!$bookingData) {
-                \Log::warning('PayPal payment init failed: No booking data in session', [
-                    'user_id' => Auth::id(),
-                ]);
-                return response()->json([
-                    'success' => false, 
-                    'error' => 'Session expirée. Veuillez recommencer la réservation.'
-                ], 400);
-            }
-
-            if (!isset($bookingData['car_id'])) {
-                \Log::warning('PayPal payment init failed: Missing car_id in booking data', [
-                    'user_id' => Auth::id(),
-                    'booking_data' => $bookingData,
-                ]);
-                return response()->json([
-                    'success' => false, 
-                    'error' => 'Données de réservation incomplètes. Veuillez recommencer.'
-                ], 400);
-            }
-
-            $car = Car::find($bookingData['car_id']);
-            if (!$car) {
-                \Log::warning('PayPal payment init failed: Car not found', [
-                    'user_id' => Auth::id(),
-                    'car_id' => $bookingData['car_id'],
-                ]);
-                return response()->json([
-                    'success' => false, 
-                    'error' => 'Véhicule introuvable. Veuillez recommencer.'
-                ], 400);
-            }
-
-            $user = Auth::user();
-
-            // Créer la réservation d'abord (en pending)
-            $startDate = Carbon::parse($bookingData['start_date']);
-            $endDate = Carbon::parse($bookingData['end_date']);
-            
-            $rental = Rental::create([
-                'user_id' => Auth::id(),
-                'car_id' => $bookingData['car_id'],
-                'agency_id' => $car->agency_id,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'total_price' => $bookingData['total_with_fees'],
-                'status' => 'pending'
-            ]);
-
-            // Créer la commande PayPal
-            $paypalData = [
-                'amount' => $bookingData['total_with_fees'],
-                'currency' => 'EUR',
-                'order_id' => 'PAYPAL_' . $rental->id . '_' . time(),
-                'description' => 'Réservation de véhicule - ' . $car->brand . ' ' . $car->model,
-            ];
-
-            $paypalResult = $this->paymentService->createPayment('paypal', $paypalData);
-
-            if (!$paypalResult['success']) {
-                $rental->delete(); // Supprimer la réservation si échec
-                \Log::error('PayPal payment creation failed', [
-                    'user_id' => Auth::id(),
-                    'rental_id' => $rental->id,
-                    'error' => $paypalResult['error'] ?? 'Unknown error',
-                ]);
-                return response()->json([
-                    'success' => false,
-                    'error' => $paypalResult['error'] ?? 'Impossible d\'initialiser le paiement PayPal. Veuillez vérifier votre configuration PayPal ou réessayer plus tard.'
-                ], 400);
-            }
-
-            // Créer l'enregistrement de paiement pending
-            $payment = \App\Models\Payment::create([
-                'rental_id' => $rental->id,
-                'user_id' => $rental->user_id,
-                'amount' => $bookingData['total_with_fees'],
-                'currency' => 'EUR',
-                'payment_method' => \App\Models\Payment::PAYMENT_METHOD_PAYPAL,
-                'payment_intent_id' => $paypalResult['order_id'],
-                'status' => \App\Models\Payment::STATUS_PENDING,
-                'metadata' => [
-                    'paypal_order_id' => $paypalResult['order_id'],
-                    'paypal_token' => $paypalResult['token'] ?? $paypalResult['order_id'],
-                ],
-            ]);
-
-            // Stocker en session
-            session([
-                'booking_data.rental_id' => $rental->id,
-                'booking_data.payment_intent_id' => $paypalResult['order_id'],
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'approve_url' => $paypalResult['approve_url'],
-                'order_id' => $paypalResult['order_id'],
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('PayPal payment init exception', [
-                'user_id' => Auth::id(),
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            
-            return response()->json([
-                'success' => false,
-                'error' => 'Une erreur est survenue lors de l\'initialisation du paiement PayPal. Veuillez réessayer.'
-            ], 500);
-        }
-    }
-
-    /**
      * Traiter le paiement et créer la réservation
      */
     public function processPayment(Request $request)
@@ -437,8 +317,8 @@ class BookingController extends Controller
                 'status' => 'pending'
             ]);
 
-            // Traiter le paiement selon la passerelle
-            $gateway = $request->payment_gateway ?? 'stripe';
+            // Traiter le paiement PayPal
+            $gateway = $request->payment_gateway ?? 'paypal';
             $paymentResult = $this->paymentService->processPayment($rental, $request->payment_intent_id, $gateway);
 
             if (!$paymentResult['success']) {
@@ -446,11 +326,11 @@ class BookingController extends Controller
                 return redirect()->back()->with('error', 'Le paiement a échoué: ' . ($paymentResult['error'] ?? 'Erreur inconnue'));
             }
 
-            // Si CMI, redirection déjà gérée dans initCMIPayment
+            // Si PayPal, redirection déjà gérée dans initPayPalPayment
             if (isset($paymentResult['redirect_required']) && $paymentResult['redirect_required']) {
-                // Ne devrait pas arriver ici car CMI redirige directement
+                // PayPal redirige directement vers PayPal
                 DB::rollBack();
-                return redirect()->back()->with('error', 'Erreur de redirection CMI');
+                return redirect()->back()->with('error', 'Erreur de redirection PayPal');
             }
 
             // Créer une notification pour l'agence
