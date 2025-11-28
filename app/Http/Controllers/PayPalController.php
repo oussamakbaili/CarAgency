@@ -129,6 +129,15 @@ class PayPalController extends Controller
                 'error' => $result['error'] ?? 'Unknown error',
             ]);
 
+            // Si le paiement échoue, annuler la réservation pour libérer la disponibilité
+            if ($rental && $rental->status === 'pending') {
+                $rental->update(['status' => 'rejected']);
+                Log::info('Rental cancelled due to PayPal payment failure', [
+                    'rental_id' => $rental->id,
+                    'order_id' => $orderId,
+                ]);
+            }
+
             // Rediriger vers la page de confirmation avec les paramètres nécessaires
             $car = $rental->car;
             if ($car) {
@@ -178,7 +187,7 @@ class PayPalController extends Controller
                         ->first();
                 }
                 
-                if ($payment) {
+                if ($payment && $payment->rental) {
                     $payment->update([
                         'status' => Payment::STATUS_CANCELLED,
                         'metadata' => array_merge($payment->metadata ?? [], [
@@ -187,8 +196,15 @@ class PayPalController extends Controller
                         ]),
                     ]);
 
-                    // Optionnel: supprimer la réservation si le paiement a été annulé
-                    // ou la laisser en pending selon votre logique métier
+                    // Annuler la réservation si le paiement est annulé
+                    // Cela libère la disponibilité de la voiture
+                    if ($payment->rental->status === 'pending') {
+                        $payment->rental->update(['status' => 'rejected']);
+                        Log::info('Rental cancelled due to PayPal payment cancellation', [
+                            'rental_id' => $payment->rental->id,
+                            'payment_id' => $payment->id,
+                        ]);
+                    }
                 }
             }
 

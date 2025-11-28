@@ -156,11 +156,26 @@ class Car extends Model
 
     public function getIsAvailableAttribute()
     {
-        if (!$this->track_stock) {
-            return $this->status === self::STATUS_AVAILABLE;
+        // Vérifier d'abord le statut de base
+        if ($this->status !== self::STATUS_AVAILABLE) {
+            return false;
         }
-        
-        return $this->status === self::STATUS_AVAILABLE && $this->available_stock > 0;
+
+        // Si le stock est suivi, vérifier qu'il y a du stock disponible
+        if ($this->track_stock && $this->available_stock <= 0) {
+            return false;
+        }
+
+        // Vérifier s'il y a des réservations pending ou active pour aujourd'hui ou dans le futur
+        // Une réservation pending bloque la voiture jusqu'à ce qu'elle soit complétée ou annulée
+        // Les réservations rejected, cancelled ou completed ne bloquent pas la disponibilité
+        $hasActiveReservations = $this->rentals()
+            ->whereIn('status', ['pending', 'active'])
+            ->where('end_date', '>=', now()->startOfDay())
+            ->exists();
+
+        // Si une réservation est en cours (pending ou active), la voiture n'est pas disponible
+        return !$hasActiveReservations;
     }
 
     public function hasStock()

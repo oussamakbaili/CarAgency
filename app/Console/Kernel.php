@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Nettoyer les réservations pending expirées toutes les heures
+        $schedule->command('rentals:clean-expired-pending --hours=24')->hourly();
+        
+        // Traiter les réservations expirées
+        $schedule->command('rentals:process-expired')->daily();
     }
 
     /**

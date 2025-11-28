@@ -299,9 +299,9 @@ class PayPalService
                     ],
                 ]);
 
-                // Mettre à jour le statut de la réservation
+                // Mettre à jour le statut de la réservation à 'active' (confirmée)
                 if ($rental) {
-                    $rental->update(['status' => 'confirmed']);
+                    $rental->update(['status' => 'active']);
                 }
             } elseif ($payment) {
                 // Mettre à jour le paiement existant
@@ -316,9 +316,9 @@ class PayPalService
                     ]),
                 ]);
 
-                // Mettre à jour le statut de la réservation
+                // Mettre à jour le statut de la réservation à 'active' (confirmée)
                 if ($rental && $rental->status === 'pending') {
-                    $rental->update(['status' => 'confirmed']);
+                    $rental->update(['status' => 'active']);
                 }
             }
 

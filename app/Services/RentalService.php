@@ -171,15 +171,24 @@ class RentalService
 
     /**
      * Check car availability for rental period
+     * Une voiture est indisponible si :
+     * - Elle a une réservation pending, active ou confirmed pour les dates demandées
+     * - Les réservations rejected, cancelled ou completed ne bloquent pas la disponibilité
      */
     public function checkAvailability(Car $car, $startDate, $endDate, $excludeRentalId = null)
     {
-        // Check if car has stock
-        if (!$car->hasStock()) {
+        // Vérifier d'abord le statut de base de la voiture
+        if ($car->status !== Car::STATUS_AVAILABLE) {
             return false;
         }
 
-        // Count conflicting rentals (pending and active)
+        // Vérifier le stock si le suivi de stock est activé
+        if ($car->track_stock && $car->available_stock <= 0) {
+            return false;
+        }
+
+        // Compter les réservations conflictuelles (pending, active)
+        // Les réservations rejected, cancelled ou completed ne bloquent pas la disponibilité
         $conflictingRentals = Rental::where('car_id', $car->id)
             ->whereIn('status', ['pending', 'active'])
             ->where(function ($query) use ($startDate, $endDate) {
@@ -197,8 +206,13 @@ class RentalService
 
         $conflictCount = $conflictingRentals->count();
 
-        // Check if we have enough stock for the period
-        return $car->available_stock > $conflictCount;
+        // Si le stock est suivi, vérifier qu'il y a assez de stock
+        if ($car->track_stock) {
+            return $car->available_stock > $conflictCount;
+        }
+
+        // Si le stock n'est pas suivi, une seule réservation conflictuelle rend la voiture indisponible
+        return $conflictCount === 0;
     }
 
     /**
