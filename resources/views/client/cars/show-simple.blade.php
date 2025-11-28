@@ -128,7 +128,7 @@
                 <a href="{{ route('client.cars.index') }}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
                     ← Retour
                 </a>
-                <a href="{{ route('client.rentals.create', $car) }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                <a href="{{ route('client.cars.show', $car) }}?book=1" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                     Louer
                 </a>
             </div>

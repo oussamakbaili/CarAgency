@@ -159,7 +159,7 @@
                         <div class="space-y-4">
                             @auth
                                 @if(auth()->user() && auth()->user()->role === 'client')
-                                    <a href="{{ route('client.rentals.create', $car) }}" 
+                                    <a href="{{ route('client.cars.show', $car) }}?book=1" 
                                        class="w-full bg-orange-600 hover:bg-orange-700 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold text-center block transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                                         Réserver maintenant
                                     </a>

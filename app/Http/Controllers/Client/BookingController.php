@@ -54,15 +54,21 @@ class BookingController extends Controller
             return redirect()->back()->with('error', 'Cette voiture n\'est pas disponible pour les dates sélectionnées.');
         }
 
+        // Calculer les prix
+        $days = $startDate->diffInDays($endDate);
+        $totalPrice = $days * $car->client_price_per_day;
+        
         // Stocker les données en session
         session([
             'booking_data' => [
                 'car_id' => $car->id,
                 'start_date' => $startDate->format('Y-m-d'),
                 'end_date' => $endDate->format('Y-m-d'),
-                'days' => $startDate->diffInDays($endDate),
+                'days' => $days,
                 'price_per_day' => $car->client_price_per_day,
-                'total_price' => $startDate->diffInDays($endDate) * $car->client_price_per_day,
+                'total_price' => $totalPrice,
+                'platform_fee' => 0, // Commission already included in client_price_per_day
+                'total_with_fees' => $totalPrice, // Total already includes commission
                 'step' => 1
             ]
         ]);
@@ -104,7 +110,7 @@ class BookingController extends Controller
             return redirect()->route('public.home')->with('error', 'Session expirée. Veuillez recommencer votre réservation.');
         }
 
-        $car = Car::with(['agency.user', 'category'])->find($bookingData['car_id']);
+        $car = Car::with(['agency.user'])->find($bookingData['car_id']);
         
         if (!$car) {
             return redirect()->route('public.home')->with('error', 'Voiture non trouvée.');

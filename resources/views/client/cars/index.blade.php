@@ -153,7 +153,7 @@
                         Voir détails
                     </a>
                     @if($car->is_available)
-                        <a href="{{ route('client.rentals.create', $car) }}" 
+                        <a href="{{ route('client.cars.show', $car) }}?book=1" 
                            class="px-3 sm:px-4 py-1.5 sm:py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-xs sm:text-sm font-medium">
                             Louer maintenant
                         </a>
@@ -212,7 +212,7 @@
                     Détails
                 </a>
                 @if($car->is_available)
-                    <a href="{{ route('client.rentals.create', $car) }}" 
+                    <a href="{{ route('client.cars.show', $car) }}?book=1" 
                        class="flex-1 px-3 sm:px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-center text-xs sm:text-sm font-medium">
                         Louer
                     </a>

@@ -389,7 +389,8 @@
                         </div>
 
                         <!-- Booking Form -->
-                        <form action="{{ route('client.rentals.confirm', $car) }}" method="GET" id="bookingForm">
+                        <form action="{{ route('booking.process-step1', $car) }}" method="POST" id="bookingForm">
+                            @csrf
                 <div class="space-y-4">
                                 <!-- Check-in -->
                                 <div>
@@ -950,6 +951,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const now = new Date();
     currentMonth = now.getMonth();
     currentYear = now.getFullYear();
+    
+    // Check if we should scroll to booking form (from "Louer" or "Louer maintenant" buttons)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('book') === '1') {
+        // Scroll to booking form after a short delay to ensure page is fully loaded
+        setTimeout(function() {
+            const bookingForm = document.getElementById('bookingForm');
+            if (bookingForm) {
+                bookingForm.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+                // Add a subtle highlight effect
+                bookingForm.style.transition = 'box-shadow 0.3s ease';
+                bookingForm.style.boxShadow = '0 0 0 3px rgba(249, 115, 22, 0.3)';
+                setTimeout(function() {
+                    bookingForm.style.boxShadow = '';
+                }, 2000);
+            }
+        }, 300);
+    }
 });
 </script>
 @endsection 

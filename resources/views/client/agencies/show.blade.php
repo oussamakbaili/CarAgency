@@ -154,7 +154,7 @@
                        class="px-4 py-2 bg-white text-gray-900 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium">
                         Voir détails
                     </a>
-                    <a href="{{ route('client.rentals.create', $car) }}" 
+                    <a href="{{ route('client.cars.show', $car) }}?book=1" 
                        class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium">
                         Louer maintenant
                     </a>
@@ -207,7 +207,7 @@
                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center text-sm font-medium">
                     Détails
                 </a>
-                <a href="{{ route('client.rentals.create', $car) }}" 
+                <a href="{{ route('client.cars.show', $car) }}?book=1" 
                    class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-center text-sm font-medium">
                     Louer
                 </a>
