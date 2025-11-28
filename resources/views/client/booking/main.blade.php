@@ -3,7 +3,6 @@
 @section('title', 'Réserver - ' . $car->brand . ' ' . $car->model)
 
 @push('scripts')
-<script src="https://js.stripe.com/v3/"></script>
 @endpush
 
 @section('content')
@@ -69,167 +68,14 @@
                     
                     <!-- Payment Methods Content (Hidden by default) -->
                     <div id="paymentMethodsContent" class="hidden mt-6">
-                        <!-- Payment Gateway Selection -->
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-3">Choisir une passerelle de paiement</label>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <!-- Stripe Option -->
-                                <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="stripe">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <h3 class="font-semibold text-gray-900">Stripe</h3>
-                                            <p class="text-sm text-gray-600 mt-1">Paiement international</p>
-                                        </div>
-                                        <input type="radio" name="payment_gateway" value="stripe" class="payment-gateway-radio" checked>
-                                    </div>
-                                </div>
-
-                                <!-- CMI Option -->
-                                <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="cmi">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <h3 class="font-semibold text-gray-900">CMI</h3>
-                                            <p class="text-sm text-gray-600 mt-1">Paiement Maroc (MAD)</p>
-                                        </div>
-                                        <input type="radio" name="payment_gateway" value="cmi" class="payment-gateway-radio">
-                                    </div>
-                                </div>
-
-                                <!-- PayPal Option -->
-                                <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="paypal">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <h3 class="font-semibold text-gray-900">PayPal</h3>
-                                            <p class="text-sm text-gray-600 mt-1">Paiement PayPal (EUR)</p>
-                                        </div>
-                                        <input type="radio" name="payment_gateway" value="paypal" class="payment-gateway-radio">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Stripe Payment Form -->
-                        <div id="stripe-payment-form" class="payment-form">
-                            <div class="mb-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <div class="flex items-center gap-3">
-                                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                                        </svg>
-                                        <h3 class="font-semibold text-gray-900">Carte de crédit ou de débit</h3>
-                                    </div>
-                                    <input type="radio" name="payment_gateway" value="stripe" class="w-5 h-5 text-red-600 border-gray-300 focus:ring-red-500" checked>
-                                </div>
-                                <div class="flex items-center gap-2 mb-4">
-                                    <!-- VISA -->
-                                    <div class="flex items-center">
-                                        <div class="w-14 h-8 bg-[#1A1F71] rounded-md shadow-md flex items-center justify-center border border-[#0F2A5C] relative overflow-hidden">
-                                            <div class="absolute inset-0 bg-gradient-to-br from-[#1A1F71] to-[#1434A4] opacity-80"></div>
-                                            <span class="text-white text-[11px] font-bold tracking-wider relative z-10">VISA</span>
-                                        </div>
-                                    </div>
-                                    <!-- Mastercard -->
-                                    <div class="flex items-center">
-                                        <div class="w-14 h-8 rounded-full shadow-md flex items-center justify-center relative overflow-hidden">
-                                            <div class="absolute left-0 top-0 w-1/2 h-full bg-[#EB001B]"></div>
-                                            <div class="absolute right-0 top-0 w-1/2 h-full bg-[#F79E1B]"></div>
-                                            <div class="absolute left-1/2 top-0 w-px h-full bg-white opacity-30 transform -translate-x-1/2"></div>
-                                            <span class="text-white text-[10px] font-bold relative z-10 drop-shadow-md">MC</span>
-                                        </div>
-                                    </div>
-                                    <!-- AMEX -->
-                                    <div class="flex items-center">
-                                        <div class="w-14 h-8 bg-[#006FCF] rounded-md shadow-md flex items-center justify-center border border-[#0052A5] relative overflow-hidden">
-                                            <div class="absolute inset-0 bg-gradient-to-br from-[#006FCF] to-[#0080FF]"></div>
-                                            <span class="text-white text-[10px] font-bold relative z-10">AMEX</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <form id="payment-form">
-                                @csrf
-                                <input type="hidden" name="payment_intent_id" id="payment_intent_id" value="">
-                                <input type="hidden" name="payment_method" value="card">
-                                <input type="hidden" name="payment_gateway" value="stripe">
-
-                                <div class="space-y-5 mb-6">
-                                    <div>
-                                        <div class="flex items-center gap-2 mb-2">
-                                            <label class="block text-sm font-medium text-gray-700">Card number</label>
-                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                            </svg>
-                                        </div>
-                                        <div class="relative">
-                                            <div id="card-element" class="px-5 py-4 border border-gray-300 rounded-lg bg-white focus-within:border-gray-400 transition-colors text-base">
-                                                <!-- Stripe Elements will create form elements here -->
-                                            </div>
-                                        </div>
-                                        <div id="stripe-card-error" class="text-red-600 text-sm mt-1 hidden"></div>
-                                        <div id="card-errors" role="alert" class="text-red-600 text-sm mt-1"></div>
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Expiration</label>
-                                            <div id="card-expiry-element" class="px-5 py-4 border border-gray-300 rounded-lg bg-white focus-within:border-gray-400 transition-colors text-base">
-                                                <!-- Stripe Elements will create form elements here -->
-                                            </div>
-                                            <div id="stripe-expiry-error" class="text-red-600 text-sm mt-1 hidden"></div>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
-                                            <div id="card-cvc-element" class="px-5 py-4 border border-gray-300 rounded-lg bg-white focus-within:border-gray-400 transition-colors text-base">
-                                                <!-- Stripe Elements will create form elements here -->
-                                            </div>
-                                            <div id="stripe-cvc-error" class="text-red-600 text-sm mt-1 hidden"></div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">ZIP code</label>
-                                        <input type="text" id="stripe-zip" name="zip_code" placeholder="" 
-                                               class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
-                                        <div id="stripe-zip-error" class="text-red-600 text-sm mt-1 hidden"></div>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Country/region</label>
-                                        <div class="relative">
-                                            <select id="stripe-country" name="country" 
-                                                    class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors appearance-none cursor-pointer text-base">
-                                                <option value="MA" selected>Morocco</option>
-                                                <option value="FR">France</option>
-                                                <option value="US">United States</option>
-                                                <option value="GB">United Kingdom</option>
-                                                <option value="DE">Germany</option>
-                                                <option value="ES">Spain</option>
-                                            </select>
-                                            <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-900 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                            </svg>
-                                        </div>
-                                        <div id="stripe-country-error" class="text-red-600 text-sm mt-1 hidden"></div>
-                                    </div>
-                                </div>
-
-                                <div class="flex justify-end">
-                                    <button type="button" id="submit-button" class="bg-gray-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                                        <span id="button-text">Suivant</span>
-                                        <span id="spinner" class="hidden">
-                                            <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                        </span>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
                         <!-- PayPal Payment Form -->
-                        <div id="paypal-payment-form" class="payment-form hidden">
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Méthode de paiement</h3>
+                            <p class="text-sm text-gray-600 mb-4">Paiement sécurisé via PayPal</p>
+                        </div>
+
+                        <!-- PayPal Payment Form (Only Payment Method) -->
+                        <div id="paypal-payment-form" class="payment-form">
                             <div class="mb-6">
                                 <p class="text-gray-600 text-sm mb-6">
                                     Connectez-vous à votre compte PayPal pour finaliser votre paiement. Vous serez redirigé vers le site PayPal pour vous connecter.
@@ -254,8 +100,6 @@
                             </div>
                         </div>
 
-                        <!-- CMI Payment Form -->
-                        <div id="cmi-payment-form" class="payment-form hidden">
                             <div class="mb-4">
                                 <div class="flex items-center justify-between mb-3">
                                     <div class="flex items-center gap-3">

@@ -523,14 +523,7 @@ Route::prefix('client')->middleware(['auth', 'verified', 'client'])->name('clien
         });
 });
 
-// Stripe Webhook (must be outside CSRF protection)
-Route::post('/stripe/webhook', [App\Http\Controllers\StripeWebhookController::class, 'handleWebhook'])
-    ->name('stripe.webhook');
-
-// CMI Callbacks (must be outside CSRF protection)
-Route::post('/cmi/callback', [App\Http\Controllers\CMIController::class, 'callback'])->name('cmi.callback');
-Route::get('/cmi/success', [App\Http\Controllers\CMIController::class, 'success'])->name('cmi.success');
-Route::get('/cmi/failure', [App\Http\Controllers\CMIController::class, 'failure'])->name('cmi.failure');
+// PayPal Callbacks (must be outside CSRF protection)
 
 // PayPal Callbacks (must be outside CSRF protection)
 Route::get('/paypal/success', [App\Http\Controllers\PayPalController::class, 'success'])->name('paypal.success');
@@ -558,8 +551,6 @@ Route::prefix('booking')->name('booking.')->group(function () {
         
         Route::get('/step3', [App\Http\Controllers\Client\BookingController::class, 'step3'])->name('step3');
         Route::get('/step4', [App\Http\Controllers\Client\BookingController::class, 'step4'])->name('step4');
-        Route::post('/init-stripe-payment', [App\Http\Controllers\Client\BookingController::class, 'initStripePayment'])->name('init-stripe-payment');
-        Route::post('/init-cmi-payment', [App\Http\Controllers\Client\BookingController::class, 'initCMIPayment'])->name('init-cmi-payment');
         Route::post('/init-paypal-payment', [App\Http\Controllers\Client\BookingController::class, 'initPayPalPayment'])->name('init-paypal-payment');
         Route::post('/process-payment', [App\Http\Controllers\Client\BookingController::class, 'processPayment'])->name('process-payment');
         Route::get('/step5', [App\Http\Controllers\Client\BookingController::class, 'step5'])->name('step5');
