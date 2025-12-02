@@ -201,10 +201,10 @@
                                 
                                 <div class="flex items-center justify-between">
                                     <span class="text-lg font-bold text-blue-600">{{ number_format($car->client_price_per_day, 0) }} MAD/jour</span>
-                                    <a href="{{ route('public.car.show', ['agency' => $car->agency, 'car' => $car]) }}" 
+                                    <button onclick="openCarDetailsModal({{ $car->agency->id }}, {{ $car->id }})" 
                                        class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                         Voir détails →
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         @endforeach

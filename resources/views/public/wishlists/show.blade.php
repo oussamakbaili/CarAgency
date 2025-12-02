@@ -72,7 +72,7 @@
             <div class="space-y-6">
                 @forelse($cars as $car)
                     <div class="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition">
-                        <a href="{{ route('public.car.show', [$car->agency, $car]) }}" class="block">
+                        <div onclick="openCarDetailsModal({{ $car->agency->id }}, {{ $car->id }})" class="block cursor-pointer">
                             <div class="relative h-64 bg-gray-100">
                                 @if($car->image_url)
                                     <img src="{{ $car->image_url }}" alt="{{ $car->brand }} {{ $car->model }}"
@@ -113,7 +113,7 @@
                                     <span class="text-sm text-gray-500">1 bed</span>
                                 </div>
                             </div>
-                        </a>
+                        </div>
                     </div>
                 @empty
                     <div class="text-center py-20 bg-white rounded-3xl shadow">

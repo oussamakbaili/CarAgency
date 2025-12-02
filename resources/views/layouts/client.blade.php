@@ -446,6 +446,33 @@
     <!-- Scripts Stack -->
     @stack('scripts')
 
+    <!-- Car Details Modal -->
+    <div id="carDetailsModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center px-4 py-8" style="background-color: rgba(0, 0, 0, 0.75);" onclick="if(event.target === this) closeCarDetailsModal()">
+        <!-- Modal Container -->
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-7xl w-full max-h-[90vh] flex flex-col overflow-hidden" onclick="event.stopPropagation()">
+            <!-- Close Button -->
+            <button onclick="closeCarDetailsModal()" class="absolute top-4 right-4 z-50 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors">
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <!-- Scrollable Content Area -->
+            <div class="overflow-y-auto flex-1">
+                <!-- Loading State -->
+                <div id="carDetailsLoading" class="p-12 text-center">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+                    <p class="mt-4 text-gray-600">Chargement des détails...</p>
+                </div>
+
+                <!-- Car Details Content -->
+                <div id="carDetailsContent" class="hidden">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         (function(){
             const sidebar = document.getElementById('sidebar-client');
@@ -465,6 +492,166 @@
             if (overlay) overlay.addEventListener('click', close);
             document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
         })();
+        
+        // Car Details Modal Functions
+        function openCarDetailsModal(agencyId, carId) {
+            const modal = document.getElementById('carDetailsModal');
+            const loading = document.getElementById('carDetailsLoading');
+            const content = document.getElementById('carDetailsContent');
+            const scrollableArea = modal.querySelector('.overflow-y-auto');
+            
+            // Prevent body scroll completely
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            
+            // Show modal
+            modal.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            content.classList.add('hidden');
+            content.innerHTML = '';
+
+            // Scroll to top of scrollable area
+            if (scrollableArea) {
+                scrollableArea.scrollTop = 0;
+            }
+
+            // Fetch car details
+            fetch(`/agencies/${agencyId}/cars/${carId}/details`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        renderCarDetails(data.car);
+                        loading.classList.add('hidden');
+                        content.classList.remove('hidden');
+                        // Scroll to top after content loads
+                        if (scrollableArea) {
+                            scrollableArea.scrollTop = 0;
+                        }
+                    } else {
+                        alert('Erreur lors du chargement des détails du véhicule');
+                        closeCarDetailsModal();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Erreur lors du chargement des détails du véhicule');
+                    closeCarDetailsModal();
+                });
+        }
+
+        function closeCarDetailsModal() {
+            const modal = document.getElementById('carDetailsModal');
+            modal.classList.add('hidden');
+            // Restore body scroll
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
+
+        function renderCarDetails(car) {
+            const content = document.getElementById('carDetailsContent');
+            
+            // Get images
+            const mainImage = car.main_image || car.images[0] || null;
+            const otherImages = car.other_images || [];
+            const allImages = car.images || [];
+
+            // Build specifications string
+            const specs = [
+                car.year,
+                car.fuel_type || 'N/A',
+                car.seats ? `${car.seats} places` : null,
+                car.transmission || null
+            ].filter(Boolean).join(' • ');
+
+            // Build HTML - Simple design matching the image
+            let html = `
+                <div class="p-6 lg:p-8">
+                    <!-- Main Image Section -->
+                    <div class="mb-6 rounded-2xl overflow-hidden">
+                        ${mainImage ? `
+                            <img src="${mainImage}" 
+                                 alt="${car.brand} ${car.model}" 
+                                 class="w-full h-[400px] object-cover rounded-2xl cursor-pointer"
+                                 onclick="openImageModal('${mainImage}')">
+                        ` : `
+                            <div class="w-full h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-2xl">
+                                <div class="text-center">
+                                    <svg class="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <p class="text-gray-500 font-medium">Photo du véhicule</p>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- Car Info Section -->
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="flex-1">
+                            <h1 class="text-3xl font-bold text-gray-900 mb-2">${car.brand} ${car.model}</h1>
+                            <p class="text-gray-600 mb-4">${specs}</p>
+                        </div>
+                        <div class="text-right ml-4">
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-3xl font-bold text-gray-900">${parseInt(car.client_price_per_day).toLocaleString('fr-FR')}</span>
+                                <span class="text-lg text-gray-600">MAD</span>
+                            </div>
+                            <span class="text-sm text-gray-500">/ jour</span>
+                        </div>
+                    </div>
+
+                    <!-- Additional Details Section -->
+                    ${car.description || (car.features && car.features.length > 0) ? `
+                        <div class="border-t border-gray-200 pt-6 mt-6">
+                            ${car.description ? `
+                                <div class="mb-6">
+                                    <h2 class="text-xl font-bold text-gray-900 mb-3">Description</h2>
+                                    <p class="text-gray-700 leading-relaxed whitespace-pre-line">${car.description}</p>
+                                </div>
+                            ` : ''}
+                            ${car.features && car.features.length > 0 ? `
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-900 mb-3">Équipements</h2>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        ${car.features.map(feature => `
+                                            <div class="flex items-center gap-2">
+                                                <svg class="w-5 h-5 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                <span class="text-gray-700">${feature}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+
+                    <!-- Booking Button -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <a href="/booking/${car.id}" onclick="closeCarDetailsModal()" class="w-full bg-gradient-to-r from-[#C2410C] to-[#9A3412] text-white font-semibold py-4 px-6 rounded-xl hover:from-[#9A3412] hover:to-[#7C2D12] transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Réserver maintenant
+                        </a>
+                    </div>
+                </div>
+            `;
+
+            content.innerHTML = html;
+        }
+        
+        // Make functions globally available
+        window.openCarDetailsModal = openCarDetailsModal;
+        window.closeCarDetailsModal = closeCarDetailsModal;
+        
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeCarDetailsModal();
+            }
+        });
     </script>
 
 </body>

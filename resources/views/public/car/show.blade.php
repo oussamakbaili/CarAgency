@@ -361,7 +361,7 @@
             
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 @forelse($agency->cars()->where('id', '!=', $car->id)->where('transmission', $car->transmission)->where('category_id', $car->category_id)->take(4)->get() as $similarCar)
-                    <div onclick="window.location='{{ route('public.car.show', [$agency, $similarCar]) }}'" class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+                    <div onclick="openCarDetailsModal({{ $agency->id }}, {{ $similarCar->id }})" class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
                         <!-- Car Image -->
                         <div class="relative h-48 bg-gray-100">
                             @if($similarCar->image_url)

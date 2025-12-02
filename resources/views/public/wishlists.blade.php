@@ -277,7 +277,7 @@
                                         <div class="wishlist-card-grid">
                                             @foreach($wishlist->items->take(4) as $item)
                                                 @if($item->car && $item->car->agency)
-                                                    <div onclick="window.location='{{ route('public.car.show', [$item->car->agency, $item->car]) }}'" 
+                                                    <div onclick="openCarDetailsModal({{ $item->car->agency->id }}, {{ $item->car->id }})" 
                                                          class="wishlist-image cursor-pointer group relative overflow-hidden rounded-lg bg-gray-100">
                                                         @if($item->car->image_url)
                                                             <img src="{{ $item->car->image_url }}" 
