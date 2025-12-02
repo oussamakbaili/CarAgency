@@ -530,12 +530,14 @@
             <div class="space-y-4 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Date de début</label>
-                    <input type="date" id="startDateInput" value="2025-10-16" 
+                    <input type="date" id="startDateInput" value="{{ session('booking_data.start_date') ?? \Carbon\Carbon::tomorrow()->format('Y-m-d') }}" 
+                           min="{{ \Carbon\Carbon::tomorrow()->format('Y-m-d') }}"
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Date de fin</label>
-                    <input type="date" id="endDateInput" value="2025-11-02" 
+                    <input type="date" id="endDateInput" value="{{ session('booking_data.end_date') ?? \Carbon\Carbon::tomorrow()->addDays(7)->format('Y-m-d') }}" 
+                           min="{{ \Carbon\Carbon::tomorrow()->addDay()->format('Y-m-d') }}"
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                 </div>
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -1775,6 +1777,17 @@ document.addEventListener('DOMContentLoaded', function() {
             errorDiv.classList.add('hidden');
 
             try {
+                // Récupérer les dates depuis les inputs ou la session
+                const startDateInput = document.getElementById('startDateInput');
+                const endDateInput = document.getElementById('endDateInput');
+                
+                const startDate = startDateInput ? startDateInput.value : '{{ session("booking_data.start_date") }}';
+                const endDate = endDateInput ? endDateInput.value : '{{ session("booking_data.end_date") }}';
+                
+                if (!startDate || !endDate) {
+                    throw new Error('Veuillez sélectionner des dates de début et de fin.');
+                }
+                
                 const response = await fetch('{{ route("booking.init-paypal-payment") }}', {
                     method: 'POST',
                     headers: {
@@ -1783,8 +1796,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     body: JSON.stringify({
                         car_id: {{ $car->id }},
-                        start_date: '{{ session("booking_data.start_date") }}',
-                        end_date: '{{ session("booking_data.end_date") }}'
+                        start_date: startDate,
+                        end_date: endDate
                     })
                 });
 

@@ -157,14 +157,83 @@ class BookingController extends Controller
         try {
             $bookingData = session('booking_data');
             
+            // Si pas de session, utiliser les données de la requête
             if (!$bookingData) {
-                \Log::warning('PayPal payment init failed: No booking data in session', [
-                    'user_id' => Auth::id(),
-                ]);
-                return response()->json([
-                    'success' => false, 
-                    'error' => 'Session expirée. Veuillez recommencer la réservation.'
-                ], 400);
+                // Vérifier que les données nécessaires sont dans la requête
+                $carId = $request->input('car_id');
+                $startDateStr = $request->input('start_date');
+                $endDateStr = $request->input('end_date');
+                
+                if (!$carId || !$startDateStr || !$endDateStr) {
+                    \Log::warning('PayPal payment init failed: Missing data in request', [
+                        'user_id' => Auth::id(),
+                        'request_data' => $request->all(),
+                    ]);
+                    return response()->json([
+                        'success' => false, 
+                        'error' => 'Données de réservation manquantes. Veuillez sélectionner des dates et réessayer.'
+                    ], 400);
+                }
+                
+                // Créer booking_data à partir de la requête
+                $car = Car::find($carId);
+                if (!$car) {
+                    return response()->json([
+                        'success' => false, 
+                        'error' => 'Véhicule introuvable. Veuillez recommencer.'
+                    ], 400);
+                }
+                
+                // Valider les dates
+                try {
+                    $startDate = Carbon::parse($startDateStr);
+                    $endDate = Carbon::parse($endDateStr);
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'success' => false, 
+                        'error' => 'Format de date invalide. Veuillez réessayer.'
+                    ], 400);
+                }
+                
+                // Vérifier que les dates sont valides
+                if ($startDate->isPast() && !$startDate->isToday()) {
+                    return response()->json([
+                        'success' => false, 
+                        'error' => 'La date de début doit être aujourd\'hui ou dans le futur.'
+                    ], 400);
+                }
+                
+                if ($endDate->lte($startDate)) {
+                    return response()->json([
+                        'success' => false, 
+                        'error' => 'La date de fin doit être après la date de début.'
+                    ], 400);
+                }
+                
+                // Vérifier la disponibilité
+                if (!$this->rentalService->checkAvailability($car, $startDate, $endDate)) {
+                    return response()->json([
+                        'success' => false, 
+                        'error' => 'Cette voiture n\'est pas disponible pour les dates sélectionnées.'
+                    ], 400);
+                }
+                
+                $days = $startDate->diffInDays($endDate);
+                $totalPrice = $days * $car->client_price_per_day;
+                
+                // Créer la session booking_data
+                $bookingData = [
+                    'car_id' => $car->id,
+                    'start_date' => $startDate->format('Y-m-d'),
+                    'end_date' => $endDate->format('Y-m-d'),
+                    'days' => $days,
+                    'price_per_day' => $car->client_price_per_day,
+                    'total_price' => $totalPrice,
+                    'platform_fee' => 0,
+                    'total_with_fees' => $totalPrice,
+                ];
+                
+                session(['booking_data' => $bookingData]);
             }
 
             if (!isset($bookingData['car_id'])) {
