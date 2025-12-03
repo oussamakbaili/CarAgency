@@ -79,7 +79,7 @@
             <!-- Cars Grid - Same design as home page -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 @forelse($cars as $car)
-                    <a href="{{ route('public.car.show', ['agency' => $car->agency, 'car' => $car]) }}" class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer block">
+                    <div onclick="openCarDetailsModal({{ $car->agency->id }}, {{ $car->id }})" class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
                         <!-- Car Image -->
                         <div class="relative h-48 bg-gray-100">
                             @if($car->image_url)

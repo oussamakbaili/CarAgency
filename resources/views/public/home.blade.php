@@ -166,7 +166,7 @@
             <!-- Horizontal Scrollable Container -->
             <div id="topCarsScroll" class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
                 @forelse($topCars as $car)
-                    <a href="{{ route('public.car.show', ['agency' => $car->agency, 'car' => $car]) }}" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer block">
+                    <div onclick="openCarDetailsModal({{ $car->agency->id }}, {{ $car->id }})" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer">
                         <!-- Car Image -->
                         <div class="car-card-image relative h-[240px] bg-gray-100 overflow-hidden">
                             @if($car->image_url)
@@ -297,7 +297,7 @@
             <!-- Cars Horizontal Scroll Container - Airbnb Style -->
             <div id="discoverCarsScroll" class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
                 @forelse($discoverCars as $car)
-                    <a href="{{ route('public.car.show', ['agency' => $car->agency, 'car' => $car]) }}" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer block">
+                    <div onclick="openCarDetailsModal({{ $car->agency->id }}, {{ $car->id }})" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer">
                         <!-- Car Image -->
                         <div class="car-card-image relative h-[240px] bg-gray-100 overflow-hidden">
                             @if($car->image_url)
