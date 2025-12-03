@@ -79,7 +79,7 @@
             <!-- Cars Grid - Same design as home page -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 @forelse($cars as $car)
-                    <div onclick="openCarDetailsModal({{ $car->agency->id }}, {{ $car->id }})" class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer">
+                    <a href="{{ route('public.car.show', ['agency' => $car->agency, 'car' => $car]) }}" class="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-shadow duration-300 cursor-pointer block">
                         <!-- Car Image -->
                         <div class="relative h-48 bg-gray-100">
                             @if($car->image_url)
@@ -130,17 +130,12 @@
                                 </div>
                             </div>
                             
-                            <!-- Price & CTA -->
+                            <!-- Price -->
                             <div class="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100">
                                 <div>
                                     <div class="text-lg sm:text-2xl font-bold text-gray-900">{{ number_format($car->client_price_per_day, 0) }} MAD</div>
                                     <div class="text-xs sm:text-sm text-gray-500">par jour</div>
                                 </div>
-                                <a href="{{ route('booking.main', $car) }}" 
-                                   class="bg-[#C2410C] hover:bg-[#9A3412] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors"
-                                   onclick="event.stopPropagation()">
-                                    Réserver
-                                </a>
                             </div>
                         </div>
                     </div>

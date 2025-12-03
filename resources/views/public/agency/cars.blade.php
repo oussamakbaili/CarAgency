@@ -88,7 +88,7 @@
                 </div>
                 <div class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
                     @foreach($cars as $car)
-                        <div onclick="openCarDetailsModal({{ $agency->id }}, {{ $car->id }})" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer">
+                        <a href="{{ route('public.car.show', ['agency' => $agency, 'car' => $car]) }}" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer block">
                             <!-- Car Image -->
                             <div class="car-card-image relative h-[240px] bg-gray-100 overflow-hidden">
                                 @if($car->image_url)
@@ -139,7 +139,7 @@
             <!-- Desktop: Grid Layout -->
             <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 @foreach($cars as $car)
-                    <div onclick="openCarDetailsModal({{ $agency->id }}, {{ $car->id }})" class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer">
+                    <a href="{{ route('public.car.show', ['agency' => $agency, 'car' => $car]) }}" class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer block">
                         <!-- Car Image -->
                         <div class="relative h-56 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                             @if($car->image_url)
@@ -209,13 +209,9 @@
 
                             <!-- Action Buttons -->
                             <div class="flex gap-3" onclick="event.stopPropagation()">
-                                <button onclick="openCarDetailsModal({{ $agency->id }}, {{ $car->id }})" 
+                                <a href="{{ route('public.car.show', ['agency' => $agency, 'car' => $car]) }}" 
                                    class="flex-1 px-4 py-3 border-2 border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white rounded-xl text-sm font-semibold text-center transition-all duration-200">
                                     Détails
-                                </button>
-                                <a href="{{ route('public.require-login') }}" 
-                                   class="flex-1 bg-[#C2410C] hover:bg-[#9A3412] text-white px-4 py-3 rounded-xl text-sm font-semibold text-center transition-all duration-200 shadow-lg hover:shadow-xl">
-                                    Réserver
                                 </a>
                             </div>
                         </div>

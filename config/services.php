@@ -51,4 +51,8 @@ return [
         'test_mode' => env('PAYPAL_TEST_MODE', env('APP_ENV') === 'production' ? false : true),
     ],
 
+    'google' => [
+    'maps_key' => env('GOOGLE_MAPS_KEY'),
+    ],
+
 ];

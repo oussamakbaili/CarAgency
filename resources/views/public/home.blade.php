@@ -166,7 +166,7 @@
             <!-- Horizontal Scrollable Container -->
             <div id="topCarsScroll" class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
                 @forelse($topCars as $car)
-                    <div onclick="openCarDetailsModal({{ $car->agency->id }}, {{ $car->id }})" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <a href="{{ route('public.car.show', ['agency' => $car->agency, 'car' => $car]) }}" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer block">
                         <!-- Car Image -->
                         <div class="car-card-image relative h-[240px] bg-gray-100 overflow-hidden">
                             @if($car->image_url)
@@ -217,17 +217,13 @@
                                 <p class="text-sm text-gray-500 mt-1">{{ $car->agency->city ?? 'Maroc' }}</p>
                             </div>
                             
-                            <!-- Price + CTA -->
+                            <!-- Price -->
                             <div class="flex items-center justify-between mt-3">
                                 <div class="flex items-baseline gap-1">
                                     <span class="text-lg font-bold text-gray-900">{{ number_format($car->client_price_per_day, 0) }}</span>
                                     <span class="text-sm text-gray-600">MAD</span>
                                     <span class="text-sm text-gray-500">/ {{ __('home.popular_cars.per_day') }}</span>
                                 </div>
-                                <a href="{{ route('booking.main', $car) }}" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 bg-[#C2410C] hover:bg-[#9A3412] text-white px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm">
-                                    {{ __('home.popular_cars.book') }}
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                                </a>
                             </div>
                         </div>
                     </div>
@@ -301,7 +297,7 @@
             <!-- Cars Horizontal Scroll Container - Airbnb Style -->
             <div id="discoverCarsScroll" class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
                 @forelse($discoverCars as $car)
-                    <div onclick="openCarDetailsModal({{ $car->agency->id }}, {{ $car->id }})" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <a href="{{ route('public.car.show', ['agency' => $car->agency, 'car' => $car]) }}" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer block">
                         <!-- Car Image -->
                         <div class="car-card-image relative h-[240px] bg-gray-100 overflow-hidden">
                             @if($car->image_url)
@@ -352,17 +348,13 @@
                                 <p class="text-sm text-gray-500 mt-1">{{ $car->agency->city ?? 'Maroc' }}</p>
                 </div>
 
-                            <!-- Price + CTA -->
+                            <!-- Price -->
                             <div class="flex items-center justify-between mt-3">
                                 <div class="flex items-baseline gap-1">
                                     <span class="text-lg font-bold text-gray-900">{{ number_format($car->client_price_per_day, 0) }}</span>
                                     <span class="text-sm text-gray-600">MAD</span>
                                     <span class="text-sm text-gray-500">/ {{ __('home.popular_cars.per_day') }}</span>
                                 </div>
-                                <a href="{{ route('booking.main', $car) }}" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 bg-[#C2410C] hover:bg-[#9A3412] text-white px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm">
-                                    {{ __('home.popular_cars.book') }}
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-                                </a>
                             </div>
                         </div>
                     </div>

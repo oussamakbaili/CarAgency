@@ -134,17 +134,12 @@
                                 </div>
                             </div>
                             
-                            <!-- Price & CTA -->
+                            <!-- Price -->
                             <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                                 <div>
                                     <div class="text-2xl font-bold text-gray-900">{{ number_format($car->client_price_per_day, 0) }} MAD</div>
                                     <div class="text-sm text-gray-500">par jour</div>
-                        </div>
-                                <a href="{{ route('booking.main', $car) }}" 
-                                   class="bg-[#C2410C] hover:bg-[#9A3412] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-                                   onclick="event.stopPropagation()">
-                                    Réserver
-                                </a>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -981,16 +981,78 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Calculate duration when dates change
     function calculateDuration() {
+        if (!startDateInput || !endDateInput) {
+            return;
+        }
+
+        if (!startDateInput.value || !endDateInput.value) {
+            return;
+        }
+
         const startDate = new Date(startDateInput.value);
         const endDate = new Date(endDateInput.value);
-        const diffTime = Math.abs(endDate - startDate);
+
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            return;
+        }
+
+        const diffTime = endDate - startDate;
+        if (diffTime <= 0) {
+            calculatedDuration.textContent = '0 jour';
+            document.getElementById('selected-duration').textContent = '0 jour';
+            return;
+        }
+
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        // Mettre à jour la durée dans le modal
         calculatedDuration.textContent = diffDays + ' jours';
+
+        // Mettre à jour la durée dans le récapitulatif à droite
+        const selectedDurationEl = document.getElementById('selected-duration');
+        if (selectedDurationEl) {
+            selectedDurationEl.textContent = diffDays + ' jours';
+        }
+
+        // Mettre à jour le texte des dates dans le récapitulatif
+        const selectedDatesEl = document.getElementById('selected-dates');
+        if (selectedDatesEl) {
+            const options = { day: 'numeric', month: 'short' };
+            const startFormatted = startDate.toLocaleDateString('fr-FR', options);
+            const endFormatted = endDate.toLocaleDateString('fr-FR', options);
+            const year = startDate.getFullYear();
+            selectedDatesEl.textContent = `Du ${startFormatted} au ${endFormatted} ${year}`;
+        }
+
+        // Mettre à jour le prix dans le récapitulatif
+        const pricePerDay = {{ $car->client_price_per_day }};
+        const subtotal = diffDays * pricePerDay;
+        const discount = subtotal * 0.1;
+        const total = subtotal - discount;
+
+        const subtotalEl = document.getElementById('price-subtotal');
+        const discountEl = document.getElementById('price-discount');
+        const totalEl = document.getElementById('price-total');
+
+        if (subtotalEl) {
+            subtotalEl.textContent = subtotal.toLocaleString('fr-FR') + ' MAD';
+        }
+        if (discountEl) {
+            discountEl.textContent = '- ' + discount.toLocaleString('fr-FR') + ' MAD';
+        }
+        if (totalEl) {
+            totalEl.textContent = total.toLocaleString('fr-FR') + ' MAD';
+        }
     }
 
     [startDateInput, endDateInput].forEach(input => {
-        input.addEventListener('change', calculateDuration);
+        if (input) {
+            input.addEventListener('change', calculateDuration);
+        }
     });
+
+    // Calcul initial au chargement de la page
+    calculateDuration();
 
     // Save dates
     saveDatesBtn.addEventListener('click', function() {

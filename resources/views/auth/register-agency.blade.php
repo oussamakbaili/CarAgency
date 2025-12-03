@@ -103,6 +103,17 @@
                                             required 
                                             placeholder="Adresse complète" />
                                         <x-input-error :messages="$errors->get('address')" class="mt-2 text-sm text-red-600" />
+                                        
+                                        <!-- Google Maps -->
+                                        <div class="mt-4">
+                                            <label class="block text-sm font-semibold text-gray-700 mb-2">Localisation sur la carte *</label>
+                                            <div id="map" class="w-full h-64 rounded-xl border border-gray-300"></div>
+                                            <p class="text-xs text-gray-500 mt-2">Cliquez sur la carte pour définir l'emplacement exact de votre agence</p>
+                                            <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}" required>
+                                            <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}" required>
+                                            <x-input-error :messages="$errors->get('latitude')" class="mt-2 text-sm text-red-600" />
+                                            <x-input-error :messages="$errors->get('longitude')" class="mt-2 text-sm text-red-600" />
+                                        </div>
                                     </div>
 
                                     <div class="grid grid-cols-3 gap-3">
@@ -370,3 +381,128 @@
         </div>
     </div>
 </x-guest-layout>
+
+@push('scripts')
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key', 'YOUR_API_KEY') }}&libraries=places"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addressInput = document.getElementById('address');
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+    
+    // Initialize map centered on Morocco
+    const map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 31.7917, lng: -7.0926 }, // Morocco center
+        zoom: 6,
+        mapTypeControl: false,
+        streetViewControl: false
+    });
+    
+    let marker = null;
+    
+    // Geocoder for address search
+    const geocoder = new google.maps.Geocoder();
+    const autocomplete = new google.maps.places.Autocomplete(addressInput);
+    
+    autocomplete.bindTo('bounds', map);
+    autocomplete.addListener('place_changed', function() {
+        const place = autocomplete.getPlace();
+        if (!place.geometry) {
+            return;
+        }
+        
+        if (place.geometry.viewport) {
+            map.fitBounds(place.geometry.viewport);
+        } else {
+            map.setCenter(place.geometry.location);
+            map.setZoom(17);
+        }
+        
+        // Set marker
+        if (marker) {
+            marker.setPosition(place.geometry.location);
+        } else {
+            marker = new google.maps.Marker({
+                position: place.geometry.location,
+                map: map,
+                draggable: true
+            });
+        }
+        
+        // Update coordinates
+        latitudeInput.value = place.geometry.location.lat();
+        longitudeInput.value = place.geometry.location.lng();
+    });
+    
+    // Click on map to set location
+    map.addListener('click', function(event) {
+        const location = event.latLng;
+        
+        if (marker) {
+            marker.setPosition(location);
+        } else {
+            marker = new google.maps.Marker({
+                position: location,
+                map: map,
+                draggable: true
+            });
+        }
+        
+        // Update coordinates
+        latitudeInput.value = location.lat();
+        longitudeInput.value = location.lng();
+        
+        // Reverse geocode to update address
+        geocoder.geocode({ location: location }, function(results, status) {
+            if (status === 'OK' && results[0]) {
+                addressInput.value = results[0].formatted_address;
+            }
+        });
+    });
+    
+    // Allow dragging marker
+    if (marker) {
+        marker.addListener('dragend', function(event) {
+            const location = event.latLng;
+            latitudeInput.value = location.lat();
+            longitudeInput.value = location.lng();
+            
+            // Reverse geocode
+            geocoder.geocode({ location: location }, function(results, status) {
+                if (status === 'OK' && results[0]) {
+                    addressInput.value = results[0].formatted_address;
+                }
+            });
+        });
+    }
+    
+    // If old values exist, set marker
+    @if(old('latitude') && old('longitude'))
+        const oldLat = {{ old('latitude') }};
+        const oldLng = {{ old('longitude') }};
+        const oldLocation = { lat: oldLat, lng: oldLng };
+        
+        map.setCenter(oldLocation);
+        map.setZoom(17);
+        
+        marker = new google.maps.Marker({
+            position: oldLocation,
+            map: map,
+            draggable: true
+        });
+        
+        marker.addListener('dragend', function(event) {
+            const location = event.latLng;
+            latitudeInput.value = location.lat();
+            longitudeInput.value = location.lng();
+            
+            geocoder.geocode({ location: location }, function(results, status) {
+                if (status === 'OK' && results[0]) {
+                    addressInput.value = results[0].formatted_address;
+                }
+            });
+        });
+    @endif
+});
+</script>
+@endpush
