@@ -47,30 +47,67 @@ class PayPalService
             Log::error('PayPal credentials not configured', [
                 'client_id_set' => !empty($this->clientId),
                 'client_secret_set' => !empty($this->clientSecret),
+                'client_id_length' => $this->clientId ? strlen($this->clientId) : 0,
+                'client_secret_length' => $this->clientSecret ? strlen($this->clientSecret) : 0,
+                'base_url' => $this->baseUrl,
+                'test_mode' => $this->isTestMode,
             ]);
             return null;
         }
 
         try {
-            $response = Http::asForm()->withBasicAuth($this->clientId, $this->clientSecret)
-                ->post($this->baseUrl . '/v1/oauth2/token', [
+            $tokenUrl = $this->baseUrl . '/v1/oauth2/token';
+            
+            Log::info('PayPal: Attempting to get access token', [
+                'url' => $tokenUrl,
+                'test_mode' => $this->isTestMode,
+                'client_id_prefix' => substr($this->clientId, 0, 10) . '...',
+            ]);
+
+            $response = Http::timeout(30)
+                ->asForm()
+                ->withBasicAuth($this->clientId, $this->clientSecret)
+                ->post($tokenUrl, [
                     'grant_type' => 'client_credentials',
                 ]);
 
             if ($response->successful()) {
-                $this->accessToken = $response->json()['access_token'];
-                return $this->accessToken;
+                $responseData = $response->json();
+                if (isset($responseData['access_token'])) {
+                    $this->accessToken = $responseData['access_token'];
+                    Log::info('PayPal: Access token obtained successfully');
+                    return $this->accessToken;
+                } else {
+                    Log::error('PayPal: Access token missing in response', [
+                        'response' => $responseData,
+                    ]);
+                    return null;
+                }
             }
 
+            $errorBody = $response->body();
+            $errorJson = $response->json();
+            
             Log::error('PayPal access token failed', [
-                'response' => $response->body(),
                 'status' => $response->status(),
+                'response_body' => $errorBody,
+                'response_json' => $errorJson,
+                'url' => $tokenUrl,
+                'test_mode' => $this->isTestMode,
+                'error_message' => $errorJson['error_description'] ?? $errorJson['error'] ?? 'Unknown error',
             ]);
 
+            return null;
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('PayPal: Connection error when getting access token', [
+                'error' => $e->getMessage(),
+                'url' => $this->baseUrl . '/v1/oauth2/token',
+            ]);
             return null;
         } catch (\Exception $e) {
             Log::error('PayPal access token error', [
                 'error' => $e->getMessage(),
+                'error_class' => get_class($e),
                 'trace' => $e->getTraceAsString(),
             ]);
 
@@ -95,9 +132,19 @@ class PayPalService
             $accessToken = $this->getAccessToken();
 
             if (!$accessToken) {
+                // Vérifier la cause spécifique de l'échec
+                $errorMessage = 'Impossible d\'obtenir l\'access token PayPal.';
+                
+                if (empty($this->clientId) || empty($this->clientSecret)) {
+                    $errorMessage .= ' Les identifiants PayPal ne sont pas configurés dans le fichier .env.';
+                } else {
+                    $errorMessage .= ' Vérifiez que vos identifiants PayPal (PAYPAL_CLIENT_ID et PAYPAL_CLIENT_SECRET) sont corrects et que votre compte PayPal Business est actif.';
+                    $errorMessage .= ' Consultez les logs pour plus de détails.';
+                }
+                
                 return [
                     'success' => false,
-                    'error' => 'Impossible d\'obtenir l\'access token PayPal. Vérifiez vos identifiants PayPal.',
+                    'error' => $errorMessage,
                 ];
             }
 

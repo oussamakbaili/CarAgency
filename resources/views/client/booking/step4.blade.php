@@ -174,6 +174,11 @@
                                 </span>
                             </button>
 
+                            <!-- Error Display -->
+                            <div id="paypal-error" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg hidden">
+                                <p class="text-red-800 text-sm font-medium" id="paypal-error-message"></p>
+                            </div>
+
                             <p class="text-xs text-gray-500 mt-4 text-center">
                                 🔒 Paiement sécurisé par PayPal. Vos données bancaires sont cryptées.
                             </p>
@@ -474,10 +479,13 @@
             const submitBtn = document.getElementById('paypal-submit-button');
             const buttonText = document.getElementById('paypal-button-text');
             const spinner = document.getElementById('paypal-spinner');
+            const errorDiv = document.getElementById('paypal-error');
+            const errorMessage = document.getElementById('paypal-error-message');
             
             submitBtn.disabled = true;
             buttonText.classList.add('hidden');
             spinner.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
 
             try {
                 const response = await fetch('{{ route('booking.init-paypal-payment') }}', {
@@ -494,13 +502,26 @@
                     // Rediriger vers PayPal
                     window.location.href = data.approve_url;
                 } else {
-                    alert('Erreur: ' + (data.error || 'Impossible d\'initialiser le paiement PayPal'));
+                    // Afficher l'erreur dans la page
+                    const errorText = data.error || 'Impossible d\'initialiser le paiement PayPal. Veuillez réessayer plus tard.';
+                    errorMessage.textContent = errorText;
+                    errorDiv.classList.remove('hidden');
+                    
+                    // Scroll vers l'erreur
+                    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    
                     submitBtn.disabled = false;
                     buttonText.classList.remove('hidden');
                     spinner.classList.add('hidden');
                 }
             } catch (error) {
-                alert('Erreur lors de l\'initialisation du paiement PayPal');
+                // Afficher l'erreur dans la page
+                errorMessage.textContent = 'Erreur de connexion lors de l\'initialisation du paiement PayPal. Veuillez vérifier votre connexion internet et réessayer.';
+                errorDiv.classList.remove('hidden');
+                
+                // Scroll vers l'erreur
+                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
                 submitBtn.disabled = false;
                 buttonText.classList.remove('hidden');
                 spinner.classList.add('hidden');
