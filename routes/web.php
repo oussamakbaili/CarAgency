@@ -596,6 +596,7 @@ Route::get('/agencies/{agency}', [App\Http\Controllers\PublicController::class, 
 Route::get('/agencies/{agency}/cars', [App\Http\Controllers\PublicController::class, 'agencyCars'])->name('public.agency.cars');
 Route::get('/agencies/{agency}/cars/{car}', [App\Http\Controllers\PublicController::class, 'showCar'])->name('public.car.show');
 Route::get('/agencies/{agency}/cars/{car}/details', [App\Http\Controllers\PublicController::class, 'getCarDetails'])->name('public.car.details');
+Route::post('/agencies/{agency}/cars/{car}/check-availability', [App\Http\Controllers\PublicController::class, 'checkCarAvailability'])->name('public.car.check-availability');
 Route::get('/require-login', [App\Http\Controllers\PublicController::class, 'requireLogin'])->name('public.require-login');
 
 // Test cancellation system

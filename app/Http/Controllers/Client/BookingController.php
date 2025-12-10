@@ -26,11 +26,33 @@ class BookingController extends Controller
     /**
      * Étape 1: Sélection des dates (accessible sans connexion)
      */
-    public function step1(Car $car)
+    public function step1(Request $request, Car $car)
     {
         // Vérifier que la voiture est disponible
         if (!$car->is_available || $car->agency->status !== 'approved') {
             return redirect()->back()->with('error', 'Cette voiture n\'est pas disponible pour la location.');
+        }
+
+        // Si des dates sont fournies en paramètre, les pré-remplir dans la session
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $startDate = Carbon::parse($request->start_date);
+            $endDate = Carbon::parse($request->end_date);
+            
+            if ($startDate->isFuture() && $endDate->gt($startDate)) {
+                $days = $startDate->diffInDays($endDate);
+                $totalPrice = $days * $car->client_price_per_day;
+                
+                session(['booking_data' => [
+                    'car_id' => $car->id,
+                    'start_date' => $startDate->format('Y-m-d'),
+                    'end_date' => $endDate->format('Y-m-d'),
+                    'days' => $days,
+                    'price_per_day' => $car->client_price_per_day,
+                    'total_price' => $totalPrice,
+                    'platform_fee' => 0,
+                    'total_with_fees' => $totalPrice,
+                ]]);
+            }
         }
 
         return view('client.booking.step1', compact('car'));

@@ -632,20 +632,159 @@
                         </div>
                     ` : ''}
 
-                    <!-- Booking Button -->
+                    <!-- Date Selection Section -->
                     <div class="mt-6 pt-6 border-t border-gray-200">
-                        <a href="/booking/${car.id}" onclick="closeCarDetailsModal()" class="w-full bg-gradient-to-r from-[#C2410C] to-[#9A3412] text-white font-semibold py-4 px-6 rounded-xl hover:from-[#9A3412] hover:to-[#7C2D12] transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">Choisissez vos dates de réservation</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="border border-gray-300 rounded-lg p-3">
+                                <label class="text-xs font-semibold text-gray-700 block mb-1">DATE DE DÉBUT</label>
+                                <input type="date" 
+                                       id="modal-start-date-${car.id}" 
+                                       class="w-full text-sm border-none outline-none bg-transparent" 
+                                       min="${new Date().toISOString().split('T')[0]}"
+                                       onchange="checkCarAvailability(${car.id}, ${car.agency.id})">
+                            </div>
+                            <div class="border border-gray-300 rounded-lg p-3">
+                                <label class="text-xs font-semibold text-gray-700 block mb-1">DATE DE FIN</label>
+                                <input type="date" 
+                                       id="modal-end-date-${car.id}" 
+                                       class="w-full text-sm border-none outline-none bg-transparent" 
+                                       min="${new Date(Date.now() + 86400000).toISOString().split('T')[0]}"
+                                       onchange="checkCarAvailability(${car.id}, ${car.agency.id})">
+                            </div>
+                        </div>
+                        
+                        <!-- Availability Status Message -->
+                        <div id="availability-message-${car.id}" class="mb-4 hidden">
+                            <div id="availability-content-${car.id}" class="p-3 rounded-lg"></div>
+                        </div>
+                        
+                        <!-- Booking Button -->
+                        <button id="booking-button-${car.id}" 
+                                onclick="redirectToBooking(${car.id})" 
+                                disabled
+                                class="w-full bg-gray-400 text-white font-semibold py-4 px-6 rounded-xl cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
-                            Réserver maintenant
-                        </a>
+                            <span id="booking-button-text-${car.id}">Sélectionnez des dates</span>
+                        </button>
                     </div>
                 </div>
             `;
 
             content.innerHTML = html;
         }
+        
+        // Check car availability function
+        window.checkCarAvailability = function(carId, agencyId) {
+            const startDateInput = document.getElementById(`modal-start-date-${carId}`);
+            const endDateInput = document.getElementById(`modal-end-date-${carId}`);
+            const bookingButton = document.getElementById(`booking-button-${carId}`);
+            const buttonText = document.getElementById(`booking-button-text-${carId}`);
+            const availabilityMessage = document.getElementById(`availability-message-${carId}`);
+            const availabilityContent = document.getElementById(`availability-content-${carId}`);
+            
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
+            
+            // Reset button state
+            bookingButton.disabled = true;
+            bookingButton.className = 'w-full bg-gray-400 text-white font-semibold py-4 px-6 rounded-xl cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2';
+            buttonText.textContent = 'Vérification en cours...';
+            availabilityMessage.classList.add('hidden');
+            
+            // Validate dates
+            if (!startDate || !endDate) {
+                buttonText.textContent = 'Sélectionnez des dates';
+                return;
+            }
+            
+            if (new Date(endDate) <= new Date(startDate)) {
+                buttonText.textContent = 'Date de fin invalide';
+                availabilityMessage.classList.remove('hidden');
+                availabilityContent.className = 'p-3 rounded-lg bg-red-50 border border-red-200';
+                availabilityContent.innerHTML = '<p class="text-red-700 text-sm">La date de fin doit être après la date de début.</p>';
+                return;
+            }
+            
+            // Update end date minimum
+            const minEndDate = new Date(startDate);
+            minEndDate.setDate(minEndDate.getDate() + 1);
+            endDateInput.min = minEndDate.toISOString().split('T')[0];
+            
+            // Make API call
+            fetch(`/agencies/${agencyId}/cars/${carId}/check-availability`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    start_date: startDate,
+                    end_date: endDate
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.available) {
+                    // Vehicle is available
+                    bookingButton.disabled = false;
+                    bookingButton.className = 'w-full bg-gradient-to-r from-[#C2410C] to-[#9A3412] text-white font-semibold py-4 px-6 rounded-xl hover:from-[#9A3412] hover:to-[#7C2D12] transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer';
+                    buttonText.textContent = `Réserver maintenant • ${parseInt(data.total_price).toLocaleString('fr-FR')} MAD`;
+                    
+                    availabilityMessage.classList.remove('hidden');
+                    availabilityContent.className = 'p-3 rounded-lg bg-green-50 border border-green-200';
+                    availabilityContent.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <p class="text-green-700 text-sm font-medium">${data.message}</p>
+                        </div>
+                        <p class="text-green-600 text-xs mt-1">${data.days} jour(s) • ${parseInt(data.price_per_day).toLocaleString('fr-FR')} MAD/jour</p>
+                    `;
+                } else {
+                    // Vehicle is not available
+                    bookingButton.disabled = true;
+                    bookingButton.className = 'w-full bg-gray-400 text-white font-semibold py-4 px-6 rounded-xl cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2';
+                    buttonText.textContent = 'Véhicule non disponible';
+                    
+                    availabilityMessage.classList.remove('hidden');
+                    availabilityContent.className = 'p-3 rounded-lg bg-red-50 border border-red-200';
+                    availabilityContent.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            <p class="text-red-700 text-sm font-medium">${data.message}</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error checking availability:', error);
+                bookingButton.disabled = true;
+                buttonText.textContent = 'Erreur de vérification';
+                availabilityMessage.classList.remove('hidden');
+                availabilityContent.className = 'p-3 rounded-lg bg-red-50 border border-red-200';
+                availabilityContent.innerHTML = '<p class="text-red-700 text-sm">Une erreur est survenue. Veuillez réessayer.</p>';
+            });
+        };
+        
+        // Redirect to booking with dates
+        window.redirectToBooking = function(carId) {
+            const startDateInput = document.getElementById(`modal-start-date-${carId}`);
+            const endDateInput = document.getElementById(`modal-end-date-${carId}`);
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
+            
+            if (startDate && endDate) {
+                closeCarDetailsModal();
+                window.location.href = `/booking/${carId}?start_date=${startDate}&end_date=${endDate}`;
+            }
+        };
         
         // Make functions globally available
         window.openCarDetailsModal = openCarDetailsModal;

@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Agency;
 use App\Models\Car;
+use App\Services\RentalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class PublicController extends Controller
 {
@@ -289,6 +291,40 @@ class PublicController extends Controller
                     'name' => $car->category->name,
                 ] : null,
             ],
+        ]);
+    }
+
+    /**
+     * Check car availability for specific dates (public endpoint)
+     */
+    public function checkCarAvailability(Request $request, Agency $agency, Car $car, RentalService $rentalService)
+    {
+        if ($agency->status !== 'approved' || $car->agency_id !== $agency->id) {
+            return response()->json(['error' => 'Voiture non trouvée'], 404);
+        }
+
+        $request->validate([
+            'start_date' => 'required|date|after_or_equal:today',
+            'end_date' => 'required|date|after:start_date',
+        ]);
+
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
+
+        $isAvailable = $rentalService->checkAvailability($car, $startDate, $endDate);
+        
+        $days = $startDate->diffInDays($endDate);
+        $clientPricePerDay = $car->client_price_per_day;
+        $totalPrice = $days * $clientPricePerDay;
+
+        return response()->json([
+            'available' => $isAvailable,
+            'days' => $days,
+            'total_price' => $totalPrice,
+            'price_per_day' => $clientPricePerDay,
+            'message' => $isAvailable 
+                ? 'Véhicule disponible pour ces dates' 
+                : 'Véhicule non disponible pour ces dates. Veuillez choisir d\'autres dates.'
         ]);
     }
 
