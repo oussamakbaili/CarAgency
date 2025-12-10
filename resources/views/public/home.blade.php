@@ -2175,16 +2175,21 @@
                 car.transmission || null
             ].filter(Boolean).join(' • ');
 
-            // Build HTML - Simple design matching the image
+            // Build HTML - Gallery horizontale avec toutes les images côte à côte
             let html = `
                 <div class="p-6 lg:p-8">
-                    <!-- Main Image Section -->
-                    <div class="mb-6 rounded-2xl overflow-hidden">
-                        ${mainImage ? `
-                            <img src="${mainImage}" 
-                                 alt="${car.brand} ${car.model}" 
-                                 class="w-full h-[400px] object-cover rounded-2xl cursor-pointer"
-                                 onclick="openImageModal('${mainImage}')">
+                    <!-- Image Gallery Section - Horizontal Scrollable -->
+                    <div class="mb-6">
+                        ${allImages.length > 0 ? `
+                            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" style="scrollbar-width: none; -ms-overflow-style: none;">
+                                ${allImages.map((image, index) => `
+                                    <div class="flex-shrink-0 w-[300px] h-[300px] rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" onclick="openImageModal('${image}')">
+                                        <img src="${image}" 
+                                             alt="${car.brand} ${car.model} - Image ${index + 1}" 
+                                             class="w-full h-full object-cover">
+                                    </div>
+                                `).join('')}
+                            </div>
                         ` : `
                             <div class="w-full h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-2xl">
                                 <div class="text-center">

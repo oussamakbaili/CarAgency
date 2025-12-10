@@ -33,6 +33,13 @@
         width: 100%;
         border-radius: 12px;
     }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
 </style>
 @endpush
 
@@ -70,8 +77,8 @@
                     </div>
                 </div>
 
-                <!-- Image Gallery (Airbnb Style) -->
-                <div id="photos" class="grid grid-cols-2 gap-2 rounded-2xl overflow-hidden">
+                <!-- Image Gallery - Horizontal Scrollable -->
+                <div id="photos" class="mb-6">
                     @php
                         $allImages = [];
                         if ($car->image_url) {
@@ -81,29 +88,26 @@
                             $allImages = array_merge($allImages, $car->picture_urls);
                         }
                         $allImages = array_unique(array_filter($allImages));
-                        $mainImage = $allImages[0] ?? null;
-                        $otherImages = array_slice($allImages, 1, 4);
                     @endphp
                     
-                    @if($mainImage)
-                        <div class="row-span-2">
-                            <img src="{{ $mainImage }}" alt="{{ $car->brand }} {{ $car->model }}" class="w-full h-full object-cover">
+                    @if(count($allImages) > 0)
+                        <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" style="scrollbar-width: none; -ms-overflow-style: none;">
+                            @foreach($allImages as $index => $image)
+                                <div class="flex-shrink-0 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" onclick="openImageModal('{{ $image }}')">
+                                    <img src="{{ $image }}" 
+                                         alt="{{ $car->brand }} {{ $car->model }} - Image {{ $index + 1 }}" 
+                                         class="w-full h-full object-cover">
+                                </div>
+                            @endforeach
                         </div>
-                    @endif
-                    
-                    @foreach($otherImages as $index => $image)
-                        @if($index < 4)
-                            <div>
-                                <img src="{{ $image }}" alt="{{ $car->brand }} {{ $car->model }}" class="w-full h-full object-cover">
+                    @else
+                        <div class="w-full h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-2xl">
+                            <div class="text-center">
+                                <svg class="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <p class="text-gray-500 font-medium">Photo du véhicule</p>
                             </div>
-                        @endif
-                    @endforeach
-                    
-                    @if(empty($allImages))
-                        <div class="row-span-2 col-span-2 bg-gray-100 flex items-center justify-center">
-                            <svg class="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
                         </div>
                     @endif
                 </div>
@@ -293,6 +297,17 @@ document.addEventListener('DOMContentLoaded', function() {
             endDateInput.value = minEndDate.toISOString().split('T')[0];
         }
     });
+    
+    // Image modal function
+    window.openImageModal = function(imageUrl) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90';
+        modal.onclick = () => modal.remove();
+        modal.innerHTML = `
+            <img src="${imageUrl}" class="max-w-full max-h-full object-contain" onclick="event.stopPropagation()">
+        `;
+        document.body.appendChild(modal);
+    };
 });
 </script>
 @endpush

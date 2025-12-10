@@ -43,60 +43,28 @@
 @endphp
 
 <div class="max-w-7xl mx-auto">
-    <!-- Image Gallery Section -->
+    <!-- Image Gallery Section - Horizontal Scrollable -->
     <div class="mb-8">
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-2 h-[500px] lg:h-[600px]">
-            <!-- Main Image -->
-            <div class="lg:col-span-2 row-span-2">
-                @if($mainImage)
-                    <img src="{{ $mainImage }}" 
-                         alt="{{ $car->brand }} {{ $car->model }}" 
-                         class="w-full h-full object-cover rounded-l-2xl cursor-pointer"
-                         onclick="openImageModal('{{ $mainImage }}')">
-                @else
-                    <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-l-2xl">
-                        <div class="text-center">
-                            <svg class="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            <p class="text-gray-500 font-medium">Photo du véhicule</p>
-                        </div>
-                    </div>
-                @endif
-            </div>
-            
-            <!-- Small Images Grid -->
-            @if(count($otherImages) > 0)
-                @foreach($otherImages as $index => $image)
-                    <div class="relative">
+        @if(count($allImages) > 0)
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" style="scrollbar-width: none; -ms-overflow-style: none;">
+                @foreach($allImages as $index => $image)
+                    <div class="flex-shrink-0 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" onclick="openImageModal('{{ $image }}')">
                         <img src="{{ $image }}" 
-                             alt="{{ $car->brand }} {{ $car->model }} - Image {{ $index + 2 }}" 
-                             class="w-full h-full object-cover cursor-pointer {{ $index === 0 ? 'rounded-tr-2xl' : '' }} {{ $index === count($otherImages) - 1 && count($otherImages) === 4 ? 'rounded-br-2xl' : '' }}"
-                             onclick="openImageModal('{{ $image }}')">
-                        @if($index === count($otherImages) - 1 && count($allImages) > 5)
-                            <div class="absolute inset-0 bg-black bg-opacity-40 rounded-br-2xl flex items-center justify-center cursor-pointer"
-                                 onclick="openImageGallery()">
-                                <button class="bg-white text-gray-900 px-4 py-2 rounded-lg font-medium flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                    </svg>
-                                    Voir toutes les photos
-                                </button>
-                            </div>
-                        @endif
+                             alt="{{ $car->brand }} {{ $car->model }} - Image {{ $index + 1 }}" 
+                             class="w-full h-full object-cover">
                     </div>
                 @endforeach
-            @else
-                <!-- Placeholder for missing images -->
-                @for($i = 0; $i < min(4, 4 - count($otherImages)); $i++)
-                    <div class="bg-gray-100 flex items-center justify-center">
-                        <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                @endfor
-            @endif
-        </div>
+            </div>
+        @else
+            <div class="w-full h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-2xl">
+                <div class="text-center">
+                    <svg class="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <p class="text-gray-500 font-medium">Photo du véhicule</p>
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- Main Content Grid -->
