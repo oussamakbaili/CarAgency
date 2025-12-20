@@ -61,7 +61,11 @@ class PayPalController extends Controller
                 'payment_id' => $payment->id ?? null,
             ]);
 
-            $rental = $payment->rental ?? null;
+            // Corriger: vérifier que $payment existe avant d'accéder à ->rental
+            $rental = null;
+            if ($payment) {
+                $rental = $payment->rental;
+            }
 
             // Si pas de payment trouvé, essayer de trouver la réservation par session
             if (!$rental) {
@@ -75,6 +79,31 @@ class PayPalController extends Controller
                 }
             }
 
+            // Si toujours pas de rental trouvé, essayer de récupérer les détails de l'ordre PayPal
+            // et trouver la réservation via le reference_id ou d'autres métadonnées
+            if (!$rental) {
+                $orderDetails = $this->paypalService->getOrder($orderId);
+                
+                if ($orderDetails && isset($orderDetails['purchase_units'][0]['reference_id'])) {
+                    $referenceId = $orderDetails['purchase_units'][0]['reference_id'];
+                    
+                    // Le reference_id peut contenir l'ID de la réservation
+                    // Format possible: PAYPAL_{rental_id}_{timestamp}
+                    if (preg_match('/PAYPAL_(\d+)_/', $referenceId, $matches)) {
+                        $rentalId = $matches[1];
+                        $rental = Rental::find($rentalId);
+                        
+                        if ($rental) {
+                            Log::info('PayPal rental found via order reference_id', [
+                                'order_id' => $orderId,
+                                'reference_id' => $referenceId,
+                                'rental_id' => $rentalId,
+                            ]);
+                        }
+                    }
+                }
+            }
+
             if (!$rental) {
                 Log::error('PayPal success: No rental found', [
                     'token' => $token,
@@ -82,7 +111,7 @@ class PayPalController extends Controller
                     'payment_id' => $payment->id ?? null,
                 ]);
                 return redirect()->route('public.home')
-                    ->with('error', 'Réservation introuvable. Veuillez contacter le support.');
+                    ->with('error', 'Réservation introuvable. Veuillez contacter le support avec le numéro de commande: ' . $orderId);
             }
 
             // Capturer et traiter le paiement

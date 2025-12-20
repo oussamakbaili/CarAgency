@@ -14,6 +14,7 @@ class PayPalService
     private $baseUrl;
     private $isTestMode;
     private $accessToken;
+    private $lastError = null;
 
     public function __construct()
     {
@@ -51,6 +52,9 @@ class PayPalService
                 'client_secret_length' => $this->clientSecret ? strlen($this->clientSecret) : 0,
                 'base_url' => $this->baseUrl,
                 'test_mode' => $this->isTestMode,
+                'config_client_id' => config('services.paypal.client_id') ? 'set' : 'not set',
+                'config_client_secret' => config('services.paypal.client_secret') ? 'set' : 'not set',
+                'config_test_mode' => config('services.paypal.test_mode'),
             ]);
             return null;
         }
@@ -62,6 +66,8 @@ class PayPalService
                 'url' => $tokenUrl,
                 'test_mode' => $this->isTestMode,
                 'client_id_prefix' => substr($this->clientId, 0, 10) . '...',
+                'client_id_length' => strlen($this->clientId),
+                'client_secret_length' => strlen($this->clientSecret),
             ]);
 
             $response = Http::timeout(30)
@@ -75,11 +81,15 @@ class PayPalService
                 $responseData = $response->json();
                 if (isset($responseData['access_token'])) {
                     $this->accessToken = $responseData['access_token'];
-                    Log::info('PayPal: Access token obtained successfully');
+                    Log::info('PayPal: Access token obtained successfully', [
+                        'token_length' => strlen($this->accessToken),
+                        'expires_in' => $responseData['expires_in'] ?? null,
+                    ]);
                     return $this->accessToken;
                 } else {
                     Log::error('PayPal: Access token missing in response', [
                         'response' => $responseData,
+                        'response_keys' => array_keys($responseData ?? []),
                     ]);
                     return null;
                 }
@@ -88,21 +98,38 @@ class PayPalService
             $errorBody = $response->body();
             $errorJson = $response->json();
             
+            $errorMessage = $errorJson['error_description'] ?? $errorJson['error'] ?? 'Unknown error';
+            $errorCode = $errorJson['error'] ?? 'UNKNOWN';
+            
             Log::error('PayPal access token failed', [
                 'status' => $response->status(),
                 'response_body' => $errorBody,
                 'response_json' => $errorJson,
                 'url' => $tokenUrl,
                 'test_mode' => $this->isTestMode,
-                'error_message' => $errorJson['error_description'] ?? $errorJson['error'] ?? 'Unknown error',
+                'error_code' => $errorCode,
+                'error_message' => $errorMessage,
+                'client_id_prefix' => substr($this->clientId, 0, 10) . '...',
             ]);
+
+            // Stocker l'erreur pour un meilleur message utilisateur
+            $this->lastError = [
+                'code' => $errorCode,
+                'message' => $errorMessage,
+                'status' => $response->status(),
+            ];
 
             return null;
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             Log::error('PayPal: Connection error when getting access token', [
                 'error' => $e->getMessage(),
                 'url' => $this->baseUrl . '/v1/oauth2/token',
+                'test_mode' => $this->isTestMode,
             ]);
+            $this->lastError = [
+                'code' => 'CONNECTION_ERROR',
+                'message' => 'Erreur de connexion à PayPal: ' . $e->getMessage(),
+            ];
             return null;
         } catch (\Exception $e) {
             Log::error('PayPal access token error', [
@@ -110,7 +137,10 @@ class PayPalService
                 'error_class' => get_class($e),
                 'trace' => $e->getTraceAsString(),
             ]);
-
+            $this->lastError = [
+                'code' => 'EXCEPTION',
+                'message' => $e->getMessage(),
+            ];
             return null;
         }
     }
@@ -137,9 +167,27 @@ class PayPalService
                 
                 if (empty($this->clientId) || empty($this->clientSecret)) {
                     $errorMessage .= ' Les identifiants PayPal ne sont pas configurés dans le fichier .env.';
+                    $errorMessage .= ' Veuillez ajouter PAYPAL_CLIENT_ID et PAYPAL_CLIENT_SECRET dans votre fichier .env et exécuter: php artisan config:clear';
                 } else {
-                    $errorMessage .= ' Vérifiez que vos identifiants PayPal (PAYPAL_CLIENT_ID et PAYPAL_CLIENT_SECRET) sont corrects et que votre compte PayPal Business est actif.';
-                    $errorMessage .= ' Consultez les logs pour plus de détails.';
+                    // Utiliser l'erreur détaillée si disponible
+                    if ($this->lastError) {
+                        $errorCode = $this->lastError['code'] ?? '';
+                        $errorDetail = $this->lastError['message'] ?? '';
+                        
+                        if ($errorCode === 'invalid_client' || str_contains($errorDetail, 'invalid_client')) {
+                            $errorMessage = 'Identifiants PayPal incorrects. Vérifiez que PAYPAL_CLIENT_ID et PAYPAL_CLIENT_SECRET sont corrects.';
+                            $errorMessage .= ' Assurez-vous que PAYPAL_TEST_MODE correspond au type d\'identifiants utilisés (true pour Sandbox, false pour Production).';
+                        } elseif ($errorCode === 'CONNECTION_ERROR') {
+                            $errorMessage = 'Erreur de connexion à PayPal. Vérifiez votre connexion internet et réessayez.';
+                        } else {
+                            $errorMessage .= ' Erreur: ' . $errorDetail;
+                            $errorMessage .= ' Vérifiez que vos identifiants PayPal sont corrects et que votre compte PayPal Business est actif.';
+                        }
+                    } else {
+                        $errorMessage .= ' Vérifiez que vos identifiants PayPal (PAYPAL_CLIENT_ID et PAYPAL_CLIENT_SECRET) sont corrects et que votre compte PayPal Business est actif.';
+                        $errorMessage .= ' Mode: ' . ($this->isTestMode ? 'Sandbox (Test)' : 'Production (Live)');
+                    }
+                    $errorMessage .= ' Consultez les logs (storage/logs/laravel.log) pour plus de détails.';
                 }
                 
                 return [
@@ -267,6 +315,43 @@ class PayPalService
                 ];
             }
 
+            // D'abord, vérifier l'état de l'ordre avant de le capturer
+            $orderDetails = $this->getOrder($orderId);
+            
+            if ($orderDetails) {
+                $currentStatus = $orderDetails['status'] ?? null;
+                
+                // Si l'ordre est déjà complété, retourner les détails
+                if ($currentStatus === 'COMPLETED') {
+                    Log::info('PayPal order already completed', [
+                        'order_id' => $orderId,
+                    ]);
+                    
+                    return [
+                        'success' => true,
+                        'order' => $orderDetails,
+                        'status' => $currentStatus,
+                        'payment_id' => $orderDetails['purchase_units'][0]['payments']['captures'][0]['id'] ?? null,
+                        'amount' => $orderDetails['purchase_units'][0]['payments']['captures'][0]['amount']['value'] ?? null,
+                        'currency' => $orderDetails['purchase_units'][0]['payments']['captures'][0]['amount']['currency_code'] ?? null,
+                    ];
+                }
+                
+                // Si l'ordre n'est pas dans un état capturable, retourner une erreur
+                if ($currentStatus !== 'APPROVED') {
+                    Log::error('PayPal order not in capturable state', [
+                        'order_id' => $orderId,
+                        'status' => $currentStatus,
+                    ]);
+                    
+                    return [
+                        'success' => false,
+                        'error' => 'L\'ordre PayPal n\'est pas dans un état capturable. Statut actuel: ' . $currentStatus,
+                        'status' => $currentStatus,
+                    ];
+                }
+            }
+
             $response = Http::withToken($accessToken)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
@@ -279,30 +364,53 @@ class PayPalService
                 $status = $order['status'] ?? null;
                 $isCompleted = $status === 'COMPLETED';
 
+                // Extraire les informations de paiement de manière sécurisée
+                $paymentId = null;
+                $amount = null;
+                $currency = null;
+                
+                if (isset($order['purchase_units'][0]['payments']['captures'][0])) {
+                    $capture = $order['purchase_units'][0]['payments']['captures'][0];
+                    $paymentId = $capture['id'] ?? null;
+                    $amount = $capture['amount']['value'] ?? null;
+                    $currency = $capture['amount']['currency_code'] ?? null;
+                }
+
                 return [
                     'success' => $isCompleted,
                     'order' => $order,
                     'status' => $status,
-                    'payment_id' => $order['purchase_units'][0]['payments']['captures'][0]['id'] ?? null,
-                    'amount' => $order['purchase_units'][0]['payments']['captures'][0]['amount']['value'] ?? null,
-                    'currency' => $order['purchase_units'][0]['payments']['captures'][0]['amount']['currency_code'] ?? null,
+                    'payment_id' => $paymentId,
+                    'amount' => $amount,
+                    'currency' => $currency,
                 ];
             }
 
+            $errorBody = $response->body();
+            $errorJson = $response->json();
+            
             Log::error('PayPal capture failed', [
                 'order_id' => $orderId,
-                'response' => $response->body(),
+                'status' => $response->status(),
+                'response' => $errorBody,
+                'error_details' => $errorJson,
             ]);
+
+            $errorMessage = 'Erreur lors de la capture du paiement';
+            if (isset($errorJson['details'][0]['description'])) {
+                $errorMessage .= ': ' . $errorJson['details'][0]['description'];
+            }
 
             return [
                 'success' => false,
-                'error' => 'Erreur lors de la capture du paiement',
-                'details' => $response->json(),
+                'error' => $errorMessage,
+                'details' => $errorJson,
             ];
         } catch (\Exception $e) {
             Log::error('PayPal capture error', [
                 'error' => $e->getMessage(),
                 'order_id' => $orderId,
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
@@ -318,6 +426,29 @@ class PayPalService
     public function processPayment(string $orderId, Rental $rental = null): array
     {
         try {
+            // Si pas de rental fourni, essayer de le trouver via le paiement
+            if (!$rental) {
+                $payment = Payment::where('payment_intent_id', $orderId)->first();
+                if ($payment && $payment->rental) {
+                    $rental = $payment->rental;
+                    Log::info('PayPal rental found via payment', [
+                        'order_id' => $orderId,
+                        'rental_id' => $rental->id,
+                    ]);
+                }
+            }
+
+            // Si toujours pas de rental, c'est une erreur
+            if (!$rental) {
+                Log::error('PayPal processPayment: No rental provided or found', [
+                    'order_id' => $orderId,
+                ]);
+                return [
+                    'success' => false,
+                    'error' => 'Aucune réservation trouvée pour ce paiement',
+                ];
+            }
+
             $captureResult = $this->captureOrder($orderId);
 
             if (!$captureResult['success']) {
@@ -327,13 +458,18 @@ class PayPalService
             // Trouver ou créer le paiement
             $payment = Payment::where('payment_intent_id', $orderId)->first();
 
-            if (!$payment && $rental) {
+            // Si pas trouvé, essayer dans metadata
+            if (!$payment) {
+                $payment = Payment::whereJsonContains('metadata->paypal_order_id', $orderId)->first();
+            }
+
+            if (!$payment) {
                 // Créer le paiement
                 $payment = Payment::create([
                     'rental_id' => $rental->id,
                     'user_id' => $rental->user_id,
-                    'amount' => $captureResult['amount'],
-                    'currency' => $captureResult['currency'],
+                    'amount' => $captureResult['amount'] ?? $rental->total_price,
+                    'currency' => $captureResult['currency'] ?? 'EUR',
                     'payment_method' => Payment::PAYMENT_METHOD_PAYPAL,
                     'payment_intent_id' => $orderId,
                     'status' => Payment::STATUS_COMPLETED,
@@ -346,15 +482,18 @@ class PayPalService
                     ],
                 ]);
 
-                // Mettre à jour le statut de la réservation à 'active' (confirmée)
-                if ($rental) {
-                    $rental->update(['status' => 'active']);
-                }
-            } elseif ($payment) {
+                Log::info('PayPal payment created', [
+                    'payment_id' => $payment->id,
+                    'order_id' => $orderId,
+                    'rental_id' => $rental->id,
+                ]);
+            } else {
                 // Mettre à jour le paiement existant
                 $payment->update([
                     'status' => Payment::STATUS_COMPLETED,
                     'paid_at' => now(),
+                    'amount' => $captureResult['amount'] ?? $payment->amount,
+                    'currency' => $captureResult['currency'] ?? $payment->currency,
                     'metadata' => array_merge($payment->metadata ?? [], [
                         'paypal_order_id' => $orderId,
                         'paypal_payment_id' => $captureResult['payment_id'],
@@ -363,10 +502,18 @@ class PayPalService
                     ]),
                 ]);
 
-                // Mettre à jour le statut de la réservation à 'active' (confirmée)
-                if ($rental && $rental->status === 'pending') {
-                    $rental->update(['status' => 'active']);
-                }
+                Log::info('PayPal payment updated', [
+                    'payment_id' => $payment->id,
+                    'order_id' => $orderId,
+                ]);
+            }
+
+            // Mettre à jour le statut de la réservation à 'active' (confirmée)
+            if ($rental && $rental->status === 'pending') {
+                $rental->update(['status' => 'active']);
+                Log::info('Rental status updated to active', [
+                    'rental_id' => $rental->id,
+                ]);
             }
 
             return [
@@ -378,6 +525,7 @@ class PayPalService
             Log::error('PayPal payment processing failed', [
                 'error' => $e->getMessage(),
                 'order_id' => $orderId,
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
