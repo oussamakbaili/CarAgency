@@ -53,37 +53,54 @@ class CarController extends Controller
             
             // Calculer la disponibilité manuellement pour chaque voiture (sans vérifier les sites externes dans la liste)
             // Cela évite les appels HTTP lents aux sites externes pour chaque voiture
-            $cars->getCollection()->transform(function($car) {
-                // Désactiver temporairement l'accesseur is_available pour éviter les appels externes
-                $car->setAppends([]);
-                
-                // Vérification simple de disponibilité sans appels externes
-                $car->is_available = $this->checkSimpleAvailability($car);
-                return $car;
-            });
+            if ($cars->count() > 0) {
+                $cars->getCollection()->transform(function($car) {
+                    try {
+                        // Désactiver temporairement l'accesseur is_available pour éviter les appels externes
+                        $car->setAppends([]);
+                        
+                        // Vérification simple de disponibilité sans appels externes
+                        $car->is_available = $this->checkSimpleAvailability($car);
+                    } catch (\Exception $e) {
+                        \Log::warning('Error calculating availability for car ' . ($car->id ?? 'unknown') . ': ' . $e->getMessage());
+                        $car->is_available = false;
+                    }
+                    return $car;
+                });
+            }
             
-            // Get available brands for filter (optimisé)
-            $brands = Car::where('status', Car::STATUS_AVAILABLE)
-                ->whereHas('agency', function($q) {
-                    $q->where('status', 'approved');
-                })
-                ->distinct()
-                ->pluck('brand')
-                ->filter()
-                ->sort()
-                ->values();
+            // Get available brands for filter (optimisé avec gestion d'erreur)
+            try {
+                $brands = Car::where('status', Car::STATUS_AVAILABLE)
+                    ->whereHas('agency', function($q) {
+                        $q->where('status', 'approved');
+                    })
+                    ->distinct()
+                    ->pluck('brand')
+                    ->filter()
+                    ->sort()
+                    ->values();
+            } catch (\Exception $e) {
+                \Log::warning('Error loading brands: ' . $e->getMessage());
+                $brands = collect([]);
+            }
 
-            // Get available fuel types for filter (optimisé)
-            $fuelTypes = Car::where('status', Car::STATUS_AVAILABLE)
-                ->whereHas('agency', function($q) {
-                    $q->where('status', 'approved');
-                })
-                ->whereNotNull('fuel_type')
-                ->distinct()
-                ->pluck('fuel_type')
-                ->filter()
-                ->sort()
-                ->values();
+            // Get available fuel types for filter (optimisé avec gestion d'erreur)
+            try {
+                $fuelTypes = Car::where('status', Car::STATUS_AVAILABLE)
+                    ->whereHas('agency', function($q) {
+                        $q->where('status', 'approved');
+                    })
+                    ->whereNotNull('fuel_type')
+                    ->distinct()
+                    ->pluck('fuel_type')
+                    ->filter()
+                    ->sort()
+                    ->values();
+            } catch (\Exception $e) {
+                \Log::warning('Error loading fuel types: ' . $e->getMessage());
+                $fuelTypes = collect([]);
+            }
 
             return view('client.cars.index', compact('cars', 'brands', 'fuelTypes'));
             

@@ -13,7 +13,7 @@
         <div class="flex items-center space-x-4 sm:space-x-6">
             <div class="text-right">
                 <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Véhicules disponibles</p>
-                <p class="text-xl sm:text-2xl font-bold text-orange-600">{{ $cars->total() }}</p>
+                <p class="text-xl sm:text-2xl font-bold text-orange-600">{{ $cars ? $cars->total() : 0 }}</p>
             </div>
         </div>
     </div>
@@ -52,11 +52,13 @@
                     <label for="brand" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Marque</label>
                     <select id="brand" name="brand" class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
                         <option value="">Toutes les marques</option>
-                        @foreach($brands as $brand)
-                            <option value="{{ $brand }}" {{ request('brand') == $brand ? 'selected' : '' }}>
-                                {{ $brand }}
-                            </option>
-                        @endforeach
+                        @if(isset($brands) && $brands->count() > 0)
+                            @foreach($brands as $brand)
+                                <option value="{{ $brand }}" {{ request('brand') == $brand ? 'selected' : '' }}>
+                                    {{ $brand }}
+                                </option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
 
@@ -65,11 +67,13 @@
                     <label for="fuel_type" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Carburant</label>
                     <select id="fuel_type" name="fuel_type" class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
                         <option value="">Tous types</option>
-                        @foreach($fuelTypes as $fuelType)
-                            <option value="{{ $fuelType }}" {{ request('fuel_type') == $fuelType ? 'selected' : '' }}>
-                                {{ ucfirst($fuelType) }}
-                            </option>
-                        @endforeach
+                        @if(isset($fuelTypes) && $fuelTypes->count() > 0)
+                            @foreach($fuelTypes as $fuelType)
+                                <option value="{{ $fuelType }}" {{ request('fuel_type') == $fuelType ? 'selected' : '' }}>
+                                    {{ ucfirst($fuelType) }}
+                                </option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
 
@@ -96,7 +100,7 @@
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-200">
                 <div class="text-xs sm:text-sm text-gray-600">
-                    {{ $cars->total() }} véhicule(s) trouvé(s)
+                    {{ $cars ? $cars->total() : 0 }} véhicule(s) trouvé(s)
                 </div>
                 <div class="flex flex-wrap gap-2 sm:gap-3">
                     <a href="{{ route('client.cars.index') }}" 
@@ -114,7 +118,7 @@
 </div>
 
 <!-- Cars Grid -->
-@if($cars->count() > 0)
+@if(isset($cars) && $cars->count() > 0)
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6 reveal-section">
     @foreach($cars as $car)
     <div class="bg-white overflow-hidden shadow-sm rounded-lg hover:shadow-md transition-shadow border border-gray-200 group">
@@ -177,7 +181,7 @@
                 </div>
                 <div class="text-left sm:text-right">
                     <div class="text-lg sm:text-xl font-bold text-orange-600">
-                        {{ number_format($car->client_price_per_day, 0) }} MAD
+                        {{ number_format($car->client_price_per_day ?? $car->price_per_day ?? 0, 0) }} MAD
                     </div>
                     <div class="text-xs text-gray-500">par jour</div>
                 </div>
@@ -189,7 +193,7 @@
                     <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                     </svg>
-                    <span class="truncate">{{ $car->agency->user->name }}</span>
+                    <span class="truncate">{{ $car->agency && $car->agency->user ? $car->agency->user->name : 'N/A' }}</span>
                 </div>
                 <div class="flex items-center text-xs sm:text-sm text-gray-600">
                     <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
