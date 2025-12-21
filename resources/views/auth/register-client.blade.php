@@ -9,7 +9,7 @@
 
             <!-- Main Form Card -->
             <div class="bg-white shadow-2xl rounded-3xl overflow-hidden">
-                <form method="POST" action="{{ route('register.client') }}" class="p-6 md:p-10">
+                <form method="POST" action="{{ route('register.client') }}" enctype="multipart/form-data" class="p-6 md:p-10">
                     @csrf
 
                     <!-- Personal Information Section -->
@@ -63,6 +63,33 @@
                                         value="{{ old('birthday') }}" 
                                         required />
                                     <x-input-error :messages="$errors->get('birthday')" class="mt-2 text-sm text-red-600" />
+                                </div>
+                            </div>
+
+                            <!-- CIN Images (Recto/Verso) -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <label for="cin_recto" class="block text-sm font-semibold text-gray-700 mb-2">{{ __('CIN Recto (Face avant)') }}</label>
+                                    <input id="cin_recto" 
+                                        class="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" 
+                                        type="file" 
+                                        name="cin_recto" 
+                                        accept="image/*"
+                                        required />
+                                    <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG (max 5MB)</p>
+                                    <x-input-error :messages="$errors->get('cin_recto')" class="mt-2 text-sm text-red-600" />
+                                </div>
+
+                                <div>
+                                    <label for="cin_verso" class="block text-sm font-semibold text-gray-700 mb-2">{{ __('CIN Verso (Face arrière)') }}</label>
+                                    <input id="cin_verso" 
+                                        class="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" 
+                                        type="file" 
+                                        name="cin_verso" 
+                                        accept="image/*"
+                                        required />
+                                    <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG (max 5MB)</p>
+                                    <x-input-error :messages="$errors->get('cin_verso')" class="mt-2 text-sm text-red-600" />
                                 </div>
                             </div>
                         </div>
@@ -121,6 +148,55 @@
                                         placeholder="Enter your address" />
                                     <x-input-error :messages="$errors->get('address')" class="mt-2 text-sm text-red-600" />
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Driving License Section -->
+                    <div class="bg-gradient-to-br from-[#C2410C]/5 to-[#9A3412]/5 p-6 rounded-2xl border border-[#C2410C]/10 mb-8">
+                        <div class="flex items-center mb-6">
+                            <div class="flex items-center justify-center w-10 h-10 bg-[#C2410C] rounded-lg mr-3">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900">Permis de Conduire</h3>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="driving_license_number" class="block text-sm font-semibold text-gray-700 mb-2">{{ __('Numéro de Permis') }}</label>
+                                    <input id="driving_license_number" 
+                                        class="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 bg-white" 
+                                        type="text" 
+                                        name="driving_license_number" 
+                                        value="{{ old('driving_license_number') }}" 
+                                        placeholder="Numéro de permis" />
+                                    <x-input-error :messages="$errors->get('driving_license_number')" class="mt-2 text-sm text-red-600" />
+                                </div>
+
+                                <div>
+                                    <label for="driving_license_expiry" class="block text-sm font-semibold text-gray-700 mb-2">{{ __('Date d\'expiration') }}</label>
+                                    <input id="driving_license_expiry" 
+                                        class="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 bg-white" 
+                                        type="date" 
+                                        name="driving_license_expiry" 
+                                        value="{{ old('driving_license_expiry') }}" />
+                                    <x-input-error :messages="$errors->get('driving_license_expiry')" class="mt-2 text-sm text-red-600" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="driving_license_image" class="block text-sm font-semibold text-gray-700 mb-2">{{ __('Photo du Permis de Conduire') }}</label>
+                                <input id="driving_license_image" 
+                                    class="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" 
+                                    type="file" 
+                                    name="driving_license_image" 
+                                    accept="image/*"
+                                    required />
+                                <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG (max 5MB)</p>
+                                <x-input-error :messages="$errors->get('driving_license_image')" class="mt-2 text-sm text-red-600" />
                             </div>
                         </div>
                     </div>

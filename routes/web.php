@@ -297,6 +297,17 @@ Route::middleware(['auth', 'role:agence'])->prefix('agence')->name('agence.')->g
         
         // Fleet Management
         Route::resource('cars', CarController::class);
+        
+        // External Sites Management (pour synchroniser la disponibilité avec d'autres sites)
+        Route::prefix('cars/{car}/external-sites')->name('cars.external-sites.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Agency\ExternalSiteController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Agency\ExternalSiteController::class, 'create'])->name('create');
+            Route::get('/discover', [App\Http\Controllers\Agency\ExternalSiteController::class, 'showDiscover'])->name('discover');
+            Route::post('/', [App\Http\Controllers\Agency\ExternalSiteController::class, 'store'])->name('store');
+            Route::post('/discover', [App\Http\Controllers\Agency\ExternalSiteController::class, 'discover'])->name('discover.submit');
+            Route::put('/{externalSite}', [App\Http\Controllers\Agency\ExternalSiteController::class, 'update'])->name('update');
+            Route::delete('/{externalSite}', [App\Http\Controllers\Agency\ExternalSiteController::class, 'destroy'])->name('destroy');
+        });
         Route::put('/cars/{car}/status', [CarController::class, 'updateStatus'])->name('cars.update-status');
         Route::get('/fleet', [CarController::class, 'index'])->name('fleet.index');
         Route::get('/fleet/categories', [App\Http\Controllers\Agency\CategoryController::class, 'index'])->name('fleet.categories');

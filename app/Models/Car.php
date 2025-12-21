@@ -83,6 +83,16 @@ class Car extends Model
         return $this->hasMany(Maintenance::class);
     }
 
+    public function externalSites()
+    {
+        return $this->hasMany(CarExternalSite::class);
+    }
+
+    public function activeExternalSites()
+    {
+        return $this->hasMany(CarExternalSite::class)->where('is_active', true);
+    }
+
     public function avis()
     {
         return $this->hasManyThrough(\App\Models\Avis::class, Rental::class, 'car_id', 'rental_id');
@@ -175,7 +185,22 @@ class Car extends Model
             ->exists();
 
         // Si une réservation est en cours (pending ou active), la voiture n'est pas disponible
-        return !$hasActiveReservations;
+        if ($hasActiveReservations) {
+            return false;
+        }
+
+        // Vérifier la disponibilité sur les sites externes
+        // Si le véhicule est partagé sur d'autres sites, vérifier qu'il est disponible partout
+        if ($this->activeExternalSites()->exists()) {
+            $externalAvailabilityService = new \App\Services\ExternalSiteAvailabilityService();
+            $externalCheck = $externalAvailabilityService->checkExternalSitesAvailability($this);
+            
+            // Le véhicule est disponible seulement s'il est disponible sur TOUS les sites externes
+            return $externalCheck['available'];
+        }
+
+        // Si pas de sites externes, la disponibilité locale suffit
+        return true;
     }
 
     public function hasStock()

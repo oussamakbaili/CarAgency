@@ -31,6 +31,11 @@ class ClientRegisterController extends Controller
             'birthday' => ['required', 'date', 'before:today'],
             'phone' => ['required', 'string', 'max:20'],
             'address' => ['required', 'string', 'max:255'],
+            'cin_recto' => ['required', 'image', 'mimes:jpeg,jpg,png', 'max:5120'], // 5MB max
+            'cin_verso' => ['required', 'image', 'mimes:jpeg,jpg,png', 'max:5120'], // 5MB max
+            'driving_license_number' => ['nullable', 'string', 'max:50'],
+            'driving_license_expiry' => ['nullable', 'date'],
+            'driving_license_image' => ['required', 'image', 'mimes:jpeg,jpg,png', 'max:5120'], // 5MB max
         ]);
 
         $user = User::create([
@@ -39,15 +44,34 @@ class ClientRegisterController extends Controller
             'password' => Hash::make($request->password),
             'role' => 'client',
         ]);
-        
+
+        // Upload CIN images
+        $cinRectoPath = null;
+        $cinVersoPath = null;
+        if ($request->hasFile('cin_recto')) {
+            $cinRectoPath = $request->file('cin_recto')->store('clients/cin', 'public');
+        }
+        if ($request->hasFile('cin_verso')) {
+            $cinVersoPath = $request->file('cin_verso')->store('clients/cin', 'public');
+        }
+
+        // Upload driving license image
+        $drivingLicensePath = null;
+        if ($request->hasFile('driving_license_image')) {
+            $drivingLicensePath = $request->file('driving_license_image')->store('clients/driving-licenses', 'public');
+        }
 
         $client = Client::create([
-            'name' => $request->name,  
             'user_id' => $user->id,
             'cin' => $request->cin,
+            'cin_recto' => $cinRectoPath,
+            'cin_verso' => $cinVersoPath,
             'birthday' => $request->birthday,
             'phone' => $request->phone,
             'address' => $request->address,
+            'driving_license_number' => $request->driving_license_number,
+            'driving_license_expiry' => $request->driving_license_expiry,
+            'driving_license_image' => $drivingLicensePath,
         ]);
 
         event(new Registered($user));

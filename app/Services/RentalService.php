@@ -174,6 +174,7 @@ class RentalService
      * Une voiture est indisponible si :
      * - Elle a une réservation pending, active ou confirmed pour les dates demandées
      * - Les réservations rejected, cancelled ou completed ne bloquent pas la disponibilité
+     * - Elle n'est pas disponible sur un des sites externes (si configuré)
      */
     public function checkAvailability(Car $car, $startDate, $endDate, $excludeRentalId = null)
     {
@@ -208,11 +209,28 @@ class RentalService
 
         // Si le stock est suivi, vérifier qu'il y a assez de stock
         if ($car->track_stock) {
-            return $car->available_stock > $conflictCount;
+            $localAvailable = $car->available_stock > $conflictCount;
+        } else {
+            // Si le stock n'est pas suivi, une seule réservation conflictuelle rend la voiture indisponible
+            $localAvailable = $conflictCount === 0;
         }
 
-        // Si le stock n'est pas suivi, une seule réservation conflictuelle rend la voiture indisponible
-        return $conflictCount === 0;
+        // Si le véhicule n'est pas disponible localement, il n'est pas disponible globalement
+        if (!$localAvailable) {
+            return false;
+        }
+
+        // Vérifier la disponibilité sur les sites externes si le véhicule est partagé
+        if ($car->activeExternalSites()->exists()) {
+            $externalAvailabilityService = new \App\Services\ExternalSiteAvailabilityService();
+            $externalCheck = $externalAvailabilityService->checkExternalSitesAvailability($car, $startDate, $endDate);
+            
+            // Le véhicule est disponible seulement s'il est disponible localement ET sur tous les sites externes
+            return $externalCheck['available'];
+        }
+
+        // Si pas de sites externes, la disponibilité locale suffit
+        return $localAvailable;
     }
 
     /**

@@ -30,6 +30,19 @@ class CustomerController extends Controller
                   ->orWhere('email', 'like', "%{$search}%");
             })->orWhere('phone', 'like', "%{$search}%");
         }
+
+        // Filtre par date d'inscription
+        if ($request->filled('date_from')) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->whereDate('created_at', '>=', $request->date_from);
+            });
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->whereDate('created_at', '<=', $request->date_to);
+            });
+        }
         
         if ($request->filled('status')) {
             switch ($request->status) {

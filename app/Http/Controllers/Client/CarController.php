@@ -58,7 +58,7 @@ class CarController extends Controller
         return view('client.cars.index', compact('cars', 'brands', 'fuelTypes'));
     }
 
-    public function show(Car $car)
+    public function show(Request $request, Car $car)
     {
         try {
             // Load necessary relationships
@@ -67,6 +67,12 @@ class CarController extends Controller
             // Basic validation - just check if car exists
             if (!$car->exists) {
                 abort(404, 'Car not found');
+            }
+
+            // If book parameter is present, redirect to booking flow
+            if ($request->has('book') && $request->get('book') == '1') {
+                // Redirect to booking step1 with the car
+                return redirect()->route('booking.step1', $car);
             }
 
             return view('client.cars.show', compact('car'));

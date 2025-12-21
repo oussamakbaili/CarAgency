@@ -76,7 +76,7 @@
                 </div>
                 <div class="ml-3 flex-1">
                     <h2 class="text-xs sm:text-sm font-medium text-gray-600">{{ __('dashboard.client.total_spent') }}</h2>
-                    <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ number_format(\App\Models\Rental::where('user_id', auth()->id())->sum('total_price'), 0, ',', ' ') }} MAD</p>
+                    <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ number_format($totalSpent ?? 0, 0, ',', ' ') }} MAD</p>
                     <div class="flex items-center mt-1 text-xs">
                         <span class="text-green-600">{{ __('dashboard.client.all_rentals') }}</span>
                     </div>

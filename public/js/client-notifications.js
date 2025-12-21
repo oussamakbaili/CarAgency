@@ -1,6 +1,6 @@
 // Client Notifications System
 // Make sure this function is available globally for Alpine.js
-window.clientNotificationsDropdown = function() {
+function clientNotificationsDropdown() {
     return {
         open: false,
         notifications: [],
@@ -13,13 +13,15 @@ window.clientNotificationsDropdown = function() {
             this.loadNotifications();
             // Refresh notifications every 30 seconds
             setInterval(() => {
-                this.loadNotifications();
+                if (this.open) {
+                    this.loadNotifications();
+                }
             }, 30000);
         },
         
         toggleDropdown() {
             this.open = !this.open;
-            if (this.open) {
+            if (this.open && this.notifications.length === 0) {
                 this.loadNotifications();
             }
         },
@@ -114,11 +116,6 @@ window.clientNotificationsDropdown = function() {
             await this.loadNotifications();
         }
     };
-};
-
-// Also export as a regular function for backward compatibility
-function clientNotificationsDropdown() {
-    return window.clientNotificationsDropdown();
 }
 
 // Real-time notifications using Server-Sent Events (if available)

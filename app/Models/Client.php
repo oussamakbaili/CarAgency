@@ -12,6 +12,8 @@ class Client extends Model
     protected $fillable = [
         'user_id',
         'cin',
+        'cin_recto',
+        'cin_verso',
         'birthday',
         'phone',
         'address',
@@ -20,6 +22,7 @@ class Client extends Model
         'date_of_birth',
         'driving_license_number',
         'driving_license_expiry',
+        'driving_license_image',
         'profile_picture',
         'preferences',
         'documents',

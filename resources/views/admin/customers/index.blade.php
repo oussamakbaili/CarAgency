@@ -86,31 +86,48 @@
 
 <!-- Search and Filters -->
 <div class="bg-white overflow-hidden shadow-sm rounded-lg p-4 sm:p-6 mb-4 sm:mb-6 reveal-section">
-    <form method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div>
-            <input type="text" name="search" value="{{ request('search') }}" 
-                   placeholder="Rechercher par nom, CIN, email..." 
-                   class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+    <form method="GET" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div>
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Recherche</label>
+                <input type="text" name="search" value="{{ request('search') }}" 
+                       placeholder="Nom, CIN, email..." 
+                       class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+            </div>
+            <div>
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Ville</label>
+                <input type="text" name="city" value="{{ request('city') }}" 
+                       placeholder="Ville" 
+                       class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+            </div>
+            <div>
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Date de début</label>
+                <input type="date" name="date_from" value="{{ request('date_from') }}" 
+                       class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+            </div>
+            <div>
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Date de fin</label>
+                <input type="date" name="date_to" value="{{ request('date_to') }}" 
+                       class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+            </div>
         </div>
-        <div>
-            <input type="text" name="city" value="{{ request('city') }}" 
-                   placeholder="Ville" 
-                   class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-        </div>
-        <div>
-            <select name="has_bookings" class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                <option value="">Tous les clients</option>
-                <option value="yes" {{ request('has_bookings') === 'yes' ? 'selected' : '' }}>Avec réservations</option>
-                <option value="no" {{ request('has_bookings') === 'no' ? 'selected' : '' }}>Sans réservations</option>
-            </select>
-        </div>
-        <div class="flex gap-2">
-            <button type="submit" class="flex-1 bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg hover:bg-blue-700 text-xs sm:text-sm font-medium transition-colors">
-                Rechercher
-            </button>
-            <a href="{{ route('admin.customers.index') }}" class="flex-1 text-center bg-gray-600 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg hover:bg-gray-700 text-xs sm:text-sm font-medium transition-colors">
-                Réinitialiser
-            </a>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div>
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Réservations</label>
+                <select name="has_bookings" class="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                    <option value="">Tous les clients</option>
+                    <option value="yes" {{ request('has_bookings') === 'yes' ? 'selected' : '' }}>Avec réservations</option>
+                    <option value="no" {{ request('has_bookings') === 'no' ? 'selected' : '' }}>Sans réservations</option>
+                </select>
+            </div>
+            <div class="flex gap-2 items-end">
+                <button type="submit" class="flex-1 bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg hover:bg-blue-700 text-xs sm:text-sm font-medium transition-colors">
+                    Rechercher
+                </button>
+                <a href="{{ route('admin.customers.index') }}" class="flex-1 text-center bg-gray-600 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg hover:bg-gray-700 text-xs sm:text-sm font-medium transition-colors">
+                    Réinitialiser
+                </a>
+            </div>
         </div>
     </form>
 </div>
