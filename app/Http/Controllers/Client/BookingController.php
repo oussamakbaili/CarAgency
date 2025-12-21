@@ -28,8 +28,11 @@ class BookingController extends Controller
      */
     public function step1(Request $request, Car $car)
     {
+        // Charger la relation agency
+        $car->load('agency');
+        
         // Vérifier que la voiture est disponible
-        if (!$car->is_available || $car->agency->status !== 'approved') {
+        if (!$car->is_available || !$car->agency || $car->agency->status !== 'approved') {
             return redirect()->back()->with('error', 'Cette voiture n\'est pas disponible pour la location.');
         }
 

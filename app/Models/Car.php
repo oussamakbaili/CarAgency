@@ -192,11 +192,18 @@ class Car extends Model
         // Vérifier la disponibilité sur les sites externes
         // Si le véhicule est partagé sur d'autres sites, vérifier qu'il est disponible partout
         if ($this->activeExternalSites()->exists()) {
-            $externalAvailabilityService = new \App\Services\ExternalSiteAvailabilityService();
-            $externalCheck = $externalAvailabilityService->checkExternalSitesAvailability($this);
-            
-            // Le véhicule est disponible seulement s'il est disponible sur TOUS les sites externes
-            return $externalCheck['available'];
+            try {
+                $externalAvailabilityService = new \App\Services\ExternalSiteAvailabilityService();
+                $externalCheck = $externalAvailabilityService->checkExternalSitesAvailability($this);
+                
+                // Le véhicule est disponible seulement s'il est disponible sur TOUS les sites externes
+                return $externalCheck['available'] ?? false;
+            } catch (\Exception $e) {
+                // En cas d'erreur lors de la vérification des sites externes, 
+                // on considère la voiture comme disponible localement
+                \Log::warning('Error checking external sites availability for car ' . $this->id . ': ' . $e->getMessage());
+                return true;
+            }
         }
 
         // Si pas de sites externes, la disponibilité locale suffit
