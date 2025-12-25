@@ -164,8 +164,13 @@ class Car extends Model
             ->get();
     }
 
-    public function getIsAvailableAttribute()
+    public function getIsAvailableAttribute($value)
     {
+        // If the attribute was already set (e.g. controller pre-computed it), reuse it
+        if (!is_null($value)) {
+            return (bool) $value;
+        }
+
         // Vérifier d'abord le statut de base
         if ($this->status !== self::STATUS_AVAILABLE) {
             return false;
