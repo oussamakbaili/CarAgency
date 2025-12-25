@@ -6,6 +6,7 @@ use App\Models\Rental;
 use App\Models\Car;
 use App\Models\Agency;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
@@ -220,13 +221,21 @@ class RentalService
             return false;
         }
 
-        // Vérifier la disponibilité sur les sites externes si le véhicule est partagé
-        if ($car->activeExternalSites()->exists()) {
-            $externalAvailabilityService = new \App\Services\ExternalSiteAvailabilityService();
-            $externalCheck = $externalAvailabilityService->checkExternalSitesAvailability($car, $startDate, $endDate);
-            
-            // Le véhicule est disponible seulement s'il est disponible localement ET sur tous les sites externes
-            return $externalCheck['available'];
+        // Vérifier la disponibilité sur les sites externes si le véhicule est partagé (seulement si la table existe)
+        if (Schema::hasTable('car_external_sites')) {
+            try {
+                if ($car->activeExternalSites()->exists()) {
+                    $externalAvailabilityService = new \App\Services\ExternalSiteAvailabilityService();
+                    $externalCheck = $externalAvailabilityService->checkExternalSitesAvailability($car, $startDate, $endDate);
+                    
+                    // Le véhicule est disponible seulement s'il est disponible localement ET sur tous les sites externes
+                    return $externalCheck['available'];
+                }
+            } catch (\Exception $e) {
+                \Log::warning('External availability check failed for car ' . $car->id . ': ' . $e->getMessage());
+                // En cas d'erreur sur les sites externes, on reste sur la dispo locale
+                return $localAvailable;
+            }
         }
 
         // Si pas de sites externes, la disponibilité locale suffit
