@@ -922,7 +922,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Check if we should scroll to booking form (from "Louer" or "Louer maintenant" buttons)
     const urlParams = new URLSearchParams(window.location.search);
+    @if(!empty($scrollToBooking))
+    if (true) {
+    @else
     if (urlParams.get('book') === '1') {
+    @endif
         // Scroll to booking form after a short delay to ensure page is fully loaded
         setTimeout(function() {
             const bookingForm = document.getElementById('bookingForm');

@@ -148,13 +148,9 @@ class CarController extends Controller
                 abort(404, 'Car not found');
             }
 
-            // If book parameter is present, redirect to booking flow
-            if ($request->has('book') && $request->get('book') == '1') {
-                // Redirect to booking step1 with the car
-                return redirect()->route('booking.step1', $car);
-            }
+            $scrollToBooking = $request->boolean('book', false);
 
-            return view('client.cars.show', compact('car'));
+            return view('client.cars.show', compact('car', 'scrollToBooking'));
             
         } catch (\Exception $e) {
             // Log the error
