@@ -35,12 +35,32 @@
                                 </div>
                             @endif
                             
-                            <!-- Price Badge -->
-                            <div class="absolute top-4 right-4 bg-white bg-opacity-90 backdrop-blur-sm rounded-lg px-3 py-2">
-                                <div class="text-right">
+                            <!-- Price + Availability Badge -->
+                            <div class="absolute top-4 right-4 space-y-2 text-right">
+                                <div class="bg-white bg-opacity-90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm">
                                     <div class="text-2xl font-bold text-blue-600">{{ number_format($car->client_price_per_day, 0) }} MAD</div>
                                     <div class="text-sm text-gray-600">par jour</div>
                                 </div>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                                    @if($car->is_available)
+                                        bg-green-100 text-green-800
+                                    @elseif($car->status === 'rented')
+                                        bg-blue-100 text-blue-800
+                                    @elseif($car->status === 'maintenance')
+                                        bg-yellow-100 text-yellow-800
+                                    @else
+                                        bg-red-100 text-red-800
+                                    @endif">
+                                    @if($car->is_available)
+                                        Disponible
+                                    @elseif($car->status === 'rented')
+                                        En location
+                                    @elseif($car->status === 'maintenance')
+                                        Maintenance
+                                    @else
+                                        Indisponible
+                                    @endif
+                                </span>
                             </div>
                         </div>
 
