@@ -152,12 +152,12 @@
             <!-- Quick Actions Overlay -->
             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
                 <div class="flex flex-col sm:flex-row gap-2 px-2">
-                    <a href="{{ route('client.cars.show', $car) }}" 
+                    <a href="{{ url('/client/cars/'.$car->id) }}" 
                        class="px-3 sm:px-4 py-1.5 sm:py-2 bg-white text-gray-900 rounded-lg hover:bg-gray-100 transition-colors text-xs sm:text-sm font-medium">
                         Voir détails
                     </a>
                     @if($car->is_available)
-                        <a href="{{ route('client.cars.show', $car) }}?book=1" 
+                        <a href="{{ url('/client/cars/'.$car->id) }}?book=1" 
                            class="px-3 sm:px-4 py-1.5 sm:py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-xs sm:text-sm font-medium">
                             Louer maintenant
                         </a>
@@ -211,12 +211,12 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row gap-2">
-                <a href="{{ route('client.cars.show', $car) }}" 
+                <a href="{{ url('/client/cars/'.$car->id) }}" 
                    class="flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center text-xs sm:text-sm font-medium">
                     Détails
                 </a>
                 @if($car->is_available)
-                    <a href="{{ route('client.cars.show', $car) }}?book=1" 
+                    <a href="{{ url('/client/cars/'.$car->id) }}?book=1" 
                        class="flex-1 px-3 sm:px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-center text-xs sm:text-sm font-medium">
                         Louer
                     </a>

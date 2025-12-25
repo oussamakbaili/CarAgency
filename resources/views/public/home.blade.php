@@ -189,6 +189,30 @@
                                     <span>{{ $car->featured ? __('home.popular_cars.featured') : __('home.popular_cars.partner') }}</span>
                                 </div>
                             @endif
+
+                            <!-- Availability Badge -->
+                            <div class="absolute top-3 right-3">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                                    @if($car->is_available)
+                                        bg-green-100 text-green-800
+                                    @elseif($car->status === 'rented')
+                                        bg-blue-100 text-blue-800
+                                    @elseif($car->status === 'maintenance')
+                                        bg-yellow-100 text-yellow-800
+                                    @else
+                                        bg-red-100 text-red-800
+                                    @endif">
+                                    @if($car->is_available)
+                                        {{ __('Disponible') }}
+                                    @elseif($car->status === 'rented')
+                                        {{ __('En location') }}
+                                    @elseif($car->status === 'maintenance')
+                                        {{ __('Maintenance') }}
+                                    @else
+                                        {{ __('Indisponible') }}
+                                    @endif
+                                </span>
+                            </div>
                             
                             <!-- Heart Icon (Airbnb style) -->
                             <button onclick="event.stopPropagation(); handleFavoriteClick({{ $car->id }}, event)" 
