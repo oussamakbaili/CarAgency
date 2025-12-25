@@ -190,9 +190,16 @@
                                 </div>
                             @endif
 
-                            <!-- Availability Badge -->
-                            <div class="absolute top-3 right-3">
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                            <!-- Top-right controls: favorite + availability -->
+                            <div class="absolute top-3 right-3 flex flex-col items-end gap-2">
+                                <button onclick="event.stopPropagation(); handleFavoriteClick({{ $car->id }}, event)" 
+                                        class="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors shadow-sm favorite-btn" 
+                                        data-car-id="{{ $car->id }}">
+                                    <svg class="w-5 h-5 text-gray-700 favorite-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                    </svg>
+                                </button>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm
                                     @if($car->is_available)
                                         bg-green-100 text-green-800
                                     @elseif($car->status === 'rented')
@@ -213,15 +220,6 @@
                                     @endif
                                 </span>
                             </div>
-                            
-                            <!-- Heart Icon (Airbnb style) -->
-                            <button onclick="event.stopPropagation(); handleFavoriteClick({{ $car->id }}, event)" 
-                                    class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors shadow-sm favorite-btn" 
-                                    data-car-id="{{ $car->id }}">
-                                <svg class="w-5 h-5 text-gray-700 favorite-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                                </svg>
-                            </button>
                             
                             <!-- Rating Badge -->
                             @if($car->average_rating > 0)
