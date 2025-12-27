@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,5 +26,14 @@ class AppServiceProvider extends ServiceProvider
             'client' => \App\Models\User::class,
             'agency' => \App\Models\User::class,
         ]);
+
+        // Ensure the public storage symlink exists in production-like environments
+        if (!app()->runningInConsole() && !file_exists(public_path('storage'))) {
+            try {
+                Artisan::call('storage:link');
+            } catch (\Exception $e) {
+                Log::warning('Unable to create storage symlink: ' . $e->getMessage());
+            }
+        }
     }
 }

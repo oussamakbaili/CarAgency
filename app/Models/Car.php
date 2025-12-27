@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class Car extends Model
 {
@@ -279,10 +280,18 @@ class Car extends Model
         if (!$this->image) {
             return null;
         }
-        
-        $imagePath = $this->image;
-        $imagePath = preg_replace('/^app\/public\//', '', $imagePath);
-        
+
+        $imagePath = $this->normalizeStoragePath($this->image);
+
+        if (Storage::disk('public')->exists($imagePath)) {
+            return Storage::disk('public')->url($imagePath);
+        }
+
+        // Fallback in case the file exists on the default disk or the symlink is missing
+        if (Storage::exists($imagePath)) {
+            return Storage::url($imagePath);
+        }
+
         return asset('storage/' . $imagePath);
     }
 
@@ -294,9 +303,25 @@ class Car extends Model
         }
         
         return collect($this->pictures)->map(function($picture) {
-            $picturePath = preg_replace('/^app\/public\//', '', $picture);
+            $picturePath = $this->normalizeStoragePath($picture);
+
+            if (Storage::disk('public')->exists($picturePath)) {
+                return Storage::disk('public')->url($picturePath);
+            }
+
+            if (Storage::exists($picturePath)) {
+                return Storage::url($picturePath);
+            }
+
             return asset('storage/' . $picturePath);
         })->toArray();
+    }
+
+    protected function normalizeStoragePath(string $path): string
+    {
+        // Accept values stored as "cars/...", "public/cars/..." or "app/public/cars/..."
+        $normalized = preg_replace('/^(app\/)?public\//', '', $path);
+        return ltrim($normalized, '/');
     }
 
     // Get client price with 15% commission

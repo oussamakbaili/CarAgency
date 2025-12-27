@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Paiement - ' . $car->brand . ' ' . $car->model)
+@section('title', __('booking.step4.page_title', ['brand' => $car->brand, 'model' => $car->model]))
 
 @push('head')
 <script src="https://js.stripe.com/v3/"></script>
@@ -15,17 +15,17 @@
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
-                Retour
+                {{ __('booking.step4.back') }}
             </a>
-            <h1 class="text-3xl font-bold text-gray-900">Paiement</h1>
-            <p class="text-gray-600 mt-2">Choisissez votre méthode de paiement</p>
+            <h1 class="text-3xl font-bold text-gray-900">{{ __('booking.step4.title') }}</h1>
+            <p class="text-gray-600 mt-2">{{ __('booking.step4.subtitle') }}</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Left Column - Payment Form -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-2xl border border-gray-200 p-6">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Méthode de paiement</h2>
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">{{ __('booking.step4.method_title') }}</h2>
 
                     @if(session('error'))
                         <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -35,15 +35,15 @@
 
                     <!-- Payment Gateway Selection -->
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-3">Choisir une passerelle de paiement</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">{{ __('booking.step4.gateway_label') }}</label>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <!-- Stripe Option -->
                             <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="stripe">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <h3 class="font-semibold text-gray-900">Stripe</h3>
-                                        <p class="text-sm text-gray-600 mt-1">Paiement international</p>
-                                        <p class="text-xs text-gray-500 mt-1">EUR, USD, etc.</p>
+                                        <h3 class="font-semibold text-gray-900">{{ __('booking.step4.gateways.stripe.title') }}</h3>
+                                        <p class="text-sm text-gray-600 mt-1">{{ __('booking.step4.gateways.stripe.desc') }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">{{ __('booking.step4.gateways.stripe.hint') }}</p>
                                     </div>
                                     <input type="radio" name="payment_gateway" value="stripe" class="payment-gateway-radio" checked>
                                 </div>
@@ -53,9 +53,9 @@
                             <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="cmi">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <h3 class="font-semibold text-gray-900">CMI</h3>
-                                        <p class="text-sm text-gray-600 mt-1">Paiement Maroc</p>
-                                        <p class="text-xs text-gray-500 mt-1">Cartes bancaires (MAD)</p>
+                                        <h3 class="font-semibold text-gray-900">{{ __('booking.step4.gateways.cmi.title') }}</h3>
+                                        <p class="text-sm text-gray-600 mt-1">{{ __('booking.step4.gateways.cmi.desc') }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">{{ __('booking.step4.gateways.cmi.hint') }}</p>
                                     </div>
                                     <input type="radio" name="payment_gateway" value="cmi" class="payment-gateway-radio">
                                 </div>
@@ -65,9 +65,9 @@
                             <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="paypal">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <h3 class="font-semibold text-gray-900">PayPal</h3>
-                                        <p class="text-sm text-gray-600 mt-1">Paiement PayPal</p>
-                                        <p class="text-xs text-gray-500 mt-1">Compte PayPal (EUR)</p>
+                                        <h3 class="font-semibold text-gray-900">{{ __('booking.step4.gateways.paypal.title') }}</h3>
+                                        <p class="text-sm text-gray-600 mt-1">{{ __('booking.step4.gateways.paypal.desc') }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">{{ __('booking.step4.gateways.paypal.hint') }}</p>
                                     </div>
                                     <input type="radio" name="payment_gateway" value="paypal" class="payment-gateway-radio">
                                 </div>
@@ -98,20 +98,22 @@
                                 <label class="flex items-start">
                                     <input type="checkbox" name="terms_checkbox" id="terms_checkbox" class="mt-1 mr-3" required>
                                     <span class="text-sm text-gray-700">
-                                        J'accepte les <a href="#" class="text-red-600 hover:underline">conditions générales</a> de location
+                                        {{ __('booking.step4.terms.accept_terms') }}
+                                        <a href="#" class="text-red-600 hover:underline">{{ __('booking.step4.terms.accept_terms_link') }}</a>
                                     </span>
                                 </label>
                                 <label class="flex items-start">
                                     <input type="checkbox" name="privacy_checkbox" id="privacy_checkbox" class="mt-1 mr-3" required>
                                     <span class="text-sm text-gray-700">
-                                        J'accepte la <a href="#" class="text-red-600 hover:underline">politique de confidentialité</a>
+                                        {{ __('booking.step4.terms.accept_privacy') }}
+                                        <a href="#" class="text-red-600 hover:underline">{{ __('booking.step4.terms.accept_privacy_link') }}</a>
                                     </span>
                                 </label>
                             </div>
 
                             <!-- Submit Button -->
                             <button type="submit" id="submit-button" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg font-semibold transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <span id="button-text">Payer {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} €</span>
+                                <span id="button-text">{{ __('booking.step4.stripe.pay', ['amount' => number_format($bookingData['total_with_fees'], 2, ',', ' ')]) }}</span>
                                 <span id="spinner" class="hidden">
                                     <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -121,7 +123,7 @@
                             </button>
 
                             <p class="text-xs text-gray-500 mt-4 text-center">
-                                🔒 Paiement sécurisé par Stripe. Vos données bancaires sont cryptées et ne sont jamais stockées sur nos serveurs.
+                                🔒 {{ __('booking.step4.stripe.secure') }}
                             </p>
                         </form>
                     </div>
@@ -134,15 +136,15 @@
                             <input type="hidden" name="payment_method" value="paypal">
 
                             <div class="mb-6">
-                                <p class="text-gray-700 mb-4">
-                                    Vous serez redirigé vers PayPal pour finaliser votre paiement de manière sécurisée.
-                                </p>
+                                    <p class="text-gray-700 mb-4">
+                                        {{ __('booking.step4.paypal.redirect') }}
+                                    </p>
                                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                                     <p class="text-sm text-blue-800">
-                                        <strong>Montant:</strong> {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} EUR
+                                        <strong>{{ __('booking.step4.paypal.amount') }}</strong> {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} EUR
                                     </p>
                                     <p class="text-sm text-blue-800 mt-2">
-                                        Vous pouvez payer avec votre compte PayPal ou une carte bancaire.
+                                        {{ __('booking.step4.gateways.paypal.desc') }}
                                     </p>
                                 </div>
                             </div>
@@ -165,7 +167,7 @@
 
                             <!-- Submit Button -->
                             <button type="submit" id="paypal-submit-button" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg font-semibold transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <span id="paypal-button-text">Payer avec PayPal - {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} EUR</span>
+                                <span id="paypal-button-text">{{ __('booking.step4.paypal.pay', ['amount' => number_format($bookingData['total_with_fees'], 2, ',', ' ')]) }}</span>
                                 <span id="paypal-spinner" class="hidden">
                                     <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -180,7 +182,7 @@
                             </div>
 
                             <p class="text-xs text-gray-500 mt-4 text-center">
-                                🔒 Paiement sécurisé par PayPal. Vos données bancaires sont cryptées.
+                                🔒 {{ __('booking.step4.paypal.secure') }}
                             </p>
                         </form>
                     </div>
@@ -193,15 +195,15 @@
                             <input type="hidden" name="payment_method" value="cmi">
 
                             <div class="mb-6">
-                                <p class="text-gray-700 mb-4">
-                                    Vous serez redirigé vers la page de paiement sécurisée de CMI pour finaliser votre transaction.
-                                </p>
+                                    <p class="text-gray-700 mb-4">
+                                        {{ __('booking.step4.cmi.redirect') }}
+                                    </p>
                                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                                     <p class="text-sm text-blue-800">
-                                        <strong>Montant:</strong> {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} MAD
+                                        <strong>{{ __('booking.step4.cmi.amount') }}</strong> {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} MAD
                                     </p>
                                     <p class="text-sm text-blue-800 mt-2">
-                                        Vous pouvez payer avec toutes les cartes bancaires marocaines acceptées par CMI.
+                                        {{ __('booking.step4.gateways.cmi.desc') }}
                                     </p>
                                 </div>
                             </div>
@@ -224,7 +226,7 @@
 
                             <!-- Submit Button -->
                             <button type="submit" id="cmi-submit-button" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg font-semibold transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <span id="cmi-button-text">Payer {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} MAD</span>
+                                <span id="cmi-button-text">{{ __('booking.step4.cmi.pay', ['amount' => number_format($bookingData['total_with_fees'], 2, ',', ' ')]) }}</span>
                                 <span id="cmi-spinner" class="hidden">
                                     <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -234,7 +236,7 @@
                             </button>
 
                             <p class="text-xs text-gray-500 mt-4 text-center">
-                                🔒 Paiement sécurisé par CMI (Credit Mutuel International). Vos données bancaires sont cryptées.
+                                🔒 {{ __('booking.step4.cmi.secure') }}
                             </p>
                         </form>
                     </div>
@@ -244,7 +246,7 @@
             <!-- Right Column - Booking Summary -->
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-2xl border border-gray-200 p-6 sticky top-8">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Résumé de la réservation</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('booking.step4.summary.title') }}</h3>
 
                     <!-- Car Image -->
                     <div class="relative h-32 bg-gray-100 rounded-xl mb-4 overflow-hidden">
@@ -265,27 +267,27 @@
 
                     <div class="border-t border-gray-200 pt-4 space-y-2">
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Dates</span>
+                            <span class="text-gray-600">{{ __('booking.step4.summary.dates') }}</span>
                             <span class="text-gray-900 font-medium">
                                 {{ \Carbon\Carbon::parse($bookingData['start_date'])->format('d/m/Y') }} - 
                                 {{ \Carbon\Carbon::parse($bookingData['end_date'])->format('d/m/Y') }}
                             </span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Durée</span>
-                            <span class="text-gray-900 font-medium">{{ $bookingData['days'] }} jour(s)</span>
+                            <span class="text-gray-600">{{ __('booking.step4.summary.duration') }}</span>
+                            <span class="text-gray-900 font-medium">{{ trans_choice('booking.step4.summary.days', $bookingData['days'], ['count' => $bookingData['days']]) }}</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Prix par jour</span>
+                            <span class="text-gray-600">{{ __('booking.step4.summary.price_per_day') }}</span>
                             <span class="text-gray-900 font-medium">{{ number_format($bookingData['price_per_day'], 2, ',', ' ') }} €</span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Sous-total</span>
+                            <span class="text-gray-600">{{ __('booking.step4.summary.subtotal') }}</span>
                             <span class="text-gray-900 font-medium">{{ number_format($bookingData['total_price'], 2, ',', ' ') }} €</span>
                         </div>
                         <div class="border-t border-gray-200 pt-2 mt-2">
                             <div class="flex justify-between">
-                                <span class="text-gray-900 font-semibold">Total</span>
+                                <span class="text-gray-900 font-semibold">{{ __('booking.step4.summary.total') }}</span>
                                 <span class="text-gray-900 font-bold text-lg">{{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} €</span>
                             </div>
                         </div>

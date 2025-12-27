@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Réserver - ' . $car->brand . ' ' . $car->model)
+@section('title', __('booking.main.page_title', ['brand' => $car->brand, 'model' => $car->model]))
 
 @push('scripts')
 @endpush
@@ -17,7 +17,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
                     </a>
-                    <h1 class="text-2xl font-bold text-gray-900">Confirmer et payer - {{ $car->brand }} {{ $car->model }}</h1>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ __('booking.main.header', ['brand' => $car->brand, 'model' => $car->model]) }}</h1>
                 </div>
                 <div class="flex items-center">
                     <div class="w-8 h-8 bg-[#C2410C] rounded-full flex items-center justify-center">
@@ -36,12 +36,12 @@
                 <div id="step1" class="bg-white rounded-2xl border border-gray-200 p-6 mb-4">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-lg font-semibold text-gray-900">1. Se connecter ou s'inscrire</h2>
-                            <p class="text-sm text-gray-600 mt-1">Connectez-vous pour continuer votre réservation</p>
+                            <h2 class="text-lg font-semibold text-gray-900">1. {{ __('booking.main.steps.login_title') }}</h2>
+                            <p class="text-sm text-gray-600 mt-1">{{ __('booking.main.steps.login_sub') }}</p>
                         </div>
                         @if(!auth()->check())
                             <a href="{{ route('login', ['return_url' => url()->current()]) }}" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition duration-200 inline-block text-center">
-                                Continuer
+                                {{ __('booking.main.buttons.continue') }}
                             </a>
                         @else
                             <div class="flex items-center text-green-600">
@@ -58,11 +58,11 @@
                 <div id="step2" class="bg-white rounded-2xl border border-gray-200 p-6 mb-4 {{ auth()->check() ? '' : 'opacity-50 pointer-events-none' }}">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <h2 class="text-lg font-semibold text-gray-900">2. Ajouter une méthode de paiement</h2>
-                            <p class="text-sm text-gray-600 mt-1">Sélectionnez votre mode de paiement</p>
+                            <h2 class="text-lg font-semibold text-gray-900">2. {{ __('booking.main.steps.payment_title') }}</h2>
+                            <p class="text-sm text-gray-600 mt-1">{{ __('booking.main.steps.payment_sub') }}</p>
                         </div>
                         <button id="paymentBtn" type="button" class="{{ auth()->check() ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed' }} px-6 py-3 rounded-lg font-semibold transition duration-200" {{ auth()->check() ? '' : 'disabled' }}>
-                            Suivant
+                            {{ __('booking.main.buttons.next') }}
                         </button>
                     </div>
                     
@@ -70,8 +70,8 @@
                     <div id="paymentMethodsContent" class="hidden mt-6">
                         <!-- PayPal Payment Form -->
                         <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Méthode de paiement</h3>
-                            <p class="text-sm text-gray-600 mb-4">Paiement sécurisé via PayPal</p>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('booking.step4.method_title') }}</h3>
+                            <p class="text-sm text-gray-600 mb-4">{{ __('booking.step4.paypal.redirect') }}</p>
                         </div>
 
                         <!-- PayPal Payment Form (Only Payment Method) -->
@@ -86,7 +86,7 @@
                                         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
                                             <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.185zm14.146-14.42a.925.925 0 0 0 .144-.05c-.02-.12-.04-.24-.06-.36-.3-1.87-.6-3.14-1.61-4.29-.9-1.03-2.4-1.48-4.4-1.48H5.998c-.52 0-.97.38-1.05.9L2.47 20.597h4.606l1.12-7.185c.082-.518.526-.9 1.05-.9h4.45c3.75 0 6.75-1.5 7.65-6.05.05-.25.09-.5.12-.75z"/>
                                         </svg>
-                                        <span id="paypal-button-text">Payer avec PayPal</span>
+                                        <span id="paypal-button-text">{{ __('booking.step4.paypal.pay', ['amount' => '']) }}</span>
                                         <span id="paypal-spinner" class="hidden">
                                             <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -106,7 +106,7 @@
                                         <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                                         </svg>
-                                        <h3 class="font-semibold text-gray-900">Carte de crédit ou de débit</h3>
+                                        <h3 class="font-semibold text-gray-900">{{ __('booking.main.payment_modal.card_label') }}</h3>
                                     </div>
                                     <input type="radio" name="payment_gateway" value="cmi" class="w-5 h-5 text-red-600 border-gray-300 focus:ring-red-500">
                                 </div>
@@ -195,7 +195,7 @@
 
                                 <div class="flex justify-end">
                                     <button type="button" id="cmi-submit-button" class="bg-gray-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                                        <span id="cmi-button-text">Suivant</span>
+                                        <span id="cmi-button-text">{{ __('booking.main.buttons.next') }}</span>
                                         <span id="cmi-spinner" class="hidden">
                                             <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -213,12 +213,12 @@
                 <div id="step3" class="bg-white rounded-2xl border border-gray-200 p-6 opacity-50 pointer-events-none">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-lg font-semibold text-gray-900">3. Examiner votre réservation</h2>
-                            <p class="text-sm text-gray-600 mt-1">Vérifiez les détails avant de confirmer</p>
+                            <h2 class="text-lg font-semibold text-gray-900">3. {{ __('booking.main.steps.review_title') }}</h2>
+                            <p class="text-sm text-gray-600 mt-1">{{ __('booking.main.steps.review_sub') }}</p>
                         </div>
                         <a href="{{ route('booking.review', $car) }}" 
                            class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition duration-200 hidden">
-                            Examiner
+                            {{ __('booking.main.steps.review_title') }}
                         </a>
                     </div>
                 </div>
@@ -251,7 +251,7 @@
                         </svg>
                         <span class="text-sm text-gray-600">{{ $car->agency->agency_name }}</span>
                         @if($car->agency->featured)
-                            <span class="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-medium rounded">Top Partner</span>
+                            <span class="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-medium rounded">{{ __('booking.main.summary.top_partner') }}</span>
                         @endif
                     </div>
                     
@@ -259,12 +259,12 @@
                         <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                         </svg>
-                        <span class="text-sm text-gray-600">4.8 (12 avis)</span>
+                        <span class="text-sm text-gray-600">{{ __('booking.main.summary.reviews', ['rating' => '4.8', 'count' => '12']) }}</span>
                     </div>
 
                     <div class="border-t border-gray-200 pt-4 mb-4">
-                        <p class="text-xs text-gray-500 mb-2">Cette réservation est non remboursable.</p>
-                        <p class="text-xs text-blue-600 underline cursor-pointer">Politique complète</p>
+                        <p class="text-xs text-gray-500 mb-2">{{ __('booking.main.summary.non_refundable') }}</p>
+                        <p class="text-xs text-blue-600 underline cursor-pointer">{{ __('booking.main.summary.full_policy') }}</p>
                     </div>
 
                     <!-- Booking Details -->
@@ -272,46 +272,46 @@
                         <!-- Dates -->
                         <div class="flex justify-between items-center">
                             <div>
-                                <p class="font-semibold text-gray-900">Dates</p>
+                                <p class="font-semibold text-gray-900">{{ __('booking.main.summary.dates') }}</p>
                                 <p class="text-sm text-gray-600" id="selected-dates">Du 16 oct. au 2 nov. 2025</p>
                             </div>
-                            <button id="editDatesBtn" class="text-gray-600 hover:text-gray-800 text-sm underline cursor-pointer">
-                                Modifier
+                                <button id="editDatesBtn" class="text-gray-600 hover:text-gray-800 text-sm underline cursor-pointer">
+                                {{ __('booking.main.buttons.edit') }}
                             </button>
                         </div>
 
                         <!-- Duration -->
                         <div class="flex justify-between items-center">
                             <div>
-                                <p class="font-semibold text-gray-900">Durée</p>
+                                <p class="font-semibold text-gray-900">{{ __('booking.main.summary.duration') }}</p>
                                 <p class="text-sm text-gray-600" id="selected-duration">17 jours</p>
                             </div>
-                            <button id="editDurationBtn" class="text-gray-600 hover:text-gray-800 text-sm underline cursor-pointer">
-                                Modifier
+                                <button id="editDurationBtn" class="text-gray-600 hover:text-gray-800 text-sm underline cursor-pointer">
+                                {{ __('booking.main.buttons.edit') }}
                             </button>
                         </div>
                     </div>
 
                     <!-- Price Details -->
                     <div class="border-t border-gray-200 pt-4 mt-6">
-                        <h4 class="font-semibold text-gray-900 mb-4">Détails des prix</h4>
+                        <h4 class="font-semibold text-gray-900 mb-4">{{ __('booking.main.summary.price_details') }}</h4>
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <span class="text-gray-600" id="price-breakdown">17 jours × {{ number_format($car->client_price_per_day, 0) }} MAD</span>
+                                <span class="text-gray-600" id="price-breakdown">17 {{ __('booking.main.summary.days', ['count' => 17]) }} × {{ number_format($car->client_price_per_day, 0) }} MAD</span>
                                 <span class="text-gray-900" id="subtotal-price">{{ number_format(17 * $car->client_price_per_day, 0) }} MAD</span>
                             </div>
                             <div class="flex justify-between text-green-600">
-                                <span>Remise séjour longue durée</span>
+                                <span>{{ __('booking.main.summary.long_stay_discount') }}</span>
                                 <span id="discount-price">-{{ number_format(17 * $car->client_price_per_day * 0.1, 0) }} MAD</span>
                             </div>
                             <div class="border-t border-gray-200 pt-2 mt-2">
                                 <div class="flex justify-between font-semibold">
-                                    <span class="text-gray-900">Total MAD</span>
+                                    <span class="text-gray-900">{{ __('booking.main.summary.total_mad') }}</span>
                                     <span class="text-gray-900" id="total-price">{{ number_format(17 * $car->client_price_per_day * 0.9, 0) }} MAD</span>
                                 </div>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2 underline cursor-pointer">Répartition des prix</p>
+                        <p class="text-xs text-gray-500 mt-2 underline cursor-pointer">{{ __('booking.main.summary.price_breakdown') }}</p>
                     </div>
 
                     <!-- Price Alert -->
@@ -320,7 +320,7 @@
                             <svg class="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <p class="text-xs text-green-700">Prix plus bas. Vos dates sont 441 MAD moins cher que la moyenne.</p>
+                            <p class="text-xs text-green-700">{{ __('booking.main.summary.lower_price', ['amount' => 441]) }}</p>
                         </div>
                     </div>
                 </div>
@@ -340,13 +340,13 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
-                <h2 class="text-xl font-bold text-gray-900">Se connecter ou s'inscrire pour réserver</h2>
+                <h2 class="text-xl font-bold text-gray-900">{{ __('booking.main.login_modal.title') }}</h2>
             </div>
 
             <!-- Phone Number Input -->
             <div class="space-y-4 mb-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Code pays</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.main.login_modal.country_code') }}</label>
                     <div class="relative">
                         <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent appearance-none">
                             <option value="+212">Maroc (+212)</option>
@@ -359,18 +359,18 @@
                     </div>
                 </div>
                 <div>
-                    <input type="tel" placeholder="Numéro de téléphone" 
+                    <input type="tel" placeholder="{{ __('booking.main.login_modal.phone_placeholder') }}" 
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                 </div>
                 <p class="text-xs text-gray-500">
                     Nous vous appellerons ou vous enverrons un SMS pour confirmer votre numéro. 
-                    <a href="#" class="text-blue-600 underline">Politique de confidentialité</a>
+                    <a href="#" class="text-blue-600 underline">{{ __('booking.main.login_modal.privacy') }}</a>
                 </p>
             </div>
 
             <!-- Continue Button -->
             <button id="continuePhone" class="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold mb-4 transition duration-200">
-                Continuer
+                {{ __('booking.main.login_modal.continue') }}
             </button>
 
             <!-- Separator -->
@@ -379,7 +379,7 @@
                     <div class="w-full border-t border-gray-300"></div>
                 </div>
                 <div class="relative flex justify-center text-sm">
-                    <span class="px-2 bg-white text-gray-500">ou</span>
+                    <span class="px-2 bg-white text-gray-500">{{ __('booking.main.login_modal.or') }}</span>
                 </div>
             </div>
 
@@ -410,7 +410,7 @@
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                 </svg>
-                <span class="text-gray-700 font-medium">Continuer avec l'e-mail</span>
+                <span class="text-gray-700 font-medium">{{ __('booking.main.login_modal.social_email') }}</span>
             </button>
         </div>
     </div>
@@ -427,19 +427,19 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
-                <h2 class="text-xl font-bold text-gray-900">Ajouter une méthode de paiement</h2>
+                <h2 class="text-xl font-bold text-gray-900">{{ __('booking.main.payment_modal.title') }}</h2>
             </div>
 
             <!-- Payment Form -->
             <form id="paymentForm" class="space-y-4">
                 <!-- Card Type -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Type de carte</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.main.payment_modal.card_type') }}</label>
                     <div class="space-y-3">
                         <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
                             <input type="radio" name="cardType" value="credit" class="mr-3" checked>
                             <div class="flex items-center">
-                                <span class="mr-3">Carte de crédit ou de débit</span>
+                                <span class="mr-3">{{ __('booking.main.payment_modal.card_label') }}</span>
                                 <div class="flex space-x-2">
                                     <svg class="w-8 h-5" viewBox="0 0 24 16">
                                         <rect width="24" height="16" rx="2" fill="#1A1F71"/>
@@ -463,7 +463,7 @@
 
                 <!-- Card Number -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de carte</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.main.payment_modal.card_number') }}</label>
                     <div class="relative">
                         <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent pl-12" 
@@ -478,14 +478,14 @@
                 <!-- Expiration and CVV -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Expiration</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.main.payment_modal.exp') }}</label>
                         <input type="text" id="expirationDate" placeholder="MM/AA" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" 
                                maxlength="5">
                         <div id="expirationError" class="text-red-500 text-sm mt-1 hidden"></div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.main.payment_modal.cvv') }}</label>
                         <input type="text" id="cvv" placeholder="123" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" 
                                maxlength="4">
@@ -495,7 +495,7 @@
 
                 <!-- Country -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Pays/région</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.main.payment_modal.country') }}</label>
                     <select id="country" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                         <option value="MA">Maroc</option>
                         <option value="FR">France</option>
@@ -505,7 +505,7 @@
 
                 <!-- Next Button -->
                 <button type="submit" id="paymentSubmitBtn" class="w-full bg-black hover:bg-gray-800 text-white py-3 rounded-lg font-semibold transition duration-200">
-                    Suivant
+                    {{ __('booking.main.payment_modal.next') }}
                 </button>
             </form>
         </div>

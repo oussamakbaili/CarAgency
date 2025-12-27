@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Réserver - ' . $car->brand . ' ' . $car->model)
+@section('title', __('booking.airbnb.page_title'))
 
 @section('content')
 <div class="min-h-screen bg-gray-50">
@@ -14,7 +14,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
                     </button>
-                    <h1 class="text-2xl font-bold text-gray-900">Confirmer et payer</h1>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ __('booking.airbnb.header') }}</h1>
                 </div>
                 <div class="flex items-center">
                     <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
@@ -33,12 +33,12 @@
                 <div id="step1" class="bg-white rounded-2xl border border-gray-200 p-6 mb-4">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-lg font-semibold text-gray-900">1. Se connecter ou s'inscrire</h2>
-                            <p class="text-sm text-gray-600 mt-1">Connectez-vous pour continuer votre réservation</p>
+                            <h2 class="text-lg font-semibold text-gray-900">1. {{ __('booking.airbnb.steps.login_title') }}</h2>
+                            <p class="text-sm text-gray-600 mt-1">{{ __('booking.airbnb.steps.login_sub') }}</p>
                         </div>
                         @if(!auth()->check())
                             <button id="loginBtn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition duration-200">
-                                Continuer
+                                {{ __('booking.airbnb.buttons.continue') }}
                             </button>
                         @else
                             <div class="flex items-center text-green-600">
@@ -55,8 +55,8 @@
                 <div id="step2" class="bg-white rounded-2xl border border-gray-200 p-6 mb-4 {{ !auth()->check() ? 'opacity-50 pointer-events-none' : '' }}">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-lg font-semibold text-gray-900">2. Ajouter une méthode de paiement</h2>
-                            <p class="text-sm text-gray-600 mt-1">Sélectionnez votre mode de paiement</p>
+                            <h2 class="text-lg font-semibold text-gray-900">2. {{ __('booking.airbnb.steps.payment_title') }}</h2>
+                            <p class="text-sm text-gray-600 mt-1">{{ __('booking.airbnb.steps.payment_sub') }}</p>
                         </div>
                         @if(auth()->check())
                             <button id="paymentBtn" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition duration-200">
@@ -74,8 +74,8 @@
                 <div id="step3" class="bg-white rounded-2xl border border-gray-200 p-6 opacity-50 pointer-events-none">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="text-lg font-semibold text-gray-900">3. Examiner votre réservation</h2>
-                            <p class="text-sm text-gray-600 mt-1">Vérifiez les détails avant de confirmer</p>
+                            <h2 class="text-lg font-semibold text-gray-900">3. {{ __('booking.airbnb.steps.review_title') }}</h2>
+                            <p class="text-sm text-gray-600 mt-1">{{ __('booking.airbnb.steps.review_sub') }}</p>
                         </div>
                         <a href="{{ route('booking.review', $car) }}" 
                            class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition duration-200 hidden">
@@ -112,8 +112,8 @@
                     </div>
 
                     <div class="border-t border-gray-200 pt-4 mb-4">
-                        <p class="text-xs text-gray-500 mb-2">Cette réservation est non remboursable.</p>
-                        <p class="text-xs text-blue-600 underline cursor-pointer">Politique complète</p>
+                        <p class="text-xs text-gray-500 mb-2">{{ __('booking.airbnb.summary.non_refundable') }}</p>
+                        <p class="text-xs text-blue-600 underline cursor-pointer">{{ __('booking.airbnb.summary.full_policy') }}</p>
                     </div>
 
                     <!-- Booking Details -->
@@ -121,46 +121,46 @@
                         <!-- Dates -->
                         <div class="flex justify-between items-center">
                             <div>
-                                <p class="font-semibold text-gray-900">Dates</p>
+                                <p class="font-semibold text-gray-900">{{ __('booking.airbnb.summary.dates') }}</p>
                                 <p class="text-sm text-gray-600">Du 16 oct. au 2 nov. 2025</p>
                             </div>
-                            <button class="text-gray-600 hover:text-gray-800 text-sm underline">
-                                Modifier
+                                <button class="text-gray-600 hover:text-gray-800 text-sm underline">
+                                {{ __('booking.airbnb.buttons.edit') }}
                             </button>
                         </div>
 
                         <!-- Duration -->
                         <div class="flex justify-between items-center">
                             <div>
-                                <p class="font-semibold text-gray-900">Durée</p>
+                                <p class="font-semibold text-gray-900">{{ __('booking.airbnb.summary.duration') }}</p>
                                 <p class="text-sm text-gray-600">17 jours</p>
                             </div>
-                            <button class="text-gray-600 hover:text-gray-800 text-sm underline">
-                                Modifier
+                                <button class="text-gray-600 hover:text-gray-800 text-sm underline">
+                                {{ __('booking.airbnb.buttons.edit') }}
                             </button>
                         </div>
                     </div>
 
                     <!-- Price Details -->
                     <div class="border-t border-gray-200 pt-4 mt-6">
-                        <h4 class="font-semibold text-gray-900 mb-4">Détails des prix</h4>
+                        <h4 class="font-semibold text-gray-900 mb-4">{{ __('booking.airbnb.summary.price_details') }}</h4>
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <span class="text-gray-600">17 jours × {{ number_format($car->client_price_per_day, 0) }} MAD</span>
+                                <span class="text-gray-600">17 {{ __('booking.airbnb.summary.days', ['count' => 17]) }} × {{ number_format($car->client_price_per_day, 0) }} MAD</span>
                                 <span class="text-gray-900">{{ number_format(17 * $car->client_price_per_day, 0) }} MAD</span>
                             </div>
                             <div class="flex justify-between text-green-600">
-                                <span>Remise séjour longue durée</span>
+                                <span>{{ __('booking.airbnb.summary.long_stay_discount') }}</span>
                                 <span>-{{ number_format(17 * $car->client_price_per_day * 0.1, 0) }} MAD</span>
                             </div>
                             <div class="border-t border-gray-200 pt-2 mt-2">
                                 <div class="flex justify-between font-semibold">
-                                    <span class="text-gray-900">Total MAD</span>
+                                    <span class="text-gray-900">{{ __('booking.airbnb.summary.total_mad') }}</span>
                                     <span class="text-gray-900">{{ number_format(17 * $car->client_price_per_day * 0.9, 0) }} MAD</span>
                                 </div>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2 underline cursor-pointer">Répartition des prix</p>
+                        <p class="text-xs text-gray-500 mt-2 underline cursor-pointer">{{ __('booking.airbnb.summary.price_breakdown') }}</p>
                     </div>
 
                     <!-- Price Alert -->
@@ -169,7 +169,7 @@
                             <svg class="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <p class="text-xs text-green-700">Prix plus bas. Vos dates sont 441 MAD moins cher que la moyenne.</p>
+                            <p class="text-xs text-green-700">{{ __('booking.airbnb.summary.lower_price', ['amount' => 441]) }}</p>
                         </div>
                     </div>
                 </div>
@@ -259,7 +259,7 @@
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                 </svg>
-                <span class="text-gray-700 font-medium">Continuer avec l'e-mail</span>
+                <span class="text-gray-700 font-medium">{{ __('booking.airbnb.login_modal.social_email') }}</span>
             </button>
         </div>
     </div>
@@ -276,19 +276,19 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
-                <h2 class="text-xl font-bold text-gray-900">Ajouter une méthode de paiement</h2>
+                <h2 class="text-xl font-bold text-gray-900">{{ __('booking.airbnb.payment_modal.title') }}</h2>
             </div>
 
             <!-- Payment Form -->
             <form id="paymentForm" class="space-y-4">
                 <!-- Card Type -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Type de carte</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.airbnb.payment_modal.card_type') }}</label>
                     <div class="space-y-3">
                         <label class="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
                             <input type="radio" name="cardType" value="credit" class="mr-3" checked>
                             <div class="flex items-center">
-                                <span class="mr-3">Carte de crédit ou de débit</span>
+                                <span class="mr-3">{{ __('booking.airbnb.payment_modal.card_label') }}</span>
                                 <div class="flex space-x-2">
                                     <svg class="w-8 h-5" viewBox="0 0 24 16">
                                         <rect width="24" height="16" rx="2" fill="#1A1F71"/>
@@ -312,7 +312,7 @@
 
                 <!-- Card Number -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de carte</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.airbnb.payment_modal.card_number') }}</label>
                     <div class="relative">
                         <input type="text" placeholder="1234 5678 9012 3456" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent pl-12">
@@ -325,12 +325,12 @@
                 <!-- Expiration and CVV -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Expiration</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.airbnb.payment_modal.exp') }}</label>
                         <input type="text" placeholder="MM/AA" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.airbnb.payment_modal.cvv') }}</label>
                         <input type="text" placeholder="123" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                     </div>
@@ -338,7 +338,7 @@
 
                 <!-- Country -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Pays/région</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.airbnb.payment_modal.country') }}</label>
                     <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                         <option value="MA">Maroc</option>
                         <option value="FR">France</option>
@@ -348,7 +348,7 @@
 
                 <!-- Next Button -->
                 <button type="submit" class="w-full bg-black hover:bg-gray-800 text-white py-3 rounded-lg font-semibold transition duration-200">
-                    Suivant
+                    {{ __('booking.airbnb.payment_modal.next') }}
                 </button>
             </form>
         </div>

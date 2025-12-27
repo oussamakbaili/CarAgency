@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Réserver - ' . $car->brand . ' ' . $car->model)
+@section('title', __('booking.step1.page_title', ['brand' => $car->brand, 'model' => $car->model]))
 
 @section('content')
     <div class="py-8">
@@ -8,9 +8,9 @@
             <!-- Breadcrumb -->
             <nav class="mb-8">
                 <ol class="flex items-center space-x-2 text-sm">
-                    <li><a href="{{ route('public.home') }}" class="text-blue-600 hover:text-blue-800">Accueil</a></li>
+                    <li><a href="{{ route('public.home') }}" class="text-blue-600 hover:text-blue-800">{{ __('booking.step1.breadcrumbs.home') }}</a></li>
                     <li class="text-gray-400">/</li>
-                    <li><a href="{{ route('public.agencies') }}" class="text-blue-600 hover:text-blue-800">Agences</a></li>
+                    <li><a href="{{ route('public.agencies') }}" class="text-blue-600 hover:text-blue-800">{{ __('booking.step1.breadcrumbs.agencies') }}</a></li>
                     <li class="text-gray-400">/</li>
                     <li><a href="{{ route('public.agency.show', $car->agency) }}" class="text-blue-600 hover:text-blue-800">{{ $car->agency->agency_name }}</a></li>
                     <li class="text-gray-400">/</li>
@@ -39,7 +39,7 @@
                             <div class="absolute top-4 right-4 space-y-2 text-right">
                                 <div class="bg-white bg-opacity-90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm">
                                     <div class="text-2xl font-bold text-blue-600">{{ number_format($car->client_price_per_day, 0) }} MAD</div>
-                                    <div class="text-sm text-gray-600">par jour</div>
+                                    <div class="text-sm text-gray-600">{{ __('booking.step1.price.per_day') }}</div>
                                 </div>
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
                                     @if($car->is_available)
@@ -52,13 +52,13 @@
                                         bg-red-100 text-red-800
                                     @endif">
                                     @if($car->is_available)
-                                        Disponible
+                                        {{ __('booking.step1.availability.available') }}
                                     @elseif($car->status === 'rented')
-                                        En location
+                                        {{ __('booking.step1.availability.rented') }}
                                     @elseif($car->status === 'maintenance')
-                                        Maintenance
+                                        {{ __('booking.step1.availability.maintenance') }}
                                     @else
-                                        Indisponible
+                                        {{ __('booking.step1.availability.unavailable') }}
                                     @endif
                                 </span>
                             </div>
@@ -92,7 +92,7 @@
                                         <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                                         </svg>
-                                        <span class="text-sm text-gray-600">{{ $car->seats }} places</span>
+                                        <span class="text-sm text-gray-600">{{ trans_choice('booking.step1.agency.seats', $car->seats, ['count' => $car->seats]) }}</span>
                                     </div>
                                 @endif
                                 @if($car->color)
@@ -119,7 +119,7 @@
                                     @endif
                                     <div class="ml-4">
                                         <h3 class="font-semibold text-gray-900">{{ $car->agency->agency_name }}</h3>
-                                        <p class="text-sm text-gray-600">{{ $car->agency->address ?? 'Adresse non spécifiée' }}</p>
+                                        <p class="text-sm text-gray-600">{{ $car->agency->address ?? __('booking.step1.agency.address_unknown') }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -136,8 +136,8 @@
                             <!-- Progress Indicator -->
                             <div class="mb-6">
                                 <div class="flex items-center justify-between mb-2">
-                                    <span class="text-sm font-medium text-gray-600">Étape 1 sur 5</span>
-                                    <span class="text-sm text-gray-500">Sélection des dates</span>
+                                    <span class="text-sm font-medium text-gray-600">{{ __('booking.step1.progress.step', ['current' => 1, 'total' => 5]) }}</span>
+                                    <span class="text-sm text-gray-500">{{ __('booking.step1.progress.title') }}</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
                                     <div class="bg-blue-600 h-2 rounded-full" style="width: 20%"></div>
@@ -148,7 +148,7 @@
                             <div class="space-y-4 mb-6">
                                 <div>
                                     <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">
-                                        Date de début
+                                        {{ __('booking.step1.dates.start') }}
                                     </label>
                                     <input type="date" id="start_date" name="start_date" 
                                            min="{{ date('Y-m-d', strtotime('+1 day')) }}"
@@ -158,7 +158,7 @@
 
                                 <div>
                                     <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">
-                                        Date de fin
+                                        {{ __('booking.step1.dates.end') }}
                                     </label>
                                     <input type="date" id="end_date" name="end_date" 
                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
@@ -168,15 +168,15 @@
 
                             <!-- Price Preview -->
                             <div class="bg-gray-50 rounded-lg p-4 mb-6" id="price-preview" style="display: none;">
-                                <h3 class="font-semibold text-gray-900 mb-3">Résumé des prix</h3>
+                                <h3 class="font-semibold text-gray-900 mb-3">{{ __('booking.step1.price_summary.title') }}</h3>
                                 <div class="space-y-2 text-sm">
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">{{ number_format($car->client_price_per_day, 0) }} MAD × <span id="days-count">0</span> jour(s)</span>
+                                        <span class="text-gray-600">{{ number_format($car->client_price_per_day, 0) }} MAD × <span id="days-count">0</span> {{ __('booking.step1.price_summary.days') }}</span>
                                         <span class="text-gray-900" id="subtotal">0 MAD</span>
                                     </div>
                                     <hr class="border-gray-300">
                                     <div class="flex justify-between font-semibold">
-                                        <span class="text-gray-900">Total</span>
+                                        <span class="text-gray-900">{{ __('booking.step1.price_summary.total') }}</span>
                                         <span class="text-blue-600" id="total-price">0 MAD</span>
                                     </div>
                                 </div>
@@ -186,15 +186,15 @@
                             <button type="submit" 
                                     class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-semibold transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                     id="continue-btn" disabled>
-                                Continuer
+                                {{ __('booking.step1.actions.continue') }}
                             </button>
 
                             <!-- Login Prompt -->
                             <div class="mt-4 text-center">
                                 <p class="text-sm text-gray-600">
-                                    Vous avez déjà un compte ? 
+                                    {{ __('booking.step1.actions.login_prompt') }} 
                                     <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-800 font-medium">
-                                        Connectez-vous
+                                        {{ __('booking.step1.actions.login') }}
                                     </a>
                                 </p>
                             </div>
