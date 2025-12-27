@@ -321,6 +321,8 @@ class Car extends Model
     {
         // Accept values stored as "cars/...", "public/cars/..." or "app/public/cars/..."
         $normalized = preg_replace('/^(app\/)?public\//', '', $path);
+        // Convert Windows-style separators to URL-friendly slashes
+        $normalized = str_replace('\\', '/', $normalized);
         return ltrim($normalized, '/');
     }
 
