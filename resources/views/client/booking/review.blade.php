@@ -113,13 +113,17 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.review.dates.start') }}</label>
-                                <input type="date" value="2025-10-16" 
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="date"
+                                       value="{{ $startDate->format('Y-m-d') }}"
+                                       readonly
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 cursor-not-allowed">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.review.dates.end') }}</label>
-                                <input type="date" value="2025-11-02" 
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="date"
+                                       value="{{ $endDate->format('Y-m-d') }}"
+                                       readonly
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 cursor-not-allowed">
                             </div>
                         </div>
                     </div>
