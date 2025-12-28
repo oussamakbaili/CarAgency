@@ -227,44 +227,242 @@
 </div>
 
 <script>
-    let stripe = null;
-    let elements = null;
-    let cardElement = null;
-    let clientSecret = null;
+    document.addEventListener('DOMContentLoaded', function() {
+        let stripe = null;
+        let elements = null;
+        let cardElement = null;
+        let clientSecret = null;
 
-    // Payment Gateway Selection
-    function updateGatewayForms() {
-        const selected = document.querySelector('.payment-gateway-radio:checked');
-        const gateway = selected ? selected.dataset.gateway : 'stripe';
+        function updateGatewayForms() {
+            const radios = Array.from(document.querySelectorAll('.payment-gateway-radio'));
+            let selected = document.querySelector('.payment-gateway-radio:checked');
 
-        const stripeForm = document.getElementById('stripe-payment-form');
-        const paypalForm = document.getElementById('paypal-payment-form');
+            // fallback: if none selected, check the first one
+            if (!selected && radios.length) {
+                radios[0].checked = true;
+                selected = radios[0];
+            }
 
-        const showStripe = gateway === 'stripe';
+            const gateway = selected ? selected.dataset.gateway : 'stripe';
+            const stripeForm = document.getElementById('stripe-payment-form');
+            const paypalForm = document.getElementById('paypal-payment-form');
+            const showStripe = gateway === 'stripe';
 
-        if (stripeForm) {
-            stripeForm.classList.toggle('hidden', !showStripe);
-            stripeForm.style.display = showStripe ? 'block' : 'none';
-            if (showStripe) {
-                initStripe();
+            if (stripeForm) {
+                stripeForm.style.display = showStripe ? 'block' : 'none';
+                stripeForm.classList.toggle('hidden', !showStripe);
+                if (showStripe) {
+                    initStripe();
+                }
+            }
+
+            if (paypalForm) {
+                paypalForm.style.display = showStripe ? 'none' : 'block';
+                paypalForm.classList.toggle('hidden', showStripe);
             }
         }
 
-        if (paypalForm) {
-            paypalForm.classList.toggle('hidden', showStripe);
-            paypalForm.style.display = showStripe ? 'none' : 'block';
+        document.querySelectorAll('.payment-gateway-radio').forEach(radio => {
+            radio.addEventListener('change', updateGatewayForms);
+        });
+
+        // Initialize Stripe when Stripe option is selected
+        function initStripe() {
+            if (stripe) return; // Already initialized
+
+            stripe = Stripe('{{ config('services.stripe.key') }}');
+            elements = stripe.elements();
+            
+            cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#424770',
+                        '::placeholder': {
+                            color: '#aab7c4',
+                        },
+                    },
+                    invalid: {
+                        color: '#9e2146',
+                    },
+                },
+            });
+
+            cardElement.mount('#card-element');
+
+            cardElement.on('change', function(event) {
+                const displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
         }
-    }
 
-    document.querySelectorAll('.payment-gateway-radio').forEach(radio => {
-        radio.addEventListener('change', updateGatewayForms);
+        // Initial state
+        updateGatewayForms();
+
+        // Initialize Stripe on page load if Stripe is selected
+        if (document.querySelector('input[name="payment_gateway"][value="stripe"]').checked) {
+            initStripe();
+        }
+
+        // Stripe Form Submission
+        const stripeForm = document.getElementById('payment-form');
+        if (stripeForm) {
+            stripeForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const termsCheckbox = document.getElementById('terms_checkbox');
+                const privacyCheckbox = document.getElementById('privacy_checkbox');
+
+                if (!termsCheckbox.checked || !privacyCheckbox.checked) {
+                    alert('Veuillez accepter les conditions générales et la politique de confidentialité');
+                    return;
+                }
+
+                // Initialize Stripe if not already done
+                if (!stripe) {
+                    initStripe();
+                }
+
+                // Get or create PaymentIntent
+                if (!clientSecret) {
+                    const submitBtn = document.getElementById('submit-button');
+                    const buttonText = document.getElementById('button-text');
+                    const spinner = document.getElementById('spinner');
+                    
+                    submitBtn.disabled = true;
+                    buttonText.classList.add('hidden');
+                    spinner.classList.remove('hidden');
+
+                    try {
+                        const response = await fetch('{{ route('booking.init-stripe-payment') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            clientSecret = data.client_secret;
+                            document.getElementById('payment_intent_id').value = data.payment_intent_id;
+                        } else {
+                            alert('Erreur: ' + (data.error || 'Impossible d\'initialiser le paiement'));
+                            submitBtn.disabled = false;
+                            buttonText.classList.remove('hidden');
+                            spinner.classList.add('hidden');
+                            return;
+                        }
+                    } catch (error) {
+                        alert('Erreur lors de l\'initialisation du paiement');
+                        submitBtn.disabled = false;
+                        buttonText.classList.remove('hidden');
+                        spinner.classList.add('hidden');
+                        return;
+                    }
+                }
+
+                // Confirm payment
+                const {error, paymentIntent} = await stripe.confirmCardPayment(
+                    clientSecret,
+                    {
+                        payment_method: {
+                            card: cardElement,
+                        }
+                    }
+                );
+
+                const submitBtn = document.getElementById('submit-button');
+                const buttonText = document.getElementById('button-text');
+                const spinner = document.getElementById('spinner');
+
+                if (error) {
+                    const displayError = document.getElementById('card-errors');
+                    displayError.textContent = error.message;
+                    submitBtn.disabled = false;
+                    buttonText.classList.remove('hidden');
+                    spinner.classList.add('hidden');
+                } else {
+                    document.getElementById('payment_intent_id').value = paymentIntent.id;
+                    document.getElementById('terms_accepted').value = '1';
+                    document.getElementById('privacy_policy_accepted').value = '1';
+                    stripeForm.submit();
+                }
+            });
+        }
+
+        // PayPal Form Submission
+        const paypalForm = document.getElementById('paypal-form');
+        if (paypalForm) {
+            paypalForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const termsCheckbox = document.getElementById('terms_checkbox_paypal');
+                const privacyCheckbox = document.getElementById('privacy_checkbox_paypal');
+
+                if (!termsCheckbox.checked || !privacyCheckbox.checked) {
+                    alert('Veuillez accepter les conditions générales et la politique de confidentialité');
+                    return;
+                }
+
+                const submitBtn = document.getElementById('paypal-submit-button');
+                const buttonText = document.getElementById('paypal-button-text');
+                const spinner = document.getElementById('paypal-spinner');
+                const errorDiv = document.getElementById('paypal-error');
+                const errorMessage = document.getElementById('paypal-error-message');
+                
+                submitBtn.disabled = true;
+                buttonText.classList.add('hidden');
+                spinner.classList.remove('hidden');
+                errorDiv.classList.add('hidden');
+
+                try {
+                    const response = await fetch('{{ route('booking.init-paypal-payment') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success && data.approve_url) {
+                        // Rediriger vers PayPal
+                        window.location.href = data.approve_url;
+                    } else {
+                        // Afficher l'erreur dans la page
+                        const errorText = data.error || 'Impossible d\'initialiser le paiement PayPal. Veuillez réessayer plus tard.';
+                        errorMessage.textContent = errorText;
+                        errorDiv.classList.remove('hidden');
+                        
+                        // Scroll vers l'erreur
+                        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        
+                        submitBtn.disabled = false;
+                        buttonText.classList.remove('hidden');
+                        spinner.classList.add('hidden');
+                    }
+                } catch (error) {
+                    // Afficher l'erreur dans la page
+                    errorMessage.textContent = 'Erreur de connexion lors de l\'initialisation du paiement PayPal. Veuillez vérifier votre connexion internet et réessayer.';
+                    errorDiv.classList.remove('hidden');
+                    
+                    // Scroll vers l'erreur
+                    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    
+                    submitBtn.disabled = false;
+                    buttonText.classList.remove('hidden');
+                    spinner.classList.add('hidden');
+                }
+            });
+        }
     });
-
-    // Initial state
-    updateGatewayForms();
-
-    // Initialize Stripe when Stripe option is selected
-    function initStripe() {
         if (stripe) return; // Already initialized
 
         stripe = Stripe('{{ config('services.stripe.key') }}');
