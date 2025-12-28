@@ -241,6 +241,17 @@
                         @endif
                     </div>
 
+                    @php
+                        $bookingData = session('booking_data');
+                        $startDate = isset($bookingData['start_date']) ? \Carbon\Carbon::parse($bookingData['start_date']) : null;
+                        $endDate = isset($bookingData['end_date']) ? \Carbon\Carbon::parse($bookingData['end_date']) : null;
+                        $days = $bookingData['days'] ?? 1;
+                        $pricePerDay = $bookingData['price_per_day'] ?? $car->client_price_per_day;
+                        $totalPrice = $bookingData['total_price'] ?? ($days * $pricePerDay);
+                        $longStayDiscount = $days >= 7 ? $totalPrice * 0.1 : 0;
+                        $totalAfterDiscount = $totalPrice - $longStayDiscount;
+                    @endphp
+
                     <!-- Car Details -->
                     <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ $car->brand }} {{ $car->model }}</h3>
                     
@@ -249,22 +260,26 @@
                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
-                        <span class="text-sm text-gray-600">{{ $car->agency->agency_name }}</span>
+                        <a href="{{ route('public.agency.show', $car->agency) }}" class="text-sm text-blue-600 underline">
+                            {{ $car->agency->agency_name }}
+                        </a>
                         @if($car->agency->featured)
                             <span class="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-medium rounded">{{ __('booking.main.summary.top_partner') }}</span>
                         @endif
                     </div>
                     
-                    <div class="flex items-center mb-4">
+                    <a href="{{ route('public.agency.show', $car->agency) }}#reviews" class="flex items-center mb-4 text-sm text-gray-700 hover:text-gray-900">
                         <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                         </svg>
-                        <span class="text-sm text-gray-600">{{ __('booking.main.summary.reviews', ['rating' => '4.8', 'count' => '12']) }}</span>
-                    </div>
+                        <span>{{ __('booking.main.summary.reviews', ['rating' => number_format($car->getAverageRating(), 1), 'count' => $car->getReviewsCount()]) }}</span>
+                    </a>
 
                     <div class="border-t border-gray-200 pt-4 mb-4">
                         <p class="text-xs text-gray-500 mb-2">{{ __('booking.main.summary.non_refundable') }}</p>
-                        <p class="text-xs text-blue-600 underline cursor-pointer">{{ __('booking.main.summary.full_policy') }}</p>
+                        <a href="{{ route('public.policies.non-refundable') }}" class="text-xs text-blue-600 underline cursor-pointer">
+                            {{ __('booking.main.summary.full_policy') }}
+                        </a>
                     </div>
 
                     <!-- Booking Details -->
@@ -273,7 +288,13 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="font-semibold text-gray-900">{{ __('booking.main.summary.dates') }}</p>
-                                <p class="text-sm text-gray-600" id="selected-dates">Du 16 oct. au 2 nov. 2025</p>
+                                <p class="text-sm text-gray-600" id="selected-dates">
+                                    @if($startDate && $endDate)
+                                        Du {{ $startDate->translatedFormat('d M Y') }} au {{ $endDate->translatedFormat('d M Y') }}
+                                    @else
+                                        --
+                                    @endif
+                                </p>
                             </div>
                                 <button id="editDatesBtn" class="text-gray-600 hover:text-gray-800 text-sm underline cursor-pointer">
                                 {{ __('booking.main.buttons.edit') }}
@@ -284,11 +305,10 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="font-semibold text-gray-900">{{ __('booking.main.summary.duration') }}</p>
-                                <p class="text-sm text-gray-600" id="selected-duration">17 jours</p>
+                                <p class="text-sm text-gray-600" id="selected-duration">
+                                    {{ trans_choice('booking.main.summary.days', $days, ['count' => $days]) }}
+                                </p>
                             </div>
-                                <button id="editDurationBtn" class="text-gray-600 hover:text-gray-800 text-sm underline cursor-pointer">
-                                {{ __('booking.main.buttons.edit') }}
-                            </button>
                         </div>
                     </div>
 
@@ -297,17 +317,21 @@
                         <h4 class="font-semibold text-gray-900 mb-4">{{ __('booking.main.summary.price_details') }}</h4>
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <span class="text-gray-600" id="price-breakdown">17 {{ __('booking.main.summary.days', ['count' => 17]) }} × {{ number_format($car->client_price_per_day, 0) }} MAD</span>
-                                <span class="text-gray-900" id="subtotal-price">{{ number_format(17 * $car->client_price_per_day, 0) }} MAD</span>
+                                <span class="text-gray-600" id="price-breakdown">
+                                    {{ $days }} {{ trans_choice('booking.main.summary.days', $days, ['count' => $days]) }} × {{ number_format($pricePerDay, 0, ',', ' ') }} MAD
+                                </span>
+                                <span class="text-gray-900" id="subtotal-price">{{ number_format($totalPrice, 0, ',', ' ') }} MAD</span>
                             </div>
-                            <div class="flex justify-between text-green-600">
-                                <span>{{ __('booking.main.summary.long_stay_discount') }}</span>
-                                <span id="discount-price">-{{ number_format(17 * $car->client_price_per_day * 0.1, 0) }} MAD</span>
-                            </div>
+                            @if($longStayDiscount > 0)
+                                <div class="flex justify-between text-green-600">
+                                    <span>{{ __('booking.main.summary.long_stay_discount') }}</span>
+                                    <span id="discount-price">-{{ number_format($longStayDiscount, 0, ',', ' ') }} MAD</span>
+                                </div>
+                            @endif
                             <div class="border-t border-gray-200 pt-2 mt-2">
                                 <div class="flex justify-between font-semibold">
                                     <span class="text-gray-900">{{ __('booking.main.summary.total_mad') }}</span>
-                                    <span class="text-gray-900" id="total-price">{{ number_format(17 * $car->client_price_per_day * 0.9, 0) }} MAD</span>
+                                    <span class="text-gray-900" id="total-price">{{ number_format($totalAfterDiscount, 0, ',', ' ') }} MAD</span>
                                 </div>
                             </div>
                         </div>
@@ -320,7 +344,7 @@
                             <svg class="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <p class="text-xs text-green-700">{{ __('booking.main.summary.lower_price', ['amount' => 441]) }}</p>
+                            <p class="text-xs text-green-700">{{ __('booking.main.summary.lower_price', ['amount' => number_format($longStayDiscount > 0 ? $longStayDiscount : 0, 0, ',', ' ')]) }}</p>
                         </div>
                     </div>
                 </div>
