@@ -25,6 +25,16 @@
         </div>
     </div>
 
+    @php
+        $bookingData = $bookingData ?? session('booking_data');
+        $startDate = \Carbon\Carbon::parse($bookingData['start_date']);
+        $endDate = \Carbon\Carbon::parse($bookingData['end_date']);
+        $longStayDiscount = ($bookingData['days'] ?? 0) >= 7 ? $bookingData['total_price'] * 0.1 : 0;
+        $totalAfterDiscount = $bookingData['total_price'] - $longStayDiscount;
+        $agencyPhone = $car->agency->responsable_phone ?? $car->agency->phone;
+        $agencyContact = $car->agency->responsable_name ?? $car->agency->agency_name;
+    @endphp
+
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Left Column - Review Details -->
@@ -180,16 +190,29 @@
 
                     <!-- Car Details -->
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $car->brand }} {{ $car->model }}</h3>
-                    <div class="flex items-center mb-4">
+                    <a href="{{ route('public.agency.show', $car->agency) }}#reviews" class="flex items-center mb-2 text-sm text-gray-700 hover:text-gray-900">
                         <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                         </svg>
-                        <span class="text-sm text-gray-600">4.8 (12 avis)</span>
-                    </div>
+                        <span>{{ number_format($car->getAverageRating(), 1) }} ({{ $car->getReviewsCount() }} avis)</span>
+                    </a>
+                    <a href="{{ route('public.agency.show', $car->agency) }}" class="text-sm text-blue-600 underline mb-1 inline-block">
+                        {{ $car->agency->agency_name }}
+                    </a>
+                    @if($agencyContact || $agencyPhone)
+                        <div class="flex items-center text-sm text-gray-600 mb-4">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h2l2 5-2 1c1 3 3 5 6 6l1-2 5 2v2a2 2 0 01-2 2h-1C9.82 19 5 14.18 5 8V7a2 2 0 00-2-2z"/>
+                            </svg>
+                            <span>{{ $agencyContact }} @if($agencyPhone) ({{ $agencyPhone }}) @endif</span>
+                        </div>
+                    @endif
 
                     <div class="border-t border-gray-200 pt-4 mb-4">
                         <p class="text-xs text-gray-500 mb-2">{{ __('booking.review.summary.non_refundable') }}</p>
-                        <p class="text-xs text-blue-600 underline cursor-pointer">{{ __('booking.review.summary.full_policy') }}</p>
+                        <a href="{{ route('public.policies.non-refundable') }}" class="text-xs text-blue-600 underline cursor-pointer">
+                            {{ __('booking.review.summary.full_policy') }}
+                        </a>
                     </div>
 
                     <!-- Booking Details -->
@@ -198,7 +221,9 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="font-semibold text-gray-900">{{ __('booking.review.summary.dates') }}</p>
-                                <p class="text-sm text-gray-600">Du 16 oct. au 2 nov. 2025</p>
+                                <p class="text-sm text-gray-600">
+                                    Du {{ $startDate->translatedFormat('d M Y') }} au {{ $endDate->translatedFormat('d M Y') }}
+                                </p>
                             </div>
                             <button class="text-gray-600 hover:text-gray-800 text-sm underline">
                                 Modifier
@@ -209,11 +234,10 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <p class="font-semibold text-gray-900">{{ __('booking.review.summary.duration') }}</p>
-                                <p class="text-sm text-gray-600">17 jours</p>
+                                <p class="text-sm text-gray-600">
+                                    {{ trans_choice('booking.review.summary.days', $bookingData['days'], ['count' => $bookingData['days']]) }}
+                                </p>
                             </div>
-                            <button class="text-gray-600 hover:text-gray-800 text-sm underline">
-                                Modifier
-                            </button>
                         </div>
                     </div>
 
@@ -222,17 +246,22 @@
                         <h4 class="font-semibold text-gray-900 mb-4">{{ __('booking.review.summary.price_details') }}</h4>
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <span class="text-gray-600">17 {{ __('booking.review.summary.days', ['count' => 17]) }} × {{ number_format($car->client_price_per_day, 0) }} MAD</span>
-                                <span class="text-gray-900">{{ number_format(17 * $car->client_price_per_day, 0) }} MAD</span>
+                                <span class="text-gray-600">
+                                    {{ trans_choice('booking.review.summary.days', $bookingData['days'], ['count' => $bookingData['days']]) }}
+                                    × {{ number_format($bookingData['price_per_day'], 0, ',', ' ') }} MAD
+                                </span>
+                                <span class="text-gray-900">{{ number_format($bookingData['total_price'], 0, ',', ' ') }} MAD</span>
                             </div>
-                            <div class="flex justify-between text-green-600">
-                                <span>{{ __('booking.review.summary.long_stay_discount') }}</span>
-                                <span>-{{ number_format(17 * $car->client_price_per_day * 0.1, 0) }} MAD</span>
-                            </div>
+                            @if($longStayDiscount > 0)
+                                <div class="flex justify-between text-green-600">
+                                    <span>{{ __('booking.review.summary.long_stay_discount') }}</span>
+                                    <span>-{{ number_format($longStayDiscount, 0, ',', ' ') }} MAD</span>
+                                </div>
+                            @endif
                             <div class="border-t border-gray-200 pt-2 mt-2">
                                 <div class="flex justify-between font-semibold">
                                     <span class="text-gray-900">{{ __('booking.review.summary.total_mad') }}</span>
-                                    <span class="text-gray-900">{{ number_format(17 * $car->client_price_per_day * 0.9, 0) }} MAD</span>
+                                    <span class="text-gray-900">{{ number_format($totalAfterDiscount, 0, ',', ' ') }} MAD</span>
                                 </div>
                             </div>
                         </div>
@@ -245,7 +274,7 @@
                             <svg class="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <p class="text-xs text-green-700">{{ __('booking.review.summary.lower_price', ['amount' => 441]) }}</p>
+                            <p class="text-xs text-green-700">{{ __('booking.review.summary.lower_price', ['amount' => number_format($longStayDiscount, 0, ',', ' ')]) }}</p>
                         </div>
                     </div>
                 </div>

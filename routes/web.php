@@ -566,7 +566,19 @@ Route::prefix('booking')->name('booking.')->group(function () {
         
         // Routes avec paramètres en dernier
         Route::get('/{car}/review', function(\App\Models\Car $car) {
-            return view('client.booking.review', compact('car'));
+            $bookingData = session('booking_data');
+
+            if (!$bookingData || ($bookingData['car_id'] ?? null) !== $car->id) {
+                return redirect()->route('booking.step1', $car)
+                    ->with('error', 'Veuillez sélectionner vos dates avant de continuer.');
+            }
+
+            $car->load('agency.user');
+
+            return view('client.booking.review', [
+                'car' => $car,
+                'bookingData' => $bookingData,
+            ]);
         })->name('review');
     });
 });
@@ -597,6 +609,7 @@ Route::get('/debug/data', function () {
 
 // Public Routes (No Authentication Required)
 Route::get('/agencies', [App\Http\Controllers\PublicController::class, 'agencies'])->name('public.agencies');
+Route::view('/policies/non-refundable', 'public.policies.non-refundable')->name('public.policies.non-refundable');
 Route::get('/about', [App\Http\Controllers\PublicController::class, 'about'])->name('public.about');
 Route::get('/how-it-works', [App\Http\Controllers\PublicController::class, 'howItWorks'])->name('public.how-it-works');
 Route::get('/wishlists', [App\Http\Controllers\PublicController::class, 'wishlists'])->name('public.wishlists');

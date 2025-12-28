@@ -217,7 +217,7 @@
             
             const pricePerDay = {{ $car->client_price_per_day }};
 
-            function updatePrice() {
+            function updatePrice(trigger) {
                 const startDate = new Date(startDateInput.value);
                 const endDate = new Date(endDateInput.value);
                 
@@ -229,7 +229,8 @@
                     totalPrice.textContent = totalAmount.toLocaleString() + ' MAD';
                     
                     pricePreview.style.display = 'block';
-                    continueBtn.disabled = false;
+                    // Le bouton ne s'active qu'après une modification de la date de fin
+                    continueBtn.disabled = trigger !== 'end';
                 } else {
                     pricePreview.style.display = 'none';
                     continueBtn.disabled = true;
@@ -238,10 +239,12 @@
 
             startDateInput.addEventListener('change', function() {
                 endDateInput.min = this.value;
-                updatePrice();
+                updatePrice('start');
             });
 
-            endDateInput.addEventListener('change', updatePrice);
+            endDateInput.addEventListener('change', function() {
+                updatePrice('end');
+            });
         });
     </script>
 @endsection
