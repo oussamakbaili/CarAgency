@@ -36,42 +36,23 @@
                     <!-- Payment Gateway Selection -->
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-3">{{ __('booking.step4.gateway_label') }}</label>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <!-- Stripe Option -->
-                            <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="stripe">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <h3 class="font-semibold text-gray-900">{{ __('booking.step4.gateways.stripe.title') }}</h3>
-                                        <p class="text-sm text-gray-600 mt-1">{{ __('booking.step4.gateways.stripe.desc') }}</p>
-                                        <p class="text-xs text-gray-500 mt-1">{{ __('booking.step4.gateways.stripe.hint') }}</p>
-                                    </div>
-                                    <input type="radio" name="payment_gateway" value="stripe" class="payment-gateway-radio" checked>
+                        <div class="space-y-3">
+                            <label class="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-red-500">
+                                <input type="radio" name="payment_gateway" value="paypal" class="mt-1 payment-gateway-radio" data-gateway="paypal">
+                                <div>
+                                    <div class="font-semibold text-gray-900">{{ __('booking.step4.gateways.paypal.title') }}</div>
+                                    <div class="text-sm text-gray-600">{{ __('booking.step4.gateways.paypal.desc') }}</div>
+                                    <div class="text-xs text-gray-500">{{ __('booking.step4.gateways.paypal.hint') }}</div>
                                 </div>
-                            </div>
-
-                            <!-- CMI Option -->
-                            <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="cmi">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <h3 class="font-semibold text-gray-900">{{ __('booking.step4.gateways.cmi.title') }}</h3>
-                                        <p class="text-sm text-gray-600 mt-1">{{ __('booking.step4.gateways.cmi.desc') }}</p>
-                                        <p class="text-xs text-gray-500 mt-1">{{ __('booking.step4.gateways.cmi.hint') }}</p>
-                                    </div>
-                                    <input type="radio" name="payment_gateway" value="cmi" class="payment-gateway-radio">
+                            </label>
+                            <label class="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-red-500">
+                                <input type="radio" name="payment_gateway" value="stripe" class="mt-1 payment-gateway-radio" data-gateway="stripe" checked>
+                                <div>
+                                    <div class="font-semibold text-gray-900">{{ __('booking.step4.gateways.stripe.title') }}</div>
+                                    <div class="text-sm text-gray-600">{{ __('booking.step4.gateways.stripe.desc') }}</div>
+                                    <div class="text-xs text-gray-500">{{ __('booking.step4.gateways.stripe.hint') }}</div>
                                 </div>
-                            </div>
-
-                            <!-- PayPal Option -->
-                            <div class="payment-gateway-option border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-red-500 transition" data-gateway="paypal">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <h3 class="font-semibold text-gray-900">{{ __('booking.step4.gateways.paypal.title') }}</h3>
-                                        <p class="text-sm text-gray-600 mt-1">{{ __('booking.step4.gateways.paypal.desc') }}</p>
-                                        <p class="text-xs text-gray-500 mt-1">{{ __('booking.step4.gateways.paypal.hint') }}</p>
-                                    </div>
-                                    <input type="radio" name="payment_gateway" value="paypal" class="payment-gateway-radio">
-                                </div>
-                            </div>
+                            </label>
                         </div>
                     </div>
 
@@ -187,59 +168,6 @@
                         </form>
                     </div>
 
-                    <!-- CMI Payment Form -->
-                    <div id="cmi-payment-form" class="payment-form hidden">
-                        <form id="cmi-form" method="POST">
-                            @csrf
-                            <input type="hidden" name="payment_gateway" value="cmi">
-                            <input type="hidden" name="payment_method" value="cmi">
-
-                            <div class="mb-6">
-                                    <p class="text-gray-700 mb-4">
-                                        {{ __('booking.step4.cmi.redirect') }}
-                                    </p>
-                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                                    <p class="text-sm text-blue-800">
-                                        <strong>{{ __('booking.step4.cmi.amount') }}</strong> {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} MAD
-                                    </p>
-                                    <p class="text-sm text-blue-800 mt-2">
-                                        {{ __('booking.step4.gateways.cmi.desc') }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Terms and Conditions -->
-                            <div class="mb-6 space-y-4">
-                                <label class="flex items-start">
-                                    <input type="checkbox" name="terms_checkbox_cmi" id="terms_checkbox_cmi" class="mt-1 mr-3" required>
-                                    <span class="text-sm text-gray-700">
-                                        J'accepte les <a href="#" class="text-red-600 hover:underline">conditions générales</a> de location
-                                    </span>
-                                </label>
-                                <label class="flex items-start">
-                                    <input type="checkbox" name="privacy_checkbox_cmi" id="privacy_checkbox_cmi" class="mt-1 mr-3" required>
-                                    <span class="text-sm text-gray-700">
-                                        J'accepte la <a href="#" class="text-red-600 hover:underline">politique de confidentialité</a>
-                                    </span>
-                                </label>
-                            </div>
-
-                            <!-- Submit Button -->
-                            <button type="submit" id="cmi-submit-button" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg font-semibold transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <span id="cmi-button-text">{{ __('booking.step4.cmi.pay', ['amount' => number_format($bookingData['total_with_fees'], 2, ',', ' ')]) }}</span>
-                                <span id="cmi-spinner" class="hidden">
-                                    <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                </span>
-                            </button>
-
-                            <p class="text-xs text-gray-500 mt-4 text-center">
-                                🔒 {{ __('booking.step4.cmi.secure') }}
-                            </p>
-                        </form>
-                    </div>
                 </div>
             </div>
 
@@ -305,33 +233,15 @@
     let clientSecret = null;
 
     // Payment Gateway Selection
-    document.querySelectorAll('.payment-gateway-option').forEach(option => {
-        option.addEventListener('click', function() {
+    document.querySelectorAll('.payment-gateway-radio').forEach(radio => {
+        radio.addEventListener('change', function() {
             const gateway = this.dataset.gateway;
-            const radio = this.querySelector('.payment-gateway-radio');
-            radio.checked = true;
 
-            // Update border styles
-            document.querySelectorAll('.payment-gateway-option').forEach(opt => {
-                opt.classList.remove('border-red-500');
-                opt.classList.add('border-gray-200');
-            });
-            this.classList.remove('border-gray-200');
-            this.classList.add('border-red-500');
-
-            // Show/hide payment forms
             if (gateway === 'stripe') {
                 document.getElementById('stripe-payment-form').classList.remove('hidden');
-                document.getElementById('cmi-payment-form').classList.add('hidden');
-                document.getElementById('paypal-payment-form').classList.add('hidden');
-                initStripe();
-            } else if (gateway === 'cmi') {
-                document.getElementById('stripe-payment-form').classList.add('hidden');
-                document.getElementById('cmi-payment-form').classList.remove('hidden');
                 document.getElementById('paypal-payment-form').classList.add('hidden');
             } else if (gateway === 'paypal') {
                 document.getElementById('stripe-payment-form').classList.add('hidden');
-                document.getElementById('cmi-payment-form').classList.add('hidden');
                 document.getElementById('paypal-payment-form').classList.remove('hidden');
             }
         });
