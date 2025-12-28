@@ -9,6 +9,7 @@ use App\Services\RentalService;
 use App\Helpers\NotificationHelper;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 
 class RentalController extends Controller
 {
@@ -108,6 +109,40 @@ class RentalController extends Controller
         $totalWithFees = $totalPrice;
         
         return view('client.rentals.confirm', compact('car', 'startDate', 'endDate', 'days', 'totalPrice', 'platformFee', 'totalWithFees'));
+    }
+
+    /**
+     * Validate a card number (front-end API).
+     */
+    public function validateCard(Request $request): JsonResponse
+    {
+        $request->validate([
+            'card_number' => 'required|string',
+        ]);
+
+        $number = preg_replace('/\D/', '', $request->card_number);
+
+        if (!$number || !$this->passesLuhn($number)) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Your card is not valid',
+            ], 422);
+        }
+
+        return response()->json(['valid' => true]);
+    }
+
+    /**
+     * Expire booking session (used by client-side timer).
+     */
+    public function expireSession(): JsonResponse
+    {
+        session()->forget('booking_data');
+
+        return response()->json([
+            'expired' => true,
+            'message' => 'Booking session expired. Car released.',
+        ]);
     }
 
     public function store(Request $request, Car $car, RentalService $rentalService)
@@ -253,5 +288,30 @@ class RentalController extends Controller
                 ? 'Véhicule disponible pour ces dates' 
                 : 'Véhicule non disponible pour ces dates'
         ]);
+    }
+
+    /**
+     * Basic Luhn validation helper for card numbers.
+     */
+    private function passesLuhn(string $number): bool
+    {
+        $sum = 0;
+        $isEven = false;
+
+        for ($i = strlen($number) - 1; $i >= 0; $i--) {
+            $digit = intval($number[$i]);
+
+            if ($isEven) {
+                $digit *= 2;
+                if ($digit > 9) {
+                    $digit -= 9;
+                }
+            }
+
+            $sum += $digit;
+            $isEven = !$isEven;
+        }
+
+        return $sum % 10 === 0;
     }
 }

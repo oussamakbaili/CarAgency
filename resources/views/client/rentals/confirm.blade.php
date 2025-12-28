@@ -19,6 +19,17 @@
             </a>
             <h1 class="text-3xl font-bold text-gray-900">Confirmer et payer</h1>
         </div>
+        <div class="mb-6 bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span class="font-semibold">Session de réservation</span>
+            </div>
+            <div class="text-sm">
+                Expire dans <span id="booking-countdown" class="font-semibold">19:00</span>
+            </div>
+        </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Left Column - Booking Steps -->
@@ -115,6 +126,16 @@
                                 <input type="hidden" name="payment_gateway" value="stripe">
 
                                 <div class="space-y-5 mb-6">
+                                    <div>
+        <div class="flex items-center gap-2 mb-2">
+            <label class="block text-sm font-medium text-gray-700">Nom du titulaire</label>
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A4 4 0 018 16h8a4 4 0 012.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+        </div>
+        <input type="text" id="cardholder-name" name="cardholder_name" placeholder="John Doe" 
+               class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
+    </div>
                                     <div>
                                         <div class="flex items-center gap-2 mb-2">
                                             <label class="block text-sm font-medium text-gray-700">Card number</label>
@@ -283,12 +304,23 @@
                                 <div class="space-y-5 mb-6">
                                     <div>
                                         <div class="flex items-center gap-2 mb-2">
+                                            <label class="block text-sm font-medium text-gray-700">Nom du titulaire</label>
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A4 4 0 018 16h8a4 4 0 012.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                        </div>
+                                        <input type="text" id="cmi-cardholder" name="cardholder" placeholder="John Doe" 
+                                               class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
+                                        <div id="cmi-cardholder-error" class="text-red-600 text-sm mt-1 hidden"></div>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-2">
                                             <label class="block text-sm font-medium text-gray-700">Card number</label>
                                             <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                             </svg>
                                         </div>
-                                        <input type="text" id="cmi-card-number" name="card_number" placeholder="" 
+                                        <input type="text" id="cmi-card-number" name="card_number" placeholder="1234 5678 9012 3456" 
                                                maxlength="19"
                                                class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
                                         <div id="cmi-card-error" class="text-red-600 text-sm mt-1 hidden"></div>
@@ -779,10 +811,26 @@
 
     // Clear all errors for a gateway
     function clearAllErrors(gateway) {
-        const fields = ['card', 'expiry', 'cvc', 'zip', 'country'];
+        const fields = ['cardholder', 'card', 'expiry', 'cvc', 'zip', 'country'];
         fields.forEach(field => {
             clearError(gateway + '-' + field);
         });
+    }
+
+    function isValidExpiry(expiry) {
+        if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+            return false;
+        }
+        const [mm, yy] = expiry.split('/').map(v => parseInt(v, 10));
+        if (mm < 1 || mm > 12) return false;
+
+        const now = new Date();
+        const currentYY = parseInt(now.getFullYear().toString().slice(-2), 10);
+        const currentMM = now.getMonth() + 1;
+
+        if (yy < currentYY) return false;
+        if (yy === currentYY && mm < currentMM) return false;
+        return true;
     }
 
     // Validate payment form based on gateway
@@ -820,12 +868,18 @@
         } else if (selectedPaymentGateway === 'cmi') {
             clearAllErrors('cmi');
             
+            const cardholder = document.getElementById('cmi-cardholder').value.trim();
             const cardNumber = document.getElementById('cmi-card-number').value.replace(/\s/g, '');
             const expiry = document.getElementById('cmi-expiry').value.trim();
             const cvc = document.getElementById('cmi-cvc').value.trim();
             const zip = document.getElementById('cmi-zip').value.trim();
             const country = document.getElementById('cmi-country').value;
             
+            if (!cardholder) {
+                showError('cmi-cardholder', 'Veuillez renseigner le nom du titulaire');
+                isValid = false;
+            }
+
             if (!cardNumber) {
                 showError('cmi-card', 'Veuillez remplir le numéro de carte');
                 isValid = false;
@@ -837,8 +891,8 @@
             if (!expiry) {
                 showError('cmi-expiry', 'Veuillez remplir la date d\'expiration');
                 isValid = false;
-            } else if (!/^\d{2}\/\d{2}$/.test(expiry)) {
-                showError('cmi-expiry', 'La date d\'expiration doit être au format MM/AA');
+            } else if (!isValidExpiry(expiry)) {
+                showError('cmi-expiry', 'La date d\'expiration doit être au format MM/AA et future');
                 isValid = false;
             }
             
@@ -1068,6 +1122,30 @@
                 return;
             }
 
+            // Validate card number via API
+            const cardNumberRaw = document.getElementById('cmi-card-number').value;
+            try {
+                const validateResponse = await fetch('{{ route('client.cards.validate') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ card_number: cardNumberRaw })
+                });
+
+                if (!validateResponse.ok) {
+                    const data = await validateResponse.json();
+                    showError('cmi-card', data.message || 'Your card is not valid');
+                    return;
+                } else {
+                    clearError('cmi-card');
+                }
+            } catch (err) {
+                showError('cmi-card', 'Votre carte n\'est pas valide');
+                return;
+            }
+
             const submitBtn = document.getElementById('cmi-submit-button');
             const buttonText = document.getElementById('cmi-button-text');
             const spinner = document.getElementById('cmi-spinner');
@@ -1117,12 +1195,21 @@
         });
     }
 
+    // Clear CMI cardholder error on input
+    const cmiCardholder = document.getElementById('cmi-cardholder');
+    if (cmiCardholder) {
+        cmiCardholder.addEventListener('input', function() {
+            clearError('cmi-cardholder');
+        });
+    }
+
     // Format CMI card number input
     const cmiCardNumber = document.getElementById('cmi-card-number');
     if (cmiCardNumber) {
         cmiCardNumber.addEventListener('input', function(e) {
             clearError('cmi-card');
             let value = e.target.value.replace(/\s/g, '');
+            value = value.replace(/\D/g, '').slice(0, 19);
             let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
             e.target.value = formattedValue;
         });
@@ -1133,8 +1220,8 @@
     if (cmiExpiry) {
         cmiExpiry.addEventListener('input', function(e) {
             clearError('cmi-expiry');
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length >= 2) {
+            let value = e.target.value.replace(/\D/g, '').slice(0, 4);
+            if (value.length > 2) {
                 value = value.substring(0, 2) + '/' + value.substring(2, 4);
             }
             e.target.value = value;
@@ -1146,7 +1233,7 @@
     if (cmiCvc) {
         cmiCvc.addEventListener('input', function(e) {
             clearError('cmi-cvc');
-            e.target.value = e.target.value.replace(/\D/g, '');
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
         });
     }
 
@@ -1208,6 +1295,47 @@
                 reviewButton.classList.add('cursor-not-allowed');
             }
         });
+    }
+
+    // Booking session countdown (19 minutes)
+    const countdownEl = document.getElementById('booking-countdown');
+    if (countdownEl) {
+        const SESSION_MS = 19 * 60 * 1000;
+        const expireAt = Date.now() + SESSION_MS;
+
+        const timer = setInterval(async () => {
+            const remaining = expireAt - Date.now();
+            if (remaining <= 0) {
+                clearInterval(timer);
+                countdownEl.textContent = '00:00';
+                handleSessionExpired();
+                return;
+            }
+            const minutes = Math.floor(remaining / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            countdownEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    async function handleSessionExpired() {
+        // Disable all payment buttons and inputs
+        ['submit-button', 'paypal-submit-button', 'cmi-submit-button', 'reviewButton'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) btn.disabled = true;
+        });
+
+        try {
+            await fetch('{{ route('client.booking.session.expire') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+        } catch (e) {}
+
+        alert('Votre session de réservation a expiré. La voiture est à nouveau disponible.');
+        window.location.href = '{{ route('client.cars.show', $car) }}';
     }
 </script>
 @endsection

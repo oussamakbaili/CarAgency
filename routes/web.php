@@ -471,6 +471,8 @@ Route::prefix('client')->middleware(['auth', 'verified', 'client'])->name('clien
     Route::patch('/rentals/{rental}/cancel', [App\Http\Controllers\Client\RentalController::class, 'cancel'])->name('rentals.cancel');
     Route::get('/cars/{car}/unavailable-dates', [App\Http\Controllers\Client\RentalController::class, 'getUnavailableDates'])->name('rentals.unavailable-dates');
     Route::post('/cars/{car}/check-availability', [App\Http\Controllers\Client\RentalController::class, 'checkAvailability'])->name('rentals.check-availability');
+        Route::post('/cards/validate', [App\Http\Controllers\Client\RentalController::class, 'validateCard'])->name('cards.validate');
+        Route::post('/booking/session/expire', [App\Http\Controllers\Client\RentalController::class, 'expireSession'])->name('booking.session.expire');
     
     
         // Profile management
