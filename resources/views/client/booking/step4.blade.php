@@ -246,19 +246,24 @@
             const gateway = selected ? selected.dataset.gateway : 'stripe';
             const stripeForm = document.getElementById('stripe-payment-form');
             const paypalForm = document.getElementById('paypal-payment-form');
-            const showStripe = gateway === 'stripe';
 
+            // hide all first
             if (stripeForm) {
-                stripeForm.style.display = showStripe ? 'block' : 'none';
-                stripeForm.classList.toggle('hidden', !showStripe);
-                if (showStripe) {
-                    initStripe();
-                }
+                stripeForm.style.display = 'none';
+                stripeForm.classList.add('hidden');
+            }
+            if (paypalForm) {
+                paypalForm.style.display = 'none';
+                paypalForm.classList.add('hidden');
             }
 
-            if (paypalForm) {
-                paypalForm.style.display = showStripe ? 'none' : 'block';
-                paypalForm.classList.toggle('hidden', showStripe);
+            if (gateway === 'stripe' && stripeForm) {
+                stripeForm.style.display = 'block';
+                stripeForm.classList.remove('hidden');
+                initStripe();
+            } else if (gateway === 'paypal' && paypalForm) {
+                paypalForm.style.display = 'block';
+                paypalForm.classList.remove('hidden');
             }
         }
 
