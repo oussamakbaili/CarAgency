@@ -57,7 +57,7 @@
                     </div>
 
                     <!-- Stripe Payment Form (Hidden by default, shown when Stripe is selected) -->
-                    <div id="stripe-payment-form" class="payment-form">
+                    <div id="stripe-payment-form" class="payment-form hidden">
                         <form id="payment-form" action="{{ route('booking.process-payment') }}" method="POST">
                             @csrf
                             <input type="hidden" name="payment_intent_id" id="payment_intent_id" value="">
@@ -233,19 +233,28 @@
     let clientSecret = null;
 
     // Payment Gateway Selection
-    document.querySelectorAll('.payment-gateway-radio').forEach(radio => {
-        radio.addEventListener('change', function() {
-            const gateway = this.dataset.gateway;
+    function updateGatewayForms() {
+        const selected = document.querySelector('.payment-gateway-radio:checked');
+        const gateway = selected ? selected.dataset.gateway : 'stripe';
 
-            if (gateway === 'stripe') {
-                document.getElementById('stripe-payment-form').classList.remove('hidden');
-                document.getElementById('paypal-payment-form').classList.add('hidden');
-            } else if (gateway === 'paypal') {
-                document.getElementById('stripe-payment-form').classList.add('hidden');
-                document.getElementById('paypal-payment-form').classList.remove('hidden');
-            }
-        });
+        const stripeForm = document.getElementById('stripe-payment-form');
+        const paypalForm = document.getElementById('paypal-payment-form');
+
+        if (gateway === 'stripe') {
+            stripeForm.classList.remove('hidden');
+            paypalForm.classList.add('hidden');
+        } else {
+            stripeForm.classList.add('hidden');
+            paypalForm.classList.remove('hidden');
+        }
+    }
+
+    document.querySelectorAll('.payment-gateway-radio').forEach(radio => {
+        radio.addEventListener('change', updateGatewayForms);
     });
+
+    // Initial state
+    updateGatewayForms();
 
     // Initialize Stripe when Stripe option is selected
     function initStripe() {
