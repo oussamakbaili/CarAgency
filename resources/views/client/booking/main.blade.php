@@ -322,12 +322,10 @@
                                 </span>
                                 <span class="text-gray-900" id="subtotal-price">{{ number_format($totalPrice, 0, ',', ' ') }} MAD</span>
                             </div>
-                            @if($longStayDiscount > 0)
-                                <div class="flex justify-between text-green-600">
-                                    <span>{{ __('booking.main.summary.long_stay_discount') }}</span>
-                                    <span id="discount-price">-{{ number_format($longStayDiscount, 0, ',', ' ') }} MAD</span>
-                                </div>
-                            @endif
+                            <div class="flex justify-between text-green-600" id="discount-row" style="{{ $longStayDiscount > 0 ? '' : 'display:none;' }}">
+                                <span>{{ __('booking.main.summary.long_stay_discount') }}</span>
+                                <span id="discount-price">-{{ number_format($longStayDiscount, 0, ',', ' ') }} MAD</span>
+                            </div>
                             <div class="border-t border-gray-200 pt-2 mt-2">
                                 <div class="flex justify-between font-semibold">
                                     <span class="text-gray-900">{{ __('booking.main.summary.total_mad') }}</span>
@@ -1051,18 +1049,28 @@ document.addEventListener('DOMContentLoaded', function() {
         // Mettre à jour le prix dans le récapitulatif
         const pricePerDay = {{ $car->client_price_per_day }};
         const subtotal = diffDays * pricePerDay;
-        const discount = subtotal * 0.1;
+        const discount = diffDays >= 7 ? subtotal * 0.1 : 0;
         const total = subtotal - discount;
 
-        const subtotalEl = document.getElementById('price-subtotal');
-        const discountEl = document.getElementById('price-discount');
-        const totalEl = document.getElementById('price-total');
+        const priceBreakdownEl = document.getElementById('price-breakdown');
+        const subtotalEl = document.getElementById('subtotal-price');
+        const discountEl = document.getElementById('discount-price');
+        const discountRow = document.getElementById('discount-row');
+        const totalEl = document.getElementById('total-price');
 
+        if (priceBreakdownEl) {
+            priceBreakdownEl.textContent = `${diffDays} ${diffDays > 1 ? 'jours' : 'jour'} × ${pricePerDay.toLocaleString('fr-FR')} MAD`;
+        }
         if (subtotalEl) {
             subtotalEl.textContent = subtotal.toLocaleString('fr-FR') + ' MAD';
         }
-        if (discountEl) {
-            discountEl.textContent = '- ' + discount.toLocaleString('fr-FR') + ' MAD';
+        if (discountEl && discountRow) {
+            if (discount > 0) {
+                discountRow.style.display = '';
+                discountEl.textContent = '-' + discount.toLocaleString('fr-FR') + ' MAD';
+            } else {
+                discountRow.style.display = 'none';
+            }
         }
         if (totalEl) {
             totalEl.textContent = total.toLocaleString('fr-FR') + ' MAD';
@@ -1102,14 +1110,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update price calculation
         const pricePerDay = {{ $car->client_price_per_day }};
         const subtotal = diffDays * pricePerDay;
-        const discount = subtotal * 0.1;
+        const discount = diffDays >= 7 ? subtotal * 0.1 : 0;
         const total = subtotal - discount;
         
         // Update price display using IDs
-        document.getElementById('price-breakdown').textContent = `${diffDays} jours × ${pricePerDay.toLocaleString()} MAD`;
-        document.getElementById('subtotal-price').textContent = `${subtotal.toLocaleString()} MAD`;
-        document.getElementById('discount-price').textContent = `-${discount.toLocaleString()} MAD`;
-        document.getElementById('total-price').textContent = `${total.toLocaleString()} MAD`;
+        document.getElementById('price-breakdown').textContent = `${diffDays} ${diffDays > 1 ? 'jours' : 'jour'} × ${pricePerDay.toLocaleString('fr-FR')} MAD`;
+        document.getElementById('subtotal-price').textContent = `${subtotal.toLocaleString('fr-FR')} MAD`;
+        const discountRow = document.getElementById('discount-row');
+        const discountPrice = document.getElementById('discount-price');
+        if (discount > 0) {
+            discountRow.style.display = '';
+            discountPrice.textContent = `-${discount.toLocaleString('fr-FR')} MAD`;
+        } else {
+            discountRow.style.display = 'none';
+        }
+        document.getElementById('total-price').textContent = `${total.toLocaleString('fr-FR')} MAD`;
         
         editDatesModal.classList.add('hidden');
     });

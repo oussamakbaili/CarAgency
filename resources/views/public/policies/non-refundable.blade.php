@@ -15,7 +15,11 @@
                 <p class="text-gray-700">
                     Pour toute question, contactez notre support ou l'agence concernée avant de confirmer.
                 </p>
-                <a href="{{ route('public.home') }}" class="inline-flex items-center text-red-600 hover:text-red-700 font-semibold">
+                @php
+                    $previous = url()->previous();
+                    $backUrl = ($previous && $previous !== url()->current()) ? $previous : route('public.home');
+                @endphp
+                <a href="{{ $backUrl }}" class="inline-flex items-center text-red-600 hover:text-red-700 font-semibold">
                     &larr; Retour à l'accueil
                 </a>
             </div>
