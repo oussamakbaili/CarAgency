@@ -20,7 +20,62 @@ class BookingController extends Controller
         private RentalService $rentalService,
         private PaymentService $paymentService
     ) {
-        $this->middleware('auth')->except(['step1', 'showLoginModal']);
+        $this->middleware('auth')->except(['main', 'step1', 'showLoginModal']);
+    }
+
+    /**
+     * Page principale de réservation (avec pré-remplissage via query string).
+     */
+    public function main(Request $request, Car $car)
+    {
+        // Charger la relation agency
+        $car->load('agency');
+
+        // Vérifier disponibilité de base
+        if (!$car->is_available || !$car->agency || $car->agency->status !== 'approved') {
+            return redirect()->back()->with('error', 'Cette voiture n\'est pas disponible pour la location.');
+        }
+
+        $bookingData = session('booking_data');
+        $hasQueryDates = $request->filled('start_date') && $request->filled('end_date');
+
+        if ($hasQueryDates) {
+            try {
+                $startDate = Carbon::parse($request->start_date);
+                $endDate = Carbon::parse($request->end_date);
+            } catch (\Exception $e) {
+                return view('client.booking.main', compact('car', 'bookingData'));
+            }
+
+            // Valider les dates de la query avant d'écraser la session
+            if ($startDate->isFuture() && $endDate->gt($startDate)) {
+                // Vérifier la dispo réelle pour éviter d'afficher des dates invalides
+                if ($this->rentalService->checkAvailability($car, $startDate, $endDate)) {
+                    $days = $startDate->diffInDays($endDate);
+                    $totalPrice = $days * $car->client_price_per_day;
+
+                    $bookingData = [
+                        'car_id' => $car->id,
+                        'start_date' => $startDate->format('Y-m-d'),
+                        'end_date' => $endDate->format('Y-m-d'),
+                        'days' => $days,
+                        'price_per_day' => $car->client_price_per_day,
+                        'total_price' => $totalPrice,
+                        'platform_fee' => 0,
+                        'total_with_fees' => $totalPrice,
+                        'step' => 1,
+                    ];
+
+                    session(['booking_data' => $bookingData]);
+                }
+            }
+        } elseif (!$bookingData || ($bookingData['car_id'] ?? null) !== $car->id) {
+            // Nettoyer la session si elle ne correspond pas à cette voiture
+            session()->forget('booking_data');
+            $bookingData = null;
+        }
+
+        return view('client.booking.main', compact('car', 'bookingData'));
     }
 
     /**

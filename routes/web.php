@@ -545,9 +545,9 @@ Route::get('/paypal/cancel', [App\Http\Controllers\PayPalController::class, 'can
 // New booking system (Airbnb-style multi-step) - Public routes
 Route::prefix('booking')->name('booking.')->group(function () {
     // Booking page (Airbnb-style design)
-    Route::get('/{car}', function(\App\Models\Car $car) {
-        return view('client.booking.main', compact('car'));
-    })->name('main');
+    Route::get('/{car}', [App\Http\Controllers\Client\BookingController::class, 'main'])
+        ->whereNumber('car')
+        ->name('main');
     
     // Step 1: Date selection (public)
     Route::get('/{car}/step1', [App\Http\Controllers\Client\BookingController::class, 'step1'])->name('step1');
