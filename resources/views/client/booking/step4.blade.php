@@ -57,7 +57,7 @@
                     </div>
 
                     <!-- Stripe Payment Form (Hidden by default, shown when Stripe is selected) -->
-                    <div id="stripe-payment-form" class="payment-form hidden">
+                    <div id="stripe-payment-form" class="payment-form hidden" style="display: none;">
                         <form id="payment-form" action="{{ route('booking.process-payment') }}" method="POST">
                             @csrf
                             <input type="hidden" name="payment_intent_id" id="payment_intent_id" value="">
@@ -110,7 +110,7 @@
                     </div>
 
                     <!-- PayPal Payment Form -->
-                    <div id="paypal-payment-form" class="payment-form hidden">
+                    <div id="paypal-payment-form" class="payment-form hidden" style="display: none;">
                         <form id="paypal-form" method="POST">
                             @csrf
                             <input type="hidden" name="payment_gateway" value="paypal">
@@ -240,12 +240,19 @@
         const stripeForm = document.getElementById('stripe-payment-form');
         const paypalForm = document.getElementById('paypal-payment-form');
 
-        if (gateway === 'stripe') {
-            stripeForm.classList.remove('hidden');
-            paypalForm.classList.add('hidden');
-        } else {
-            stripeForm.classList.add('hidden');
-            paypalForm.classList.remove('hidden');
+        const showStripe = gateway === 'stripe';
+
+        if (stripeForm) {
+            stripeForm.classList.toggle('hidden', !showStripe);
+            stripeForm.style.display = showStripe ? 'block' : 'none';
+            if (showStripe) {
+                initStripe();
+            }
+        }
+
+        if (paypalForm) {
+            paypalForm.classList.toggle('hidden', showStripe);
+            paypalForm.style.display = showStripe ? 'none' : 'block';
         }
     }
 
