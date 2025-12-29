@@ -155,7 +155,7 @@
                                             </svg>
                                         </div>
                                         <input type="text" id="cmi-card-number" name="card_number" placeholder="4444 4444 4444 4444" 
-                                               maxlength="23"
+                                               maxlength="23" inputmode="numeric" autocomplete="cc-number"
                                                class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
                                         <div id="cmi-card-error" class="text-red-600 text-sm mt-1 hidden"></div>
                                     </div>
@@ -164,7 +164,7 @@
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Expiration</label>
                                             <input type="text" id="cmi-expiry" name="expiry" placeholder="MM/AA" 
-                                                   maxlength="5"
+                                                   maxlength="5" inputmode="numeric" autocomplete="cc-exp"
                                                    class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
                                             <div id="cmi-expiry-error" class="text-red-600 text-sm mt-1 hidden"></div>
                                         </div>
@@ -778,27 +778,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // Format card number with spaces
         if (cardNumberInput) {
             cardNumberInput.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-                let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
-                e.target.value = formattedValue;
+                e.target.value = formatCardNumber(e.target.value);
             });
         }
 
         // Format expiration date
         if (expirationInput) {
             expirationInput.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length >= 2) {
-                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
-                }
-                e.target.value = value;
+                e.target.value = formatExpiry(e.target.value);
             });
         }
 
         // Only allow numbers in CVV
         if (cvvInput) {
             cvvInput.addEventListener('input', function(e) {
-                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
             });
         }
 
