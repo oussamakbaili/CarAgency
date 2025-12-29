@@ -1942,12 +1942,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function formatCardNumber(value) {
         const digits = value.replace(/\D/g, '').slice(0, 19);
-        return digits.replace(/(.{4})/g, '$1 ').trim();
+        let formatted = digits.replace(/(.{4})/g, '$1 ').trim();
+        // If exactly a 4-digit block (or multiple of 4) and not max length, keep a trailing space for UX
+        if (digits.length > 0 && digits.length < 19 && digits.length % 4 === 0) {
+            formatted += ' ';
+        }
+        return formatted;
     }
 
     function formatExpiry(value) {
         const digits = value.replace(/\D/g, '').slice(0, 4);
-        if (digits.length <= 2) return digits;
+        if (digits.length === 0) return '';
+        if (digits.length <= 2) return digits + (digits.length === 2 ? '/' : '');
         return `${digits.slice(0, 2)}/${digits.slice(2)}`;
     }
 
