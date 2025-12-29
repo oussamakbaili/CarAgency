@@ -1941,10 +1941,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // CMI Payment Handler
     const cmiSubmitButton = document.getElementById('cmi-submit-button');
-    const cmiCardNumber = document.getElementById('cmi-card-number');
-    const cmiExpiry = document.getElementById('cmi-expiry');
-    const cmiCvc = document.getElementById('cmi-cvc');
-    const cmiCardholder = document.getElementById('cmi-cardholder');
+    let cmiCardNumber = document.getElementById('cmi-card-number');
+    let cmiExpiry = document.getElementById('cmi-expiry');
+    let cmiCvc = document.getElementById('cmi-cvc');
+    let cmiCardholder = document.getElementById('cmi-cardholder');
 
     function formatCardNumber(value) {
         const digits = value.replace(/\D/g, '').slice(0, 19);
@@ -2015,37 +2015,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    if (cmiCardNumber) {
-        cmiCardNumber.addEventListener('input', (e) => {
-            const formatted = formatCardNumber(e.target.value);
-            e.target.value = formatted;
-            setFieldError('card', '');
-        });
-        cmiCardNumber.addEventListener('blur', () => {
-            const digits = cmiCardNumber.value.replace(/\s/g, '');
-            if (digits.length >= 13 && digits.length <= 19) {
-                validateCardNumberApi(digits);
-            }
-        });
+    function bindCmiListeners() {
+        cmiCardNumber = document.getElementById('cmi-card-number');
+        cmiExpiry = document.getElementById('cmi-expiry');
+        cmiCvc = document.getElementById('cmi-cvc');
+        cmiCardholder = document.getElementById('cmi-cardholder');
+
+        if (cmiCardNumber && !cmiCardNumber.dataset.bound) {
+            cmiCardNumber.dataset.bound = '1';
+            cmiCardNumber.addEventListener('input', (e) => {
+                const formatted = formatCardNumber(e.target.value);
+                e.target.value = formatted;
+                setFieldError('card', '');
+            });
+            cmiCardNumber.addEventListener('blur', () => {
+                const digits = cmiCardNumber.value.replace(/\s/g, '');
+                if (digits.length >= 13 && digits.length <= 19) {
+                    validateCardNumberApi(digits);
+                }
+            });
+        }
+
+        if (cmiExpiry && !cmiExpiry.dataset.bound) {
+            cmiExpiry.dataset.bound = '1';
+            cmiExpiry.addEventListener('input', (e) => {
+                e.target.value = formatExpiry(e.target.value);
+                setFieldError('expiry', '');
+            });
+        }
+
+        if (cmiCvc && !cmiCvc.dataset.bound) {
+            cmiCvc.dataset.bound = '1';
+            cmiCvc.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                setFieldError('cvc', '');
+            });
+        }
+
+        if (cmiCardholder && !cmiCardholder.dataset.bound) {
+            cmiCardholder.dataset.bound = '1';
+            cmiCardholder.addEventListener('input', () => setFieldError('cardholder', ''));
+        }
     }
 
-    if (cmiExpiry) {
-        cmiExpiry.addEventListener('input', (e) => {
-            e.target.value = formatExpiry(e.target.value);
-            setFieldError('expiry', '');
-        });
-    }
-
-    if (cmiCvc) {
-        cmiCvc.addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
-            setFieldError('cvc', '');
-        });
-    }
-
-    if (cmiCardholder) {
-        cmiCardholder.addEventListener('input', () => setFieldError('cardholder', ''));
-    }
+    bindCmiListeners();
+    // Re-bind if the form is re-rendered dynamically
+    document.addEventListener('DOMContentLoaded', bindCmiListeners);
 
     if (cmiSubmitButton) {
         cmiSubmitButton.addEventListener('click', async function(event) {
