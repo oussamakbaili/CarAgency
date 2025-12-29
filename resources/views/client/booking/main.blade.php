@@ -500,7 +500,7 @@
                     <div class="relative">
                         <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent pl-12" 
-                               maxlength="19">
+                               maxlength="19" inputmode="numeric" autocomplete="cc-number">
                         <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                         </svg>
@@ -514,7 +514,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.main.payment_modal.exp') }}</label>
                         <input type="text" id="expirationDate" placeholder="MM/AA" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" 
-                               maxlength="5">
+                               maxlength="5" inputmode="numeric" autocomplete="cc-exp">
                         <div id="expirationError" class="text-red-500 text-sm mt-1 hidden"></div>
                     </div>
                     <div>
@@ -2057,17 +2057,25 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('DOMContentLoaded', bindCmiListeners);
     // Ensure formatting even if events are missed (paste/fast input)
     document.addEventListener('input', (e) => {
-        if (e.target && e.target.id === 'cmi-card-number') {
+        const targetId = e.target && e.target.id;
+        if (targetId === 'cmi-card-number') {
             e.target.value = formatCardNumber(e.target.value);
             setFieldError('card', '');
         }
-        if (e.target && e.target.id === 'cmi-expiry') {
+        if (targetId === 'cmi-expiry') {
             e.target.value = formatExpiry(e.target.value);
             setFieldError('expiry', '');
         }
-        if (e.target && e.target.id === 'cmi-cvc') {
+        if (targetId === 'cmi-cvc') {
             e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
             setFieldError('cvc', '');
+        }
+        // Ensure Stripe modal inputs also stay formatted on fast paste/auto-fill
+        if (targetId === 'cardNumber') {
+            e.target.value = formatCardNumber(e.target.value);
+        }
+        if (targetId === 'expirationDate') {
+            e.target.value = formatExpiry(e.target.value);
         }
     });
 
