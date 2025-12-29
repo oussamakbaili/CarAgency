@@ -2061,6 +2061,21 @@ document.addEventListener('DOMContentLoaded', function() {
     bindCmiListeners();
     // Re-bind if the form is re-rendered dynamically
     document.addEventListener('DOMContentLoaded', bindCmiListeners);
+    // Ensure formatting even if events are missed (paste/fast input)
+    document.addEventListener('input', (e) => {
+        if (e.target && e.target.id === 'cmi-card-number') {
+            e.target.value = formatCardNumber(e.target.value);
+            setFieldError('card', '');
+        }
+        if (e.target && e.target.id === 'cmi-expiry') {
+            e.target.value = formatExpiry(e.target.value);
+            setFieldError('expiry', '');
+        }
+        if (e.target && e.target.id === 'cmi-cvc') {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+            setFieldError('cvc', '');
+        }
+    });
 
     if (cmiSubmitButton) {
         cmiSubmitButton.addEventListener('click', async function(event) {
