@@ -138,13 +138,24 @@
                                 <div class="space-y-5 mb-6">
                                     <div>
                                         <div class="flex items-center gap-2 mb-2">
+                                            <label class="block text-sm font-medium text-gray-700">Nom du titulaire</label>
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A4 4 0 018 16h8a4 4 0 012.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                        </div>
+                                        <input type="text" id="cmi-cardholder" name="cardholder" placeholder="John Doe"
+                                               class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
+                                        <div id="cmi-cardholder-error" class="text-red-600 text-sm mt-1 hidden"></div>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-2">
                                             <label class="block text-sm font-medium text-gray-700">Card number</label>
                                             <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                             </svg>
                                         </div>
-                                        <input type="text" id="cmi-card-number" name="card_number" placeholder="" 
-                                               maxlength="19"
+                                        <input type="text" id="cmi-card-number" name="card_number" placeholder="4444 4444 4444 4444" 
+                                               maxlength="23"
                                                class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
                                         <div id="cmi-card-error" class="text-red-600 text-sm mt-1 hidden"></div>
                                     </div>
@@ -152,14 +163,14 @@
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Expiration</label>
-                                            <input type="text" id="cmi-expiry" name="expiry" placeholder="" 
+                                            <input type="text" id="cmi-expiry" name="expiry" placeholder="MM/AA" 
                                                    maxlength="5"
                                                    class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
                                             <div id="cmi-expiry-error" class="text-red-600 text-sm mt-1 hidden"></div>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
-                                            <input type="text" id="cmi-cvc" name="cvc" placeholder="" 
+                                            <input type="text" id="cmi-cvc" name="cvc" placeholder="123" 
                                                    maxlength="4"
                                                    class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
                                             <div id="cmi-cvc-error" class="text-red-600 text-sm mt-1 hidden"></div>
@@ -1930,21 +1941,164 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // CMI Payment Handler
     const cmiSubmitButton = document.getElementById('cmi-submit-button');
-    if (cmiSubmitButton) {
-        cmiSubmitButton.addEventListener('click', async function() {
-            // Validation et soumission CMI
-            const cardNumber = document.getElementById('cmi-card-number').value.replace(/\s/g, '');
-            const expiry = document.getElementById('cmi-expiry').value.trim();
-            const cvc = document.getElementById('cmi-cvc').value.trim();
-            const zip = document.getElementById('cmi-zip').value.trim();
-            const country = document.getElementById('cmi-country').value;
+    const cmiCardNumber = document.getElementById('cmi-card-number');
+    const cmiExpiry = document.getElementById('cmi-expiry');
+    const cmiCvc = document.getElementById('cmi-cvc');
+    const cmiCardholder = document.getElementById('cmi-cardholder');
 
-            if (!cardNumber || !expiry || !cvc || !zip || !country) {
-                showNotification('Veuillez remplir tous les champs', 'error');
-                return;
+    function formatCardNumber(value) {
+        const digits = value.replace(/\D/g, '').slice(0, 19);
+        return digits.replace(/(.{4})/g, '$1 ').trim();
+    }
+
+    function formatExpiry(value) {
+        const digits = value.replace(/\D/g, '').slice(0, 4);
+        if (digits.length <= 2) return digits;
+        return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    }
+
+    function isValidExpiry(expiry) {
+        if (!/^\d{2}\/\d{2}$/.test(expiry)) return false;
+        const [mm, yy] = expiry.split('/').map(v => parseInt(v, 10));
+        if (mm < 1 || mm > 12) return false;
+        const now = new Date();
+        const currentYY = parseInt(now.getFullYear().toString().slice(-2), 10);
+        const currentMM = now.getMonth() + 1;
+        if (yy < currentYY) return false;
+        if (yy === currentYY && mm < currentMM) return false;
+        return true;
+    }
+
+    function setFieldError(key, message) {
+        const map = {
+            card: 'cmi-card-error',
+            expiry: 'cmi-expiry-error',
+            cvc: 'cmi-cvc-error',
+            cardholder: 'cmi-cardholder-error',
+        };
+        const el = document.getElementById(map[key]);
+        if (el) {
+            el.textContent = message || '';
+            el.classList.toggle('hidden', !message);
+        }
+        const inputMap = {
+            card: cmiCardNumber,
+            expiry: cmiExpiry,
+            cvc: cmiCvc,
+            cardholder: cmiCardholder,
+        };
+        if (inputMap[key]) {
+            inputMap[key].classList.toggle('border-red-500', !!message);
+        }
+    }
+
+    async function validateCardNumberApi(number) {
+        try {
+            const response = await fetch('{{ route('client.cards.validate') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ card_number: number })
+            });
+            const data = await response.json();
+            if (!response.ok || !data.valid) {
+                setFieldError('card', data.message || 'Your card is not valid');
+                return false;
+            }
+            setFieldError('card', '');
+            return true;
+        } catch (e) {
+            setFieldError('card', 'Your card is not valid');
+            return false;
+        }
+    }
+
+    if (cmiCardNumber) {
+        cmiCardNumber.addEventListener('input', (e) => {
+            const formatted = formatCardNumber(e.target.value);
+            e.target.value = formatted;
+            setFieldError('card', '');
+        });
+        cmiCardNumber.addEventListener('blur', () => {
+            const digits = cmiCardNumber.value.replace(/\s/g, '');
+            if (digits.length >= 13 && digits.length <= 19) {
+                validateCardNumberApi(digits);
+            }
+        });
+    }
+
+    if (cmiExpiry) {
+        cmiExpiry.addEventListener('input', (e) => {
+            e.target.value = formatExpiry(e.target.value);
+            setFieldError('expiry', '');
+        });
+    }
+
+    if (cmiCvc) {
+        cmiCvc.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+            setFieldError('cvc', '');
+        });
+    }
+
+    if (cmiCardholder) {
+        cmiCardholder.addEventListener('input', () => setFieldError('cardholder', ''));
+    }
+
+    if (cmiSubmitButton) {
+        cmiSubmitButton.addEventListener('click', async function(event) {
+            event.preventDefault();
+
+            const cardholder = cmiCardholder ? cmiCardholder.value.trim() : '';
+            const cardNumber = cmiCardNumber ? cmiCardNumber.value.replace(/\s/g, '') : '';
+            const expiry = cmiExpiry ? cmiExpiry.value.trim() : '';
+            const cvc = cmiCvc ? cmiCvc.value.trim() : '';
+            const zip = document.getElementById('cmi-zip')?.value.trim() || '';
+            const country = document.getElementById('cmi-country')?.value;
+
+            let valid = true;
+
+            if (!cardholder) {
+                setFieldError('cardholder', 'Veuillez renseigner le nom du titulaire');
+                valid = false;
             }
 
-            // Soumettre le formulaire CMI
+            if (!cardNumber) {
+                setFieldError('card', 'Veuillez remplir le numéro de carte');
+                valid = false;
+            } else if (cardNumber.length < 13 || cardNumber.length > 19) {
+                setFieldError('card', 'Le numéro de carte doit contenir entre 13 et 19 chiffres');
+                valid = false;
+            }
+
+            if (!expiry) {
+                setFieldError('expiry', 'Veuillez remplir la date d\'expiration');
+                valid = false;
+            } else if (!isValidExpiry(expiry)) {
+                setFieldError('expiry', 'La date d\'expiration doit être au format MM/AA et future');
+                valid = false;
+            }
+
+            if (!cvc) {
+                setFieldError('cvc', 'Veuillez remplir le CVV');
+                valid = false;
+            } else if (cvc.length < 3 || cvc.length > 4) {
+                setFieldError('cvc', 'Le CVV doit contenir 3 ou 4 chiffres');
+                valid = false;
+            }
+
+            if (!zip || !country) {
+                showNotification('Veuillez remplir le code postal et le pays', 'error');
+                valid = false;
+            }
+
+            if (!valid) return;
+
+            const cardOk = await validateCardNumberApi(cardNumber);
+            if (!cardOk) return;
+
             document.getElementById('cmi-form').submit();
         });
     }
