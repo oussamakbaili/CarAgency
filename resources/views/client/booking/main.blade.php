@@ -774,21 +774,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const cvvInput = document.getElementById('cvv');
     const countrySelect = document.getElementById('country');
 
+    function bindFormatter(input, formatter, maxDigits) {
+        if (!input || input.dataset.boundFormatter) return;
+        input.dataset.boundFormatter = '1';
+        const apply = () => {
+            input.value = formatter(input.value);
+        };
+        input.addEventListener('input', apply);
+        input.addEventListener('change', apply);
+        input.addEventListener('blur', apply);
+        input.addEventListener('keyup', apply);
+        input.addEventListener('paste', () => setTimeout(apply, 0));
+        // Run once on load to normalize existing content/auto-fill
+        apply();
+    }
+
+    bindFormatter(cardNumberInput, formatCardNumber);
+    bindFormatter(expirationInput, formatExpiry);
+
     if (paymentForm) {
-        // Format card number with spaces
-        if (cardNumberInput) {
-            cardNumberInput.addEventListener('input', function(e) {
-                e.target.value = formatCardNumber(e.target.value);
-            });
-        }
-
-        // Format expiration date
-        if (expirationInput) {
-            expirationInput.addEventListener('input', function(e) {
-                e.target.value = formatExpiry(e.target.value);
-            });
-        }
-
         // Only allow numbers in CVV
         if (cvvInput) {
             cvvInput.addEventListener('input', function(e) {
@@ -1944,7 +1948,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const digits = value.replace(/\D/g, '').slice(0, 19);
         let formatted = digits.replace(/(.{4})/g, '$1 ').trim();
         // If exactly a 4-digit block (or multiple of 4) and not max length, keep a trailing space for UX
-        if (digits.length > 0 && digits.length < 19 && digits.length % 4 === 0) {
+        if (digits.length > 0 && digits.length < 19 && digits.length % 4 === 0 && !formatted.endsWith(' ')) {
             formatted += ' ';
         }
         return formatted;
@@ -1953,7 +1957,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function formatExpiry(value) {
         const digits = value.replace(/\D/g, '').slice(0, 4);
         if (digits.length === 0) return '';
-        if (digits.length <= 2) return digits + (digits.length === 2 ? '/' : '');
+        if (digits.length <= 2) {
+            return digits + (digits.length === 2 ? '/' : '');
+        }
         return `${digits.slice(0, 2)}/${digits.slice(2)}`;
     }
 
