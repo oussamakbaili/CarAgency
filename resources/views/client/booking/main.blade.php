@@ -68,14 +68,31 @@
                     
                     <!-- Payment Methods Content (Hidden by default) -->
                     <div id="paymentMethodsContent" class="hidden mt-6">
-                        <!-- PayPal Payment Form -->
-                        <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('booking.step4.method_title') }}</h3>
-                            <p class="text-sm text-gray-600 mb-4">{{ __('booking.step4.paypal.redirect') }}</p>
+                        <!-- Payment Method Selection - Radio Buttons (Shown First) -->
+                        <div id="payment-method-selection" class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Choisissez votre méthode de paiement</h3>
+                            <div class="space-y-3">
+                                <label class="flex items-start space-x-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-red-500 transition-all payment-method-option" data-method="paypal">
+                                    <input type="radio" name="payment_method" value="paypal" class="mt-1 payment-method-radio" style="width: 20px; height: 20px;">
+                                    <div class="flex-1">
+                                        <div class="font-semibold text-gray-900">PayPal</div>
+                                        <div class="text-sm text-gray-600 mt-1">Payer avec votre compte PayPal</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-start space-x-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-red-500 transition-all payment-method-option" data-method="card">
+                                    <input type="radio" name="payment_method" value="card" class="mt-1 payment-method-radio" style="width: 20px; height: 20px;">
+                                    <div class="flex-1">
+                                        <div class="font-semibold text-gray-900">Carte bancaire</div>
+                                        <div class="text-sm text-gray-600 mt-1">Payer avec votre carte bancaire</div>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
 
-                        <!-- PayPal Payment Form (Only Payment Method) -->
-                        <div id="paypal-payment-form" class="payment-form">
+                        <!-- Selected Payment Method Container (Hidden Initially) -->
+                        <div id="selected-payment-method" style="display: none;">
+                            <!-- PayPal Payment Form -->
+                            <div id="paypal-payment-form" class="payment-form" style="display: none;">
                             <div class="mb-6">
                                 <p class="text-gray-600 text-sm mb-6">
                                     Connectez-vous à votre compte PayPal pour finaliser votre paiement. Vous serez redirigé vers le site PayPal pour vous connecter.
@@ -100,6 +117,8 @@
                             </div>
                         </div>
 
+                        <!-- Card Payment Form -->
+                        <div id="card-payment-form" class="payment-form" style="display: none;">
                             <div class="mb-4">
                                 <div class="flex items-center justify-between mb-3">
                                     <div class="flex items-center gap-3">
@@ -108,7 +127,6 @@
                                         </svg>
                                         <h3 class="font-semibold text-gray-900">{{ __('booking.main.payment_modal.card_label') }}</h3>
                                     </div>
-                                    <input type="radio" name="payment_gateway" value="cmi" class="w-5 h-5 text-red-600 border-gray-300 focus:ring-red-500">
                                 </div>
                                 <div class="flex items-center gap-2 mb-4 flex-wrap">
                                     <!-- VISA -->
@@ -217,6 +235,8 @@
                                 </div>
                             </form>
                         </div>
+                        </div>
+                        <!-- End of Selected Payment Method Container -->
                     </div>
                 </div>
 
@@ -741,6 +761,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 paymentMethodsContent.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }, 100);
             
+            // Initialize payment method selection handler
+            initializePaymentMethodSelection();
+            
             // Initialiser Stripe si Stripe est sélectionné par défaut
             const stripeRadio = document.querySelector('input[name="payment_gateway"][value="stripe"]');
             if (stripeRadio && stripeRadio.checked) {
@@ -756,6 +779,150 @@ document.addEventListener('DOMContentLoaded', function() {
             button: !!paymentBtnHandler,
             content: !!paymentMethodsContent
         });
+    }
+
+    // Initialize Payment Method Selection Handler
+    function initializePaymentMethodSelection() {
+        const paymentMethodSelection = document.getElementById('payment-method-selection');
+        const selectedPaymentMethod = document.getElementById('selected-payment-method');
+        const paypalForm = document.getElementById('paypal-payment-form');
+        const cardForm = document.getElementById('card-payment-form');
+        const radioButtons = document.querySelectorAll('.payment-method-radio');
+        const paymentOptions = document.querySelectorAll('.payment-method-option');
+
+        if (!paymentMethodSelection || !selectedPaymentMethod) {
+            console.warn('Payment method selection elements not found');
+            return;
+        }
+
+        // Handle radio button selection
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const selectedMethod = this.value;
+                console.log('Payment method selected:', selectedMethod);
+                
+                // Update visual state of options
+                paymentOptions.forEach(option => {
+                    const input = option.querySelector('input');
+                    if (input && input.checked) {
+                        option.style.borderColor = '#ef4444';
+                        option.style.backgroundColor = '#fef2f2';
+                    } else {
+                        option.style.borderColor = '#e5e7eb';
+                        option.style.backgroundColor = 'transparent';
+                    }
+                });
+
+                // Hide payment method selection, show selected method
+                paymentMethodSelection.style.display = 'none';
+                selectedPaymentMethod.style.display = 'block';
+
+                // Show selected payment form
+                if (selectedMethod === 'paypal') {
+                    if (paypalForm) paypalForm.style.display = 'block';
+                    if (cardForm) cardForm.style.display = 'none';
+                    // Ensure PayPal button handler is attached
+                    attachPayPalButtonHandler();
+                } else if (selectedMethod === 'card') {
+                    if (cardForm) cardForm.style.display = 'block';
+                    if (paypalForm) paypalForm.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Attach PayPal Button Handler
+    function attachPayPalButtonHandler() {
+        const paypalSubmitButton = document.getElementById('paypal-submit-button');
+        if (!paypalSubmitButton) {
+            console.warn('PayPal submit button not found');
+            return;
+        }
+
+        // Remove existing listeners by cloning the button
+        const newButton = paypalSubmitButton.cloneNode(true);
+        paypalSubmitButton.parentNode.replaceChild(newButton, paypalSubmitButton);
+
+        // Attach new event listener
+        newButton.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('PayPal button clicked');
+            
+            const button = this;
+            const buttonText = document.getElementById('paypal-button-text');
+            const spinner = document.getElementById('paypal-spinner');
+            const errorDiv = document.getElementById('paypal-error');
+            
+            button.disabled = true;
+            if (buttonText) buttonText.classList.add('hidden');
+            if (spinner) spinner.classList.remove('hidden');
+            if (errorDiv) errorDiv.classList.add('hidden');
+
+            try {
+                // Get dates from session or inputs
+                const startDateInput = document.getElementById('startDateInput');
+                const endDateInput = document.getElementById('endDateInput');
+                
+                const startDate = startDateInput ? startDateInput.value : '{{ session("booking_data.start_date") ?? "" }}';
+                const endDate = endDateInput ? endDateInput.value : '{{ session("booking_data.end_date") ?? "" }}';
+                
+                if (!startDate || !endDate) {
+                    throw new Error('Veuillez sélectionner des dates de début et de fin.');
+                }
+                
+                console.log('Calling PayPal init with:', { car_id: {{ $car->id }}, start_date: startDate, end_date: endDate });
+                
+                const response = await fetch('{{ route("booking.init-paypal-payment") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        car_id: {{ $car->id }},
+                        start_date: startDate,
+                        end_date: endDate
+                    })
+                });
+
+                console.log('PayPal response status:', response.status);
+                const data = await response.json();
+                console.log('PayPal response data:', data);
+                
+                if (data.success && data.approve_url) {
+                    console.log('Redirecting to PayPal:', data.approve_url);
+                    window.location.href = data.approve_url;
+                } else {
+                    const errorText = data.error || 'Impossible d\'initialiser le paiement PayPal. Veuillez réessayer plus tard.';
+                    if (errorDiv) {
+                        errorDiv.textContent = errorText;
+                        errorDiv.classList.remove('hidden');
+                    } else {
+                        alert(errorText);
+                    }
+                    button.disabled = false;
+                    if (buttonText) buttonText.classList.remove('hidden');
+                    if (spinner) spinner.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('PayPal init error:', error);
+                const errorText = 'Erreur de connexion lors de l\'initialisation du paiement PayPal. Veuillez vérifier votre connexion internet et réessayer.';
+                if (errorDiv) {
+                    errorDiv.textContent = errorText;
+                    errorDiv.classList.remove('hidden');
+                } else {
+                    alert(errorText);
+                }
+                button.disabled = false;
+                if (buttonText) buttonText.classList.remove('hidden');
+                if (spinner) spinner.classList.add('hidden');
+            }
+        });
+        
+        console.log('PayPal button handler attached');
     }
 
     // Payment Modal (si existe)
@@ -1872,69 +2039,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 
-    // PayPal Payment Handler
-    const paypalSubmitButton = document.getElementById('paypal-submit-button');
-    if (paypalSubmitButton) {
-        paypalSubmitButton.addEventListener('click', async function() {
-            const button = this;
-            const buttonText = document.getElementById('paypal-button-text');
-            const spinner = document.getElementById('paypal-spinner');
-            const errorDiv = document.getElementById('paypal-error');
-            
-            button.disabled = true;
-            buttonText.classList.add('hidden');
-            spinner.classList.remove('hidden');
-            errorDiv.classList.add('hidden');
-
-            try {
-                // Récupérer les dates depuis les inputs ou la session
-                const startDateInput = document.getElementById('startDateInput');
-                const endDateInput = document.getElementById('endDateInput');
-                
-                const startDate = startDateInput ? startDateInput.value : '{{ session("booking_data.start_date") }}';
-                const endDate = endDateInput ? endDateInput.value : '{{ session("booking_data.end_date") }}';
-                
-                if (!startDate || !endDate) {
-                    throw new Error('Veuillez sélectionner des dates de début et de fin.');
-                }
-                
-                const response = await fetch('{{ route("booking.init-paypal-payment") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        car_id: {{ $car->id }},
-                        start_date: startDate,
-                        end_date: endDate
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.success && data.approve_url) {
-                    // Ouvrir PayPal dans une nouvelle fenêtre
-                    const paypalWindow = window.open(data.approve_url, 'paypal', 'width=600,height=700');
-                    
-                    // Écouter les messages de succès
-                    window.addEventListener('message', function(event) {
-                        if (event.data && event.data.type === 'paypal_payment_success') {
-                            paypalWindow.close();
-                            window.location.href = '{{ route("client.rentals.confirm", $car) }}?payment_success=paypal';
-                        }
-                    });
-                } else {
-                    throw new Error(data.error || 'Erreur lors de l\'initialisation du paiement PayPal');
-                }
-            } catch (error) {
-                errorDiv.textContent = error.message;
-                errorDiv.classList.remove('hidden');
-                button.disabled = false;
-                buttonText.classList.remove('hidden');
-                spinner.classList.add('hidden');
-            }
-        });
+    // Initialize PayPal button handler on page load (if PayPal form is already visible)
+    // This will be called again when PayPal is selected via radio button
+    if (document.getElementById('paypal-payment-form') && 
+        document.getElementById('paypal-payment-form').style.display !== 'none') {
+        attachPayPalButtonHandler();
     }
 
     // CMI Payment Handler

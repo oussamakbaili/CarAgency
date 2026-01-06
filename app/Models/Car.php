@@ -283,16 +283,26 @@ class Car extends Model
 
         $imagePath = $this->normalizeStoragePath($this->image);
 
+        // Check if file exists in public disk
         if (Storage::disk('public')->exists($imagePath)) {
-            return Storage::disk('public')->url($imagePath);
+            return '/public/storage/' . $imagePath;
         }
 
-        // Fallback in case the file exists on the default disk or the symlink is missing
+        // Check if file exists in default disk
         if (Storage::exists($imagePath)) {
-            return Storage::url($imagePath);
+            return '/public/storage/' . $imagePath;
         }
 
-        return asset('storage/' . $imagePath);
+        // Check if file exists in storage/app/public (absolute path check)
+        $absolutePath = storage_path('app/public/' . $imagePath);
+        if (file_exists($absolutePath)) {
+            return '/public/storage/' . $imagePath;
+        }
+
+        // File doesn't exist - return null or placeholder
+        // You can return a placeholder image URL here if needed
+        // return asset('images/placeholder-car.jpg');
+        return null;
     }
 
     // Get picture URLs
@@ -305,16 +315,25 @@ class Car extends Model
         return collect($this->pictures)->map(function($picture) {
             $picturePath = $this->normalizeStoragePath($picture);
 
+            // Check if file exists in public disk
             if (Storage::disk('public')->exists($picturePath)) {
-                return Storage::disk('public')->url($picturePath);
+                return '/public/storage/' . $picturePath;
             }
 
+            // Check if file exists in default disk
             if (Storage::exists($picturePath)) {
-                return Storage::url($picturePath);
+                return '/public/storage/' . $picturePath;
             }
 
-            return asset('storage/' . $picturePath);
-        })->toArray();
+            // Check if file exists in storage/app/public (absolute path check)
+            $absolutePath = storage_path('app/public/' . $picturePath);
+            if (file_exists($absolutePath)) {
+                return '/public/storage/' . $picturePath;
+            }
+
+            // File doesn't exist - return null
+            return null;
+        })->filter()->values()->toArray(); // Remove null values and reindex
     }
 
     protected function normalizeStoragePath(string $path): string

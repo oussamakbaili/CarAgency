@@ -14,13 +14,6 @@ return [
     |
     */
 
-    'mailgun' => [
-        'domain' => env('MAILGUN_DOMAIN'),
-        'secret' => env('MAILGUN_SECRET'),
-        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
-        'scheme' => 'https',
-    ],
-
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
@@ -31,28 +24,32 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'stripe' => [
-        'key' => env('STRIPE_KEY'),
-        'secret' => env('STRIPE_SECRET'),
-        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    'resend' => [
+        'key' => env('RESEND_KEY'),
     ],
 
-    'cmi' => [
-        'merchant_id' => env('CMI_MERCHANT_ID'),
-        'secret_key' => env('CMI_SECRET_KEY'),
-        'test_mode' => env('CMI_TEST_MODE', true),
-        'test_url' => env('CMI_TEST_URL', 'https://testpayment.cmi.co.ma/fim/est3Dgate'),
-        'production_url' => env('CMI_PRODUCTION_URL', 'https://payment.cmi.co.ma/fim/est3Dgate'),
+    'slack' => [
+        'notifications' => [
+            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
+            'channel' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
+        ],
+    ],
+
+    'stripe' => [
+        'model' => env('STRIPE_MODEL', \App\Models\User::class),
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+        'webhook' => [
+            'secret' => env('STRIPE_WEBHOOK_SECRET'),
+            'tolerance' => env('STRIPE_WEBHOOK_TOLERANCE', 300),
+        ],
     ],
 
     'paypal' => [
         'client_id' => env('PAYPAL_CLIENT_ID'),
         'client_secret' => env('PAYPAL_CLIENT_SECRET'),
-        'test_mode' => env('PAYPAL_TEST_MODE', env('APP_ENV') === 'production' ? false : true),
-    ],
-
-    'google' => [
-    'maps_key' => env('GOOGLE_MAPS_KEY'),
+        'test_mode' => filter_var(env('PAYPAL_TEST_MODE', true), FILTER_VALIDATE_BOOLEAN),
     ],
 
 ];
+

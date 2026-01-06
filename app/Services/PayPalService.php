@@ -18,8 +18,12 @@ class PayPalService
 
     public function __construct()
     {
-        $this->clientId = config('services.paypal.client_id');
-        $this->clientSecret = config('services.paypal.client_secret');
+        // Nettoyer les identifiants (supprimer les espaces, retours à la ligne, etc.)
+        $rawClientId = config('services.paypal.client_id');
+        $rawClientSecret = config('services.paypal.client_secret');
+        
+        $this->clientId = $rawClientId ? trim($rawClientId) : null;
+        $this->clientSecret = $rawClientSecret ? trim($rawClientSecret) : null;
         $this->isTestMode = config('services.paypal.test_mode', true);
         $this->baseUrl = $this->isTestMode
             ? 'https://api.sandbox.paypal.com'
@@ -30,6 +34,20 @@ class PayPalService
             Log::warning('PayPal credentials not configured', [
                 'client_id_set' => !empty($this->clientId),
                 'client_secret_set' => !empty($this->clientSecret),
+                'raw_client_id_length' => $rawClientId ? strlen($rawClientId) : 0,
+                'raw_client_secret_length' => $rawClientSecret ? strlen($rawClientSecret) : 0,
+            ]);
+        } else {
+            // Log pour vérifier les identifiants (sans exposer le secret complet)
+            Log::info('PayPal credentials loaded', [
+                'client_id_prefix' => substr($this->clientId, 0, 15) . '...',
+                'client_id_length' => strlen($this->clientId),
+                'client_secret_length' => strlen($this->clientSecret),
+                'client_secret_prefix' => substr($this->clientSecret, 0, 10) . '...',
+                'test_mode' => $this->isTestMode,
+                'base_url' => $this->baseUrl,
+                'has_spaces_in_id' => str_contains($this->clientId, ' '),
+                'has_spaces_in_secret' => str_contains($this->clientSecret, ' '),
             ]);
         }
     }
@@ -70,9 +88,21 @@ class PayPalService
                 'client_secret_length' => strlen($this->clientSecret),
             ]);
 
+            // S'assurer que les identifiants sont bien nettoyés avant l'envoi
+            $cleanClientId = trim($this->clientId);
+            $cleanClientSecret = trim($this->clientSecret);
+            
+            Log::info('PayPal: Sending authentication request', [
+                'url' => $tokenUrl,
+                'client_id_length' => strlen($cleanClientId),
+                'client_secret_length' => strlen($cleanClientSecret),
+                'client_id_has_spaces' => str_contains($cleanClientId, ' '),
+                'client_secret_has_spaces' => str_contains($cleanClientSecret, ' '),
+            ]);
+            
             $response = Http::timeout(30)
                 ->asForm()
-                ->withBasicAuth($this->clientId, $this->clientSecret)
+                ->withBasicAuth($cleanClientId, $cleanClientSecret)
                 ->post($tokenUrl, [
                     'grant_type' => 'client_credentials',
                 ]);
@@ -235,6 +265,24 @@ class PayPalService
                 
                 $approveUrl = collect($order['links'])->firstWhere('rel', 'approve')['href'] ?? null;
                 
+                if (!$approveUrl) {
+                    Log::error('PayPal order created but approve URL not found', [
+                        'order' => $order,
+                        'links' => $order['links'] ?? [],
+                    ]);
+                    return [
+                        'success' => false,
+                        'error' => 'Erreur: Lien de paiement PayPal introuvable. Veuillez réessayer.',
+                        'order_id' => $order['id'] ?? null,
+                    ];
+                }
+                
+                Log::info('PayPal order created successfully', [
+                    'order_id' => $order['id'],
+                    'status' => $order['status'] ?? null,
+                    'approve_url' => $approveUrl,
+                ]);
+                
                 return [
                     'success' => true,
                     'order_id' => $order['id'],
@@ -244,15 +292,26 @@ class PayPalService
                 ];
             }
 
+            $errorBody = $response->body();
+            $errorJson = $response->json();
+            
             Log::error('PayPal order creation failed', [
-                'response' => $response->body(),
+                'response' => $errorBody,
                 'status' => $response->status(),
+                'error_details' => $errorJson,
             ]);
+
+            $errorMessage = 'Erreur lors de la création de la commande PayPal';
+            if (isset($errorJson['details'][0]['description'])) {
+                $errorMessage .= ': ' . $errorJson['details'][0]['description'];
+            } elseif (isset($errorJson['message'])) {
+                $errorMessage .= ': ' . $errorJson['message'];
+            }
 
             return [
                 'success' => false,
-                'error' => 'Erreur lors de la création de la commande PayPal',
-                'details' => $response->json(),
+                'error' => $errorMessage,
+                'details' => $errorJson,
             ];
         } catch (\Exception $e) {
             Log::error('PayPal order creation error', [
@@ -548,7 +607,25 @@ class PayPalService
         // S'assurer que le chemin commence par /
         $path = '/' . ltrim($path, '/');
         
-        return $appUrl . $path;
+        // Vérifier si APP_URL contient déjà /public
+        $hasPublic = strpos($appUrl, '/public') !== false;
+        
+        // Si APP_URL ne contient pas /public, l'ajouter
+        // (car l'application semble être accessible via /public)
+        if (!$hasPublic) {
+            $fullUrl = $appUrl . '/public' . $path;
+        } else {
+            $fullUrl = $appUrl . $path;
+        }
+        
+        Log::info('PayPal callback URL generated', [
+            'app_url' => $appUrl,
+            'path' => $path,
+            'has_public' => $hasPublic,
+            'full_url' => $fullUrl,
+        ]);
+        
+        return $fullUrl;
     }
 
     /**
