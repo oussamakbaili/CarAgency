@@ -297,6 +297,7 @@ Route::middleware(['auth', 'role:agence'])->prefix('agence')->name('agence.')->g
         
         // Fleet Management
         Route::resource('cars', CarController::class);
+        Route::get('/cars/search/similar', [CarController::class, 'searchSimilar'])->name('cars.search-similar');
         
         // External Sites Management (pour synchroniser la disponibilité avec d'autres sites)
         Route::prefix('cars/{car}/external-sites')->name('cars.external-sites.')->group(function () {
@@ -610,13 +611,11 @@ Route::get('/debug/data', function () {
 })->middleware('auth');
 
 // Public Routes (No Authentication Required)
-Route::get('/agencies', [App\Http\Controllers\PublicController::class, 'agencies'])->name('public.agencies');
 Route::view('/policies/non-refundable', 'public.policies.non-refundable')->name('public.policies.non-refundable');
 Route::get('/about', [App\Http\Controllers\PublicController::class, 'about'])->name('public.about');
 Route::get('/how-it-works', [App\Http\Controllers\PublicController::class, 'howItWorks'])->name('public.how-it-works');
 Route::get('/wishlists', [App\Http\Controllers\PublicController::class, 'wishlists'])->name('public.wishlists');
 Route::get('/messages', [App\Http\Controllers\PublicController::class, 'messages'])->name('public.messages');
-Route::get('/search', [App\Http\Controllers\PublicController::class, 'search'])->name('public.search');
 Route::get('/cars/search', [App\Http\Controllers\PublicController::class, 'searchCars'])->name('public.cars.search');
 Route::get('/agencies/{agency}', [App\Http\Controllers\PublicController::class, 'showAgency'])->name('public.agency.show');
 Route::get('/agencies/{agency}/cars', [App\Http\Controllers\PublicController::class, 'agencyCars'])->name('public.agency.cars');

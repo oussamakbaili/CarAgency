@@ -8,6 +8,8 @@ use App\Services\RentalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class PublicController extends Controller
 {
@@ -62,49 +64,31 @@ class PublicController extends Controller
                 $rating = $car->average_rating;
                 
                 return $featuredCar + $featuredAgency + $priority + $rating;
-            });
+            })
+            ->values(); // Reset keys after sorting
         
         // Top picks: prioritize featured cars, then featured agency cars, then by rating (limited to 4)
         $topCars = $allCars->take(4);
         
-        // All cars for "Discover" section (up to 12)
-        $discoverCars = $allCars->take(12);
+        // Paginate the discover cars (21 per page)
+        $currentPage = Paginator::resolveCurrentPage();
+        $perPage = 21;
+        $currentItems = $allCars->slice(($currentPage - 1) * $perPage, $perPage)->all();
+        $discoverCars = new LengthAwarePaginator(
+            $currentItems,
+            $allCars->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => Paginator::resolveCurrentPath(),
+                'pageName' => 'page',
+            ]
+        );
+        
+        // Append query parameters to pagination links
+        $discoverCars->appends($request->query());
 
         return view('public.home', compact('topCars', 'discoverCars', 'categories'));
-    }
-
-    /**
-     * Show all agencies with search and filter
-     */
-    public function agencies(Request $request)
-    {
-        $query = Agency::where('status', 'approved')
-            ->withCount('cars')
-            ->with('user');
-
-        // Search by agency name
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('agency_name', 'like', '%' . $search . '%')
-                  ->orWhere('city', 'like', '%' . $search . '%');
-            });
-        }
-
-        // Filter by city
-        if ($request->filled('city')) {
-            $query->where('city', 'like', '%' . $request->city . '%');
-        }
-
-        // Filter by minimum rating (if we had reviews)
-        if ($request->filled('min_rating')) {
-            // For now, we'll just show all agencies
-            // In the future, this would filter by actual ratings
-        }
-
-        $agencies = $query->orderBy('agency_name')->paginate(12);
-
-        return view('public.agencies', compact('agencies'));
     }
 
     /**
@@ -326,38 +310,6 @@ class PublicController extends Controller
                 ? 'Véhicule disponible pour ces dates' 
                 : 'Véhicule non disponible pour ces dates. Veuillez choisir d\'autres dates.'
         ]);
-    }
-
-    /**
-     * Handle search requests
-     */
-    public function search(Request $request)
-    {
-        $query = Agency::where('status', 'approved')
-            ->withCount('cars')
-            ->with('user');
-
-        // Search by agency name
-        if ($request->filled('agency')) {
-            $query->where('agency_name', 'like', '%' . $request->agency . '%');
-        }
-
-        // Search by car brand/model
-        if ($request->filled('car')) {
-            $query->whereHas('cars', function($q) use ($request) {
-                $q->where('brand', 'like', '%' . $request->car . '%')
-                  ->orWhere('model', 'like', '%' . $request->car . '%');
-            });
-        }
-
-        // Search by city
-        if ($request->filled('city')) {
-            $query->where('city', 'like', '%' . $request->city . '%');
-        }
-
-        $agencies = $query->orderBy('agency_name')->paginate(12);
-
-        return view('public.agencies', compact('agencies'));
     }
 
     /**

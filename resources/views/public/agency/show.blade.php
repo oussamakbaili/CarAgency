@@ -168,10 +168,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                                                         </svg>
                 </a>
-                <a href="{{ route('public.agencies') }}" 
-                   class="inline-flex items-center gap-1.5 sm:gap-2 bg-transparent border-2 border-white hover:bg-white hover:text-orange-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base">
-                    Autres Agences
-                </a>
                                                 </div>
                                             </div>
                                         </div>

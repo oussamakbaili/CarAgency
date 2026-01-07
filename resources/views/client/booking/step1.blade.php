@@ -10,8 +10,6 @@
                 <ol class="flex items-center space-x-2 text-sm">
                     <li><a href="{{ route('public.home') }}" class="text-blue-600 hover:text-blue-800">{{ __('booking.step1.breadcrumbs.home') }}</a></li>
                     <li class="text-gray-400">/</li>
-                    <li><a href="{{ route('public.agencies') }}" class="text-blue-600 hover:text-blue-800">{{ __('booking.step1.breadcrumbs.agencies') }}</a></li>
-                    <li class="text-gray-400">/</li>
                     <li><a href="{{ route('public.agency.show', $car->agency) }}" class="text-blue-600 hover:text-blue-800">{{ $car->agency->agency_name }}</a></li>
                     <li class="text-gray-400">/</li>
                     <li class="text-gray-600">{{ $car->brand }} {{ $car->model }}</li>

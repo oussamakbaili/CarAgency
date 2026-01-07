@@ -391,6 +391,130 @@
 
 @push('scripts')
 <script>
+// Auto-load vehicle data from similar vehicles in database
+let autoLoadTimeout;
+let isAutoLoading = false;
+
+function searchSimilarVehicle() {
+    const brand = document.getElementById('brand')?.value.trim();
+    const model = document.getElementById('model')?.value.trim();
+    const year = document.getElementById('year')?.value.trim();
+
+    // Only search if we have at least brand and model
+    if (!brand || !model || isAutoLoading) {
+        return;
+    }
+
+    // Clear previous timeout
+    clearTimeout(autoLoadTimeout);
+
+    // Debounce: wait 800ms after user stops typing
+    autoLoadTimeout = setTimeout(async () => {
+        try {
+            isAutoLoading = true;
+            
+            const url = new URL('{{ route("agence.cars.search-similar") }}');
+            if (brand) url.searchParams.append('brand', brand);
+            if (model) url.searchParams.append('model', model);
+            if (year) url.searchParams.append('year', year);
+
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.car) {
+                // Show notification
+                showAutoLoadNotification('Données chargées automatiquement depuis un véhicule similaire');
+
+                // Fill in the fields that are empty
+                if (data.car.fuel_type && !document.getElementById('fuel_type').value) {
+                    document.getElementById('fuel_type').value = data.car.fuel_type;
+                }
+                if (data.car.transmission && !document.getElementById('transmission').value) {
+                    document.getElementById('transmission').value = data.car.transmission;
+                }
+                if (data.car.seats && !document.getElementById('seats').value) {
+                    document.getElementById('seats').value = data.car.seats;
+                }
+                if (data.car.engine_size && !document.getElementById('engine_size').value) {
+                    document.getElementById('engine_size').value = data.car.engine_size;
+                }
+                if (data.car.color && !document.querySelector('input[name="color"]:checked')) {
+                    const colorRadio = document.querySelector(`input[name="color"][value="${data.car.color}"]`);
+                    if (colorRadio) {
+                        colorRadio.checked = true;
+                        // Trigger change event to update UI
+                        colorRadio.dispatchEvent(new Event('change'));
+                    }
+                }
+                if (data.car.category_id && !document.getElementById('category_id').value) {
+                    document.getElementById('category_id').value = data.car.category_id;
+                }
+                if (data.car.description && !document.getElementById('description').value) {
+                    document.getElementById('description').value = data.car.description;
+                }
+                // Load features if available
+                if (data.car.features && Array.isArray(data.car.features)) {
+                    data.car.features.forEach(feature => {
+                        const featureCheckbox = document.querySelector(`input[name="features[]"][value="${feature}"]`);
+                        if (featureCheckbox && !featureCheckbox.checked) {
+                            featureCheckbox.checked = true;
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error loading similar vehicle data:', error);
+        } finally {
+            isAutoLoading = false;
+        }
+    }, 800);
+}
+
+function showAutoLoadNotification(message) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-3';
+    notification.innerHTML = `
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(notification);
+
+    // Remove notification after 3 seconds
+    setTimeout(() => {
+        notification.style.transition = 'opacity 0.3s';
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Add event listeners when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    const brandInput = document.getElementById('brand');
+    const modelInput = document.getElementById('model');
+    const yearInput = document.getElementById('year');
+
+    if (brandInput) {
+        brandInput.addEventListener('input', searchSimilarVehicle);
+    }
+    if (modelInput) {
+        modelInput.addEventListener('input', searchSimilarVehicle);
+    }
+    if (yearInput) {
+        yearInput.addEventListener('input', searchSimilarVehicle);
+    }
+});
+
 function previewImage(input, previewId) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();

@@ -285,13 +285,8 @@
     <!-- Discover our wide range of cars -->
     <div id="discover" class="py-10 sm:py-16 bg-gray-50 reveal-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="mb-6 sm:mb-8 flex items-center justify-between">
+            <div class="mb-6 sm:mb-8">
                 <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">{{ __('home.categories.title') }}</h2>
-                <button onclick="document.getElementById('discoverCarsScroll').scrollBy({left: 300, behavior: 'smooth'})" class="hidden md:flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 hover:border-gray-900 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
-                </button>
             </div>
             
             <!-- Category Filters - Horizontal Scrollable (like Véhicules Populaires) -->
@@ -316,10 +311,10 @@
                     </button>
             </div>
 
-            <!-- Cars Horizontal Scroll Container - Airbnb Style -->
-            <div id="discoverCarsScroll" class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide scroll-smooth" style="scrollbar-width: none; -ms-overflow-style: none;">
+            <!-- Cars Grid Container -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                 @forelse($discoverCars as $car)
-                    <div onclick="openCarDetailsModal({{ $car->agency->id }}, {{ $car->id }})" class="car-card group flex-shrink-0 w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <div onclick="openCarDetailsModal({{ $car->agency->id }}, {{ $car->id }})" class="car-card group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer">
                         <!-- Car Image -->
                         <div class="car-card-image relative h-[240px] bg-gray-100 overflow-hidden">
                             @if($car->image_url)
@@ -361,14 +356,14 @@
                                     <span class="text-sm font-semibold text-gray-900">{{ number_format($car->average_rating, 1) }}</span>
                                 </div>
                             @endif
-                    </div>
+                        </div>
                         
                         <!-- Car Details -->
                         <div class="p-4">
                             <div class="mb-3">
                                 <h3 class="text-base font-semibold text-gray-900 truncate">{{ $car->brand }} {{ $car->model }}</h3>
                                 <p class="text-sm text-gray-500 mt-1">{{ $car->agency->city ?? 'Maroc' }}</p>
-                </div>
+                            </div>
 
                             <!-- Price -->
                             <div class="flex items-center justify-between mt-3">
@@ -381,22 +376,76 @@
                         </div>
                     </div>
                 @empty
-                    <div class="w-full text-center py-12">
+                    <div class="col-span-full text-center py-12">
                         <p class="text-gray-500">{{ __('home.popular_cars.no_cars_category') }}</p>
                     </div>
                 @endforelse
-                </div>
+            </div>
 
-            <!-- View More Button -->
-            @if($discoverCars->count() >= 12)
-                <div class="text-center mt-12">
-                    <a href="{{ route('public.agencies') }}" 
-                       class="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
-                        {{ __('home.popular_cars.view_all_cars') }}
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                        </svg>
-                    </a>
+            <!-- Pagination -->
+            @if($discoverCars->hasPages())
+                <div class="mt-8 flex justify-center">
+                    <nav class="flex items-center gap-2">
+                        {{-- Previous Page Link --}}
+                        @if($discoverCars->onFirstPage())
+                            <span class="px-4 py-2 text-gray-400 border border-gray-300 rounded-lg cursor-not-allowed">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </span>
+                        @else
+                            <a href="{{ $discoverCars->previousPageUrl() }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </a>
+                        @endif
+
+                        {{-- Pagination Elements --}}
+                        @php
+                            $currentPage = $discoverCars->currentPage();
+                            $lastPage = $discoverCars->lastPage();
+                            $startPage = max(1, $currentPage - 2);
+                            $endPage = min($lastPage, $currentPage + 2);
+                        @endphp
+                        
+                        @if($startPage > 1)
+                            <a href="{{ $discoverCars->url(1) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">1</a>
+                            @if($startPage > 2)
+                                <span class="px-2 text-gray-500">...</span>
+                            @endif
+                        @endif
+                        
+                        @for($page = $startPage; $page <= $endPage; $page++)
+                            @if($page == $currentPage)
+                                <span class="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold">{{ $page }}</span>
+                            @else
+                                <a href="{{ $discoverCars->url($page) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">{{ $page }}</a>
+                            @endif
+                        @endfor
+                        
+                        @if($endPage < $lastPage)
+                            @if($endPage < $lastPage - 1)
+                                <span class="px-2 text-gray-500">...</span>
+                            @endif
+                            <a href="{{ $discoverCars->url($lastPage) }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">{{ $lastPage }}</a>
+                        @endif
+
+                        {{-- Next Page Link --}}
+                        @if($discoverCars->hasMorePages())
+                            <a href="{{ $discoverCars->nextPageUrl() }}" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        @else
+                            <span class="px-4 py-2 text-gray-400 border border-gray-300 rounded-lg cursor-not-allowed">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </span>
+                        @endif
+                    </nav>
                 </div>
             @endif
         </div>

@@ -20,6 +20,77 @@ class CarController extends Controller
         return view('agence.cars.create');
     }
 
+    /**
+     * API endpoint to search for similar vehicles in the database
+     * Used for auto-loading vehicle data when creating a new vehicle
+     */
+    public function searchSimilar(Request $request)
+    {
+        $request->validate([
+            'brand' => 'nullable|string|max:255',
+            'model' => 'nullable|string|max:255',
+            'year' => 'nullable|integer|min:1900|max:2030',
+        ]);
+
+        $query = Car::query();
+
+        // Search by brand if provided
+        if ($request->filled('brand')) {
+            $query->where('brand', 'like', '%' . $request->brand . '%');
+        }
+
+        // Search by model if provided
+        if ($request->filled('model')) {
+            $query->where('model', 'like', '%' . $request->model . '%');
+        }
+
+        // Search by year if provided
+        if ($request->filled('year')) {
+            $query->where('year', $request->year);
+        }
+
+        // Get the most similar vehicle (exact match preferred)
+        $similarCar = $query->orderByRaw('
+            CASE 
+                WHEN brand = ? AND model = ? AND year = ? THEN 1
+                WHEN brand = ? AND model = ? THEN 2
+                WHEN brand = ? THEN 3
+                ELSE 4
+            END
+        ', [
+            $request->brand ?? '',
+            $request->model ?? '',
+            $request->year ?? 0,
+            $request->brand ?? '',
+            $request->model ?? '',
+            $request->brand ?? '',
+        ])->first();
+
+        if ($similarCar) {
+            return response()->json([
+                'success' => true,
+                'car' => [
+                    'brand' => $similarCar->brand,
+                    'model' => $similarCar->model,
+                    'year' => $similarCar->year,
+                    'fuel_type' => $similarCar->fuel_type,
+                    'transmission' => $similarCar->transmission,
+                    'seats' => $similarCar->seats,
+                    'engine_size' => $similarCar->engine_size,
+                    'color' => $similarCar->color,
+                    'category_id' => $similarCar->category_id,
+                    'features' => $similarCar->features ?? [],
+                    'description' => $similarCar->description,
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Aucun véhicule similaire trouvé'
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
