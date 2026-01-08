@@ -103,9 +103,9 @@
                         <div class="hidden md:block bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border border-gray-200 p-2 hero-search">
                             <div class="flex flex-row items-center gap-2">
                                 <!-- Where -->
-                                <div class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-l-full transition-colors" onclick="openSearchModal('where')">
-                                    <label class="block text-xs font-semibold text-gray-900 mb-1">{{ __('home.hero.where') }}</label>
-                                    <div class="text-sm text-gray-600" id="whereDisplayDesktop">{{ __('home.hero.where_placeholder') }}</div>
+                                <div class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-l-full transition-colors" onclick="openSearchModal('where')" style="pointer-events: auto; position: relative; z-index: 1;">
+                                    <label class="block text-xs font-semibold text-gray-900 mb-1 pointer-events-none">{{ __('home.hero.where') }}</label>
+                                    <div class="text-sm text-gray-600 pointer-events-none" id="whereDisplayDesktop">{{ __('home.hero.where_placeholder') }}</div>
                                 </div>
                                 
                                 <!-- Check in -->
@@ -548,7 +548,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                             <input type="text" name="where" id="whereInput" placeholder="Search destinations" 
-                                   class="w-full pl-12 pr-10 py-3 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all text-base">
+                                   class="w-full pl-12 pr-10 py-3 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all text-base"
+                                   style="pointer-events: auto; cursor: text;" autocomplete="off">
                             <!-- Clear button -->
                             <button type="button" id="clearWhereInput" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -842,11 +843,15 @@
 
         // Open modal with specific section
         function openSearchModal(section) {
+            console.log('openSearchModal called with section:', section);
             const modal = document.getElementById('searchModal');
             if (modal) {
                 modal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden'; // Prevent background scroll
                 switchToSection(section || 'where');
+                console.log('Modal opened, section switched to:', section || 'where');
+            } else {
+                console.error('Search modal not found!');
             }
         }
 
@@ -874,6 +879,35 @@
                     openSearchModal('where');
                     return false;
                 }, true); // true = capture phase (avant la phase de propagation)
+            }
+
+            // Add click handlers for desktop search fields
+            const whereDesktop = document.querySelector('[onclick="openSearchModal(\'where\')"]');
+            const checkInDesktop = document.querySelector('[onclick="openSearchModal(\'checkin\')"]');
+            const checkOutDesktop = document.querySelector('[onclick="openSearchModal(\'checkout\')"]');
+            
+            if (whereDesktop) {
+                whereDesktop.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openSearchModal('where');
+                });
+            }
+            
+            if (checkInDesktop) {
+                checkInDesktop.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openSearchModal('checkin');
+                });
+            }
+            
+            if (checkOutDesktop) {
+                checkOutDesktop.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openSearchModal('checkout');
+                });
             }
 
             // Close modal when clicking outside
@@ -945,7 +979,10 @@
                     if (input) {
                         input.focus();
                         // Initialize autocomplete
+                        console.log('Initializing city autocomplete...');
                         initCityAutocomplete();
+                    } else {
+                        console.error('whereInput not found!');
                     }
                 }, 100);
             } else if (section === 'checkin' || section === 'checkout') {
@@ -1013,32 +1050,46 @@
             const clearButton = document.getElementById('clearWhereInput');
             const suggestionsList = document.getElementById('suggestionsList');
 
-            if (!whereInput) return;
+            if (!whereInput) {
+                console.error('whereInput not found in initCityAutocomplete');
+                return;
+            }
+            
+            console.log('City autocomplete initialized');
+            
+            // Check if already initialized to avoid duplicate listeners
+            if (whereInput.dataset.autocompleteInitialized === 'true') {
+                console.log('Autocomplete already initialized, skipping...');
+                return;
+            }
+            whereInput.dataset.autocompleteInitialized = 'true';
 
             // Show/hide clear button
             whereInput.addEventListener('input', function() {
                 if (this.value.length > 0) {
-                    clearButton.classList.remove('hidden');
+                    if (clearButton) clearButton.classList.remove('hidden');
                 } else {
-                    clearButton.classList.add('hidden');
-                    citySuggestions.classList.add('hidden');
+                    if (clearButton) clearButton.classList.add('hidden');
+                    if (citySuggestions) citySuggestions.classList.add('hidden');
                 }
             });
 
             // Clear input
-            clearButton.addEventListener('click', function() {
-                whereInput.value = '';
-                citySuggestions.classList.add('hidden');
-                clearButton.classList.add('hidden');
-                whereInput.focus();
-            });
+            if (clearButton) {
+                clearButton.addEventListener('click', function() {
+                    whereInput.value = '';
+                    if (citySuggestions) citySuggestions.classList.add('hidden');
+                    clearButton.classList.add('hidden');
+                    whereInput.focus();
+                });
+            }
 
             // Search cities on input
             whereInput.addEventListener('input', function() {
                 const query = this.value.trim();
                 
                 if (query.length < 2) {
-                    citySuggestions.classList.add('hidden');
+                    if (citySuggestions) citySuggestions.classList.add('hidden');
                     return;
                 }
 
@@ -1051,13 +1102,14 @@
 
             // Hide suggestions when clicking outside
             document.addEventListener('click', function(e) {
-                if (!whereInput.contains(e.target) && !citySuggestions.contains(e.target)) {
+                if (whereInput && citySuggestions && !whereInput.contains(e.target) && !citySuggestions.contains(e.target)) {
                     citySuggestions.classList.add('hidden');
                 }
             });
 
             // Handle keyboard navigation
             whereInput.addEventListener('keydown', function(e) {
+                if (!suggestionsList) return;
                 const suggestions = suggestionsList.querySelectorAll('.suggestion-item');
                 const activeSuggestion = suggestionsList.querySelector('.suggestion-item.active');
                 
