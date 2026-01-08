@@ -612,6 +612,7 @@ Route::get('/debug/data', function () {
 
 // Public Routes (No Authentication Required)
 Route::view('/policies/non-refundable', 'public.policies.non-refundable')->name('public.policies.non-refundable');
+Route::get('/api/cities/search', [App\Http\Controllers\PublicController::class, 'searchCities'])->name('public.cities.search');
 Route::get('/about', [App\Http\Controllers\PublicController::class, 'about'])->name('public.about');
 Route::get('/how-it-works', [App\Http\Controllers\PublicController::class, 'howItWorks'])->name('public.how-it-works');
 Route::get('/wishlists', [App\Http\Controllers\PublicController::class, 'wishlists'])->name('public.wishlists');

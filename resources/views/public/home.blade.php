@@ -547,8 +547,18 @@
                             <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
-                        <input type="text" name="where" id="whereInput" placeholder="Search destinations" 
-                                   class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all text-base">
+                            <input type="text" name="where" id="whereInput" placeholder="Search destinations" 
+                                   class="w-full pl-12 pr-10 py-3 border border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all text-base">
+                            <!-- Clear button -->
+                            <button type="button" id="clearWhereInput" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                            <!-- Suggestions dropdown -->
+                            <div id="citySuggestions" class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-80 overflow-y-auto hidden">
+                                <div id="suggestionsList" class="py-2"></div>
+                            </div>
                         </div>
                         
                         <!-- Recent searches (Dynamic) -->
@@ -932,7 +942,11 @@
                 
                 setTimeout(() => {
                     const input = document.getElementById('whereInput');
-                    if (input) input.focus();
+                    if (input) {
+                        input.focus();
+                        // Initialize autocomplete
+                        initCityAutocomplete();
+                    }
                 }, 100);
             } else if (section === 'checkin' || section === 'checkout') {
                 // Show when section
@@ -986,6 +1000,162 @@
             } else {
                 mobileSearchBar.innerHTML = '<span class="text-gray-500">Start your search</span>';
                 mobileSearchBar.classList.remove('text-gray-900');
+            }
+        }
+
+        // City autocomplete functionality
+        let cityAutocompleteTimeout;
+        let isSearchingCities = false;
+
+        function initCityAutocomplete() {
+            const whereInput = document.getElementById('whereInput');
+            const citySuggestions = document.getElementById('citySuggestions');
+            const clearButton = document.getElementById('clearWhereInput');
+            const suggestionsList = document.getElementById('suggestionsList');
+
+            if (!whereInput) return;
+
+            // Show/hide clear button
+            whereInput.addEventListener('input', function() {
+                if (this.value.length > 0) {
+                    clearButton.classList.remove('hidden');
+                } else {
+                    clearButton.classList.add('hidden');
+                    citySuggestions.classList.add('hidden');
+                }
+            });
+
+            // Clear input
+            clearButton.addEventListener('click', function() {
+                whereInput.value = '';
+                citySuggestions.classList.add('hidden');
+                clearButton.classList.add('hidden');
+                whereInput.focus();
+            });
+
+            // Search cities on input
+            whereInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                
+                if (query.length < 2) {
+                    citySuggestions.classList.add('hidden');
+                    return;
+                }
+
+                // Debounce search
+                clearTimeout(cityAutocompleteTimeout);
+                cityAutocompleteTimeout = setTimeout(() => {
+                    searchCities(query);
+                }, 300);
+            });
+
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!whereInput.contains(e.target) && !citySuggestions.contains(e.target)) {
+                    citySuggestions.classList.add('hidden');
+                }
+            });
+
+            // Handle keyboard navigation
+            whereInput.addEventListener('keydown', function(e) {
+                const suggestions = suggestionsList.querySelectorAll('.suggestion-item');
+                const activeSuggestion = suggestionsList.querySelector('.suggestion-item.active');
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (activeSuggestion) {
+                        activeSuggestion.classList.remove('active');
+                        const next = activeSuggestion.nextElementSibling;
+                        if (next) {
+                            next.classList.add('active');
+                            next.scrollIntoView({ block: 'nearest' });
+                        }
+                    } else if (suggestions.length > 0) {
+                        suggestions[0].classList.add('active');
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (activeSuggestion) {
+                        activeSuggestion.classList.remove('active');
+                        const prev = activeSuggestion.previousElementSibling;
+                        if (prev) {
+                            prev.classList.add('active');
+                            prev.scrollIntoView({ block: 'nearest' });
+                        }
+                    }
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (activeSuggestion) {
+                        const cityName = activeSuggestion.dataset.city;
+                        selectDestination(cityName);
+                        citySuggestions.classList.add('hidden');
+                    }
+                } else if (e.key === 'Escape') {
+                    citySuggestions.classList.add('hidden');
+                }
+            });
+        }
+
+        async function searchCities(query) {
+            if (isSearchingCities) return;
+            
+            isSearchingCities = true;
+            const citySuggestions = document.getElementById('citySuggestions');
+            const suggestionsList = document.getElementById('suggestionsList');
+
+            try {
+                const response = await fetch(`{{ route('public.cities.search') }}?q=${encodeURIComponent(query)}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.cities.length > 0) {
+                    suggestionsList.innerHTML = '';
+                    
+                    data.cities.forEach((city, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'suggestion-item flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors';
+                        item.dataset.city = city.name;
+                        if (index === 0) {
+                            item.classList.add('active');
+                        }
+                        
+                        item.innerHTML = `
+                            <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-900">${city.name}</p>
+                            </div>
+                        `;
+                        
+                        item.addEventListener('click', function() {
+                            selectDestination(city.name);
+                            citySuggestions.classList.add('hidden');
+                        });
+                        
+                        item.addEventListener('mouseenter', function() {
+                            suggestionsList.querySelectorAll('.suggestion-item').forEach(i => i.classList.remove('active'));
+                            this.classList.add('active');
+                        });
+                        
+                        suggestionsList.appendChild(item);
+                    });
+                    
+                    citySuggestions.classList.remove('hidden');
+                } else {
+                    citySuggestions.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error searching cities:', error);
+                citySuggestions.classList.add('hidden');
+            } finally {
+                isSearchingCities = false;
             }
         }
 
@@ -1319,10 +1489,11 @@
             generateCalendar();
         });
 
-        // Update where input
+        // Update where input (keep existing functionality)
         const whereInput = document.getElementById('whereInput');
         if (whereInput) {
-            whereInput.addEventListener('input', function(e) {
+            // This listener is already handled by initCityAutocomplete, but we keep this for display updates
+            const existingInputHandler = function(e) {
             const value = e.target.value;
             const displayText = value || 'Search destinations';
                 
@@ -1370,7 +1541,16 @@
             });
 
             // Add to recent searches when pressing Enter in the where input
+            // Note: This is handled in initCityAutocomplete, but we keep this as fallback
             whereInput.addEventListener('keydown', function(e) {
+                const citySuggestions = document.getElementById('citySuggestions');
+                const activeSuggestion = document.getElementById('suggestionsList')?.querySelector('.suggestion-item.active');
+                
+                // If suggestions are visible and active, let autocomplete handle it
+                if (citySuggestions && !citySuggestions.classList.contains('hidden') && activeSuggestion) {
+                    return; // Let autocomplete handle Enter key
+                }
+                
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     const value = whereInput.value.trim();
@@ -1538,6 +1718,15 @@
             background: #0F3B63;
             border-color: #0F3B63;
             color: #fff;
+        }
+
+        /* City suggestions styles */
+        .suggestion-item.active {
+            background-color: #f3f4f6;
+        }
+        
+        .suggestion-item:hover {
+            background-color: #f9fafb;
         }
     </style>
 

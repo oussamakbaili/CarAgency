@@ -372,6 +372,41 @@ class PublicController extends Controller
     }
 
     /**
+     * API endpoint to search cities by name prefix
+     * Used for autocomplete in search forms
+     */
+    public function searchCities(Request $request)
+    {
+        $request->validate([
+            'q' => 'required|string|min:2|max:100',
+        ]);
+
+        $query = $request->input('q');
+        
+        // Search cities from approved agencies
+        $cities = Agency::where('status', 'approved')
+            ->whereNotNull('city')
+            ->where('city', 'like', $query . '%')
+            ->select('city', DB::raw('COUNT(*) as count'))
+            ->groupBy('city')
+            ->orderBy('count', 'desc')
+            ->orderBy('city', 'asc')
+            ->limit(10)
+            ->get()
+            ->map(function($item) {
+                return [
+                    'name' => $item->city,
+                    'count' => $item->count,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'cities' => $cities,
+        ]);
+    }
+
+    /**
      * Show Wishlists page
      */
     public function wishlists()
