@@ -273,6 +273,7 @@
                     </div>
 
                     <!-- Price Alert -->
+                    @if($longStayDiscount > 0)
                     <div class="mt-4 p-3 bg-green-50 rounded-lg">
                         <div class="flex items-center">
                             <svg class="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -281,6 +282,7 @@
                             <p class="text-xs text-green-700">{{ __('booking.review.summary.lower_price', ['amount' => number_format($longStayDiscount, 0, ',', ' ')]) }}</p>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>

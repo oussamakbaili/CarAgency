@@ -80,5 +80,19 @@ return [
         'languages' => 'Languages & currency',
         'logout' => 'Log out',
     ],
+    'auth' => [
+        'welcome_back' => 'Welcome Back',
+        'sign_in_to_continue' => 'Sign in to your account to continue',
+        'email_address' => 'Email Address',
+        'enter_email' => 'Enter your email address',
+        'password' => 'Password',
+        'enter_password' => 'Enter your password',
+        'remember_me' => 'Remember me',
+        'forgot_password' => 'Forgot password?',
+        'sign_in' => 'Sign In',
+        'dont_have_account' => 'Don\'t have an account?',
+        'sign_up_here' => 'Sign up here',
+        'all_rights_reserved' => 'All rights reserved',
+    ],
 ];
 

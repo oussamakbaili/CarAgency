@@ -194,14 +194,16 @@
                     </div>
 
                     <!-- Price Alert -->
+                    @if($longStayDiscount > 0)
                     <div class="mt-4 p-3 bg-green-50 rounded-lg">
                         <div class="flex items-center">
                             <svg class="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <p class="text-xs text-green-700">{{ __('booking.airbnb.summary.lower_price', ['amount' => number_format($longStayDiscount > 0 ? $longStayDiscount : 0, 0, ',', ' ')]) }}</p>
+                            <p class="text-xs text-green-700">{{ __('booking.airbnb.summary.lower_price', ['amount' => number_format($longStayDiscount, 0, ',', ' ')]) }}</p>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>

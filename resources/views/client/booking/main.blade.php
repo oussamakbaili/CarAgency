@@ -89,13 +89,23 @@
                             </div>
                         </div>
 
-                        <!-- Selected Payment Method Container (Hidden Initially) -->
-                        <div id="selected-payment-method" style="display: none;">
+                        <!-- Selected Payment Method Container (Shown when method is selected) -->
+                        <div id="selected-payment-method" style="display: none;" class="mt-6">
+                            <!-- Back to selection button -->
+                            <div class="mb-4">
+                                <button type="button" id="change-payment-method-btn" class="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                    Changer de méthode de paiement
+                                </button>
+                            </div>
+                            
                             <!-- PayPal Payment Form -->
                             <div id="paypal-payment-form" class="payment-form" style="display: none;">
                             <div class="mb-6">
                                 <p class="text-gray-600 text-sm mb-6">
-                                    Connectez-vous à votre compte PayPal pour finaliser votre paiement. Vous serez redirigé vers le site PayPal pour vous connecter.
+                                    Connectez-vous à votre compte PayPal pour finaliser votre paiement. Une nouvelle fenêtre s'ouvrira pour vous connecter à PayPal.
                                 </p>
                                 
                                 <div class="flex justify-center">
@@ -368,14 +378,16 @@
                     </div>
 
                     <!-- Price Alert -->
+                    @if($longStayDiscount > 0)
                     <div class="mt-4 p-3 bg-green-50 rounded-lg">
                         <div class="flex items-center">
                             <svg class="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <p class="text-xs text-green-700">{{ __('booking.main.summary.lower_price', ['amount' => number_format($longStayDiscount > 0 ? $longStayDiscount : 0, 0, ',', ' ')]) }}</p>
+                            <p class="text-xs text-green-700">{{ __('booking.main.summary.lower_price', ['amount' => number_format($longStayDiscount, 0, ',', ' ')]) }}</p>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -789,10 +801,34 @@ document.addEventListener('DOMContentLoaded', function() {
         const cardForm = document.getElementById('card-payment-form');
         const radioButtons = document.querySelectorAll('.payment-method-radio');
         const paymentOptions = document.querySelectorAll('.payment-method-option');
+        const changeMethodBtn = document.getElementById('change-payment-method-btn');
 
         if (!paymentMethodSelection || !selectedPaymentMethod) {
             console.warn('Payment method selection elements not found');
             return;
+        }
+
+        // Handle "Change payment method" button
+        if (changeMethodBtn) {
+            changeMethodBtn.addEventListener('click', function() {
+                // Uncheck all radio buttons
+                radioButtons.forEach(radio => {
+                    radio.checked = false;
+                });
+                
+                // Reset visual state
+                paymentOptions.forEach(option => {
+                    option.style.borderColor = '#e5e7eb';
+                    option.style.backgroundColor = 'transparent';
+                });
+                
+                // Hide selected payment method container
+                selectedPaymentMethod.style.display = 'none';
+                
+                // Hide both forms
+                if (paypalForm) paypalForm.style.display = 'none';
+                if (cardForm) cardForm.style.display = 'none';
+            });
         }
 
         // Handle radio button selection
@@ -801,7 +837,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const selectedMethod = this.value;
                 console.log('Payment method selected:', selectedMethod);
                 
-                // Update visual state of options
+                // Update visual state of options (keep both visible)
                 paymentOptions.forEach(option => {
                     const input = option.querySelector('input');
                     if (input && input.checked) {
@@ -813,11 +849,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                // Hide payment method selection, show selected method
-                paymentMethodSelection.style.display = 'none';
+                // Keep payment method selection visible, show selected method below
+                paymentMethodSelection.style.display = 'block';
                 selectedPaymentMethod.style.display = 'block';
 
-                // Show selected payment form
+                // Show selected payment form, hide the other
                 if (selectedMethod === 'paypal') {
                     if (paypalForm) paypalForm.style.display = 'block';
                     if (cardForm) cardForm.style.display = 'none';
@@ -893,8 +929,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('PayPal response data:', data);
                 
                 if (data.success && data.approve_url) {
-                    console.log('Redirecting to PayPal:', data.approve_url);
-                    window.location.href = data.approve_url;
+                    console.log('Opening PayPal in new window:', data.approve_url);
+                    // Ouvrir PayPal dans une nouvelle fenêtre
+                    const paypalWindow = window.open(data.approve_url, 'paypal_payment', 'width=800,height=600,scrollbars=yes,resizable=yes');
+                    
+                    // Vérifier si la fenêtre a été ouverte (peut être bloquée par le bloqueur de popup)
+                    if (!paypalWindow || paypalWindow.closed || typeof paypalWindow.closed === 'undefined') {
+                        // Si la popup est bloquée, rediriger dans la même fenêtre
+                        console.warn('Popup blocked, redirecting in same window');
+                        window.location.href = data.approve_url;
+                    } else {
+                        // Surveiller la fermeture de la fenêtre PayPal
+                        const checkClosed = setInterval(() => {
+                            if (paypalWindow.closed) {
+                                clearInterval(checkClosed);
+                                // Vérifier le statut du paiement après fermeture
+                                console.log('PayPal window closed, checking payment status...');
+                                // Optionnel: recharger la page ou vérifier le statut
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                            }
+                        }, 500);
+                    }
                 } else {
                     const errorText = data.error || 'Impossible d\'initialiser le paiement PayPal. Veuillez réessayer plus tard.';
                     if (errorDiv) {

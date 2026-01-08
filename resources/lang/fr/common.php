@@ -80,5 +80,19 @@ return [
         'languages' => 'Langues et devise',
         'logout' => 'Déconnexion',
     ],
+    'auth' => [
+        'welcome_back' => 'Bon retour',
+        'sign_in_to_continue' => 'Connectez-vous à votre compte pour continuer',
+        'email_address' => 'Adresse e-mail',
+        'enter_email' => 'Entrez votre adresse e-mail',
+        'password' => 'Mot de passe',
+        'enter_password' => 'Entrez votre mot de passe',
+        'remember_me' => 'Se souvenir de moi',
+        'forgot_password' => 'Mot de passe oublié?',
+        'sign_in' => 'Se connecter',
+        'dont_have_account' => 'Vous n\'avez pas de compte?',
+        'sign_up_here' => 'Inscrivez-vous ici',
+        'all_rights_reserved' => 'Tous droits réservés',
+    ],
 ];
 
