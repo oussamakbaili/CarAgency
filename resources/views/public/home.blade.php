@@ -103,21 +103,21 @@
                         <div class="hidden md:block bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border border-gray-200 p-2 hero-search">
                             <div class="flex flex-row items-center gap-2">
                                 <!-- Where -->
-                                <div class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-l-full transition-colors" onclick="openSearchModal('where')" style="pointer-events: auto; position: relative; z-index: 1;">
+                                <div id="whereDesktopBtn" class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-l-full transition-colors" onclick="openSearchModal('where')" style="pointer-events: auto; position: relative; z-index: 1;">
                                     <label class="block text-xs font-semibold text-gray-900 mb-1 pointer-events-none">{{ __('home.hero.where') }}</label>
                                     <div class="text-sm text-gray-600 pointer-events-none" id="whereDisplayDesktop">{{ __('home.hero.where_placeholder') }}</div>
                                 </div>
                                 
                                 <!-- Check in -->
-                                <div class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkin')">
-                                    <label class="block text-xs font-semibold text-gray-900 mb-1">{{ __('home.hero.check_in') }}</label>
-                                    <div class="text-sm text-gray-400" id="checkInDisplayDesktop">{{ __('home.hero.add_dates') }}</div>
+                                <div id="checkInDesktopBtn" class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkin')" style="pointer-events: auto; position: relative; z-index: 1;">
+                                    <label class="block text-xs font-semibold text-gray-900 mb-1 pointer-events-none">{{ __('home.hero.check_in') }}</label>
+                                    <div class="text-sm text-gray-400 pointer-events-none" id="checkInDisplayDesktop">{{ __('home.hero.add_dates') }}</div>
                                 </div>
                                 
                                 <!-- Check out -->
-                                <div class="flex-1 px-6 py-3 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkout')">
-                                    <label class="block text-xs font-semibold text-gray-900 mb-1">{{ __('home.hero.check_out') }}</label>
-                                    <div class="text-sm text-gray-400" id="checkOutDisplayDesktop">{{ __('home.hero.add_dates') }}</div>
+                                <div id="checkOutDesktopBtn" class="flex-1 px-6 py-3 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkout')" style="pointer-events: auto; position: relative; z-index: 1;">
+                                    <label class="block text-xs font-semibold text-gray-900 mb-1 pointer-events-none">{{ __('home.hero.check_out') }}</label>
+                                    <div class="text-sm text-gray-400 pointer-events-none" id="checkOutDisplayDesktop">{{ __('home.hero.add_dates') }}</div>
                                 </div>
                                 
                                 <!-- Search Button -->
@@ -881,33 +881,48 @@
                 }, true); // true = capture phase (avant la phase de propagation)
             }
 
-            // Add click handlers for desktop search fields
-            const whereDesktop = document.querySelector('[onclick="openSearchModal(\'where\')"]');
-            const checkInDesktop = document.querySelector('[onclick="openSearchModal(\'checkin\')"]');
-            const checkOutDesktop = document.querySelector('[onclick="openSearchModal(\'checkout\')"]');
+            // Add click handlers for desktop search fields using IDs
+            const whereDesktop = document.getElementById('whereDesktopBtn');
+            const checkInDesktop = document.getElementById('checkInDesktopBtn');
+            const checkOutDesktop = document.getElementById('checkOutDesktopBtn');
             
             if (whereDesktop) {
+                // Keep onclick as fallback, but add event listener with capture phase
                 whereDesktop.addEventListener('click', function(e) {
                     e.preventDefault();
-                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    console.log('Where button clicked');
                     openSearchModal('where');
-                });
+                    return false;
+                }, true); // Use capture phase to intercept before other handlers
+            } else {
+                console.warn('Where desktop button not found');
             }
             
             if (checkInDesktop) {
+                // Keep onclick as fallback, but add event listener with capture phase
                 checkInDesktop.addEventListener('click', function(e) {
                     e.preventDefault();
-                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    console.log('Check-in button clicked');
                     openSearchModal('checkin');
-                });
+                    return false;
+                }, true); // Use capture phase to intercept before other handlers
+            } else {
+                console.warn('Check-in desktop button not found');
             }
             
             if (checkOutDesktop) {
+                // Keep onclick as fallback, but add event listener with capture phase
                 checkOutDesktop.addEventListener('click', function(e) {
                     e.preventDefault();
-                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    console.log('Check-out button clicked');
                     openSearchModal('checkout');
-                });
+                    return false;
+                }, true); // Use capture phase to intercept before other handlers
+            } else {
+                console.warn('Check-out desktop button not found');
             }
 
             // Close modal when clicking outside
