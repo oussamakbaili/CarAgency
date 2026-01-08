@@ -1190,14 +1190,76 @@
 
         // Perform search
         function performSearch() {
-            const whereValue = document.getElementById('whereInput') ? document.getElementById('whereInput').value.trim() : '';
-            if (whereValue) {
-                addRecentSearch(whereValue);
+            // Get values from modal inputs if modal is open
+            const whereInput = document.getElementById('whereInput');
+            const checkInInput = document.getElementById('checkInInput');
+            const checkOutInput = document.getElementById('checkOutInput');
+            const searchModal = document.getElementById('searchModal');
+            const form = document.getElementById('searchForm');
+            
+            // If modal is open and form exists, submit the form
+            if (searchModal && !searchModal.classList.contains('hidden') && form) {
+                const whereValue = whereInput ? whereInput.value.trim() : '';
+                if (whereValue) {
+                    addRecentSearch(whereValue);
+                    renderRecentSearches();
+                }
+                form.submit();
+                return;
+            }
+            
+            // If modal is closed, build URL from stored values
+            let where = '';
+            let checkIn = '';
+            let checkOut = '';
+            
+            // Get where value from input or display
+            if (whereInput && whereInput.value.trim()) {
+                where = whereInput.value.trim();
+            } else {
+                const whereDisplayDesktop = document.getElementById('whereDisplayDesktop');
+                if (whereDisplayDesktop) {
+                    const displayText = whereDisplayDesktop.textContent.trim();
+                    // Check if it's not the placeholder
+                    if (displayText && displayText !== 'Search destinations' && displayText !== 'Rechercher des destinations') {
+                        where = displayText;
+                    }
+                }
+            }
+            
+            // Get dates from global variables or hidden inputs
+            if (checkInDate) {
+                checkIn = new Date(checkInDate).toISOString().split('T')[0];
+            } else if (checkInInput && checkInInput.value) {
+                checkIn = checkInInput.value;
+            }
+            
+            if (checkOutDate) {
+                checkOut = new Date(checkOutDate).toISOString().split('T')[0];
+            } else if (checkOutInput && checkOutInput.value) {
+                checkOut = checkOutInput.value;
+            }
+            
+            // Build search URL
+            const searchUrl = new URL('{{ route("public.cars.search") }}', window.location.origin);
+            if (where) {
+                searchUrl.searchParams.append('where', where);
+                addRecentSearch(where);
                 renderRecentSearches();
             }
-            const form = document.getElementById('searchForm');
-            form.submit();
+            if (checkIn) {
+                searchUrl.searchParams.append('check_in', checkIn);
+            }
+            if (checkOut) {
+                searchUrl.searchParams.append('check_out', checkOut);
+            }
+            
+            // Redirect to search page
+            window.location.href = searchUrl.toString();
         }
+        
+        // Make function globally available
+        window.performSearch = performSearch;
 
         // Recent searches helpers (localStorage)
         function getRecentSearches() {
