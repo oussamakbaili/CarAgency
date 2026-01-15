@@ -135,6 +135,162 @@
         window.closeSearchModal = closeSearchModal;
         window.switchToSection = switchToSection;
         
+        // Car Details Modal Functions - Define early to avoid ReferenceError
+        function openCarDetailsModal(agencyId, carId) {
+            const modal = document.getElementById('carDetailsModal');
+            const loading = document.getElementById('carDetailsLoading');
+            const content = document.getElementById('carDetailsContent');
+            const scrollableArea = modal ? modal.querySelector('.overflow-y-auto') : null;
+            
+            if (!modal || !loading || !content) {
+                console.error('Car details modal elements not found');
+                return;
+            }
+            
+            // Prevent body scroll completely
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            
+            // Show modal
+            modal.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            content.classList.add('hidden');
+            content.innerHTML = '';
+
+            // Scroll to top of scrollable area
+            if (scrollableArea) {
+                scrollableArea.scrollTop = 0;
+            }
+
+            // Fetch car details
+            fetch(`/agencies/${agencyId}/cars/${carId}/details`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        renderCarDetails(data.car);
+                        loading.classList.add('hidden');
+                        content.classList.remove('hidden');
+                        // Scroll to top after content loads
+                        if (scrollableArea) {
+                            scrollableArea.scrollTop = 0;
+                        }
+                    } else {
+                        alert('Erreur lors du chargement des détails du véhicule');
+                        closeCarDetailsModal();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Erreur lors du chargement des détails du véhicule');
+                    closeCarDetailsModal();
+                });
+        }
+        
+        function closeCarDetailsModal() {
+            const modal = document.getElementById('carDetailsModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                // Restore body scroll
+                document.body.style.overflow = '';
+                document.documentElement.style.overflow = '';
+            }
+        }
+        
+        function renderCarDetails(car) {
+            const content = document.getElementById('carDetailsContent');
+            if (!content) return;
+            
+            // Get images
+            const mainImage = car.main_image || car.images?.[0] || null;
+            const otherImages = car.other_images || [];
+            const allImages = car.images || [];
+
+            // Build specifications string
+            const specs = [
+                car.year,
+                car.fuel_type || 'N/A',
+                car.seats ? `${car.seats} places` : null,
+                car.transmission || null
+            ].filter(Boolean).join(' • ');
+
+            // Build HTML - Gallery horizontale avec toutes les images côte à côte
+            let html = `
+                <div class="p-6 lg:p-8">
+                    <!-- Image Gallery Section - Horizontal Scrollable -->
+                    <div class="mb-6">
+                        ${allImages.length > 0 ? `
+                            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" style="scrollbar-width: none; -ms-overflow-style: none;">
+                                ${allImages.map((image, index) => `
+                                    <div class="flex-shrink-0 w-[300px] h-[300px] rounded-xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" onclick="openImageModal('${image}')">
+                                        <img src="${image}" 
+                                             alt="${car.brand} ${car.model} - Image ${index + 1}" 
+                                             class="w-full h-full object-cover">
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : `
+                            <div class="w-full h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-2xl">
+                                <div class="text-center">
+                                    <svg class="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <p class="text-gray-500 font-medium">Photo du véhicule</p>
+                                </div>
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- Car Info Section -->
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="flex-1">
+                            <h1 class="text-3xl font-bold text-gray-900 mb-2">${car.brand} ${car.model}</h1>
+                            <p class="text-gray-600 mb-4">${specs}</p>
+                        </div>
+                        <div class="text-right ml-4">
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-3xl font-bold text-gray-900">${parseInt(car.client_price_per_day || car.price_per_day || 0).toLocaleString('fr-FR')}</span>
+                                <span class="text-lg text-gray-600">MAD</span>
+                            </div>
+                            <span class="text-sm text-gray-500">/ jour</span>
+                        </div>
+                    </div>
+
+                    <!-- Additional Details Section -->
+                    ${car.description || (car.features && car.features.length > 0) ? `
+                        <div class="border-t border-gray-200 pt-6">
+                            ${car.description ? `
+                                <div class="mb-6">
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Description</h3>
+                                    <p class="text-gray-600 whitespace-pre-line">${car.description}</p>
+                                </div>
+                            ` : ''}
+                            ${car.features && car.features.length > 0 ? `
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Équipements</h3>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        ${car.features.map(feature => `
+                                            <div class="flex items-center gap-2 text-gray-700">
+                                                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                <span>${feature}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            content.innerHTML = html;
+        }
+        
+        // Make functions globally available
+        window.openCarDetailsModal = openCarDetailsModal;
+        window.closeCarDetailsModal = closeCarDetailsModal;
+        
         console.log('Search modal functions initialized immediately');
     </script>
     
@@ -2548,11 +2704,6 @@
             }
         });
 
-        // Make functions globally available
-        window.openCarDetailsModal = openCarDetailsModal;
-        window.closeCarDetailsModal = closeCarDetailsModal;
-    </script>
-
     <!-- Car Details Modal -->
     <div id="carDetailsModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center px-4 py-8" style="background-color: rgba(0, 0, 0, 0.75);" onclick="if(event.target === this) closeCarDetailsModal()">
         <!-- Modal Container -->
@@ -2581,61 +2732,11 @@
     </div>
 
     <script>
-        // Car Details Modal Functions
-        function openCarDetailsModal(agencyId, carId) {
-            const modal = document.getElementById('carDetailsModal');
-            const loading = document.getElementById('carDetailsLoading');
-            const content = document.getElementById('carDetailsContent');
-            const scrollableArea = modal.querySelector('.overflow-y-auto');
-            
-            // Prevent body scroll completely
-            document.body.style.overflow = 'hidden';
-            document.documentElement.style.overflow = 'hidden';
-            
-            // Show modal
-            modal.classList.remove('hidden');
-            loading.classList.remove('hidden');
-            content.classList.add('hidden');
-            content.innerHTML = '';
-
-            // Scroll to top of scrollable area
-            if (scrollableArea) {
-                scrollableArea.scrollTop = 0;
-            }
-
-            // Fetch car details
-            fetch(`/agencies/${agencyId}/cars/${carId}/details`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        renderCarDetails(data.car);
-                        loading.classList.add('hidden');
-                        content.classList.remove('hidden');
-                        // Scroll to top after content loads
-                        if (scrollableArea) {
-                            scrollableArea.scrollTop = 0;
-                        }
-                    } else {
-                        alert('Erreur lors du chargement des détails du véhicule');
-                        closeCarDetailsModal();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Erreur lors du chargement des détails du véhicule');
-                    closeCarDetailsModal();
-                });
-        }
-
-        function closeCarDetailsModal() {
-            const modal = document.getElementById('carDetailsModal');
-            modal.classList.add('hidden');
-            // Restore body scroll
-            document.body.style.overflow = '';
-            document.documentElement.style.overflow = '';
-        }
-
-        function renderCarDetails(car) {
+        // Car Details Modal Functions are already defined above
+        // Override renderCarDetails with the full version that includes date selection
+        if (typeof window.renderCarDetails !== 'undefined') {
+            // Replace the simple version with the full version
+            window.renderCarDetails = function(car) {
             const content = document.getElementById('carDetailsContent');
             
             // Get images
@@ -2763,6 +2864,7 @@
             `;
 
             content.innerHTML = html;
+        };
         }
 
         // Check car availability function
