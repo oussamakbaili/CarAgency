@@ -69,11 +69,19 @@
                         if (input.dataset.autocompleteInitialized === 'true') {
                             input.dataset.autocompleteInitialized = 'false';
                         }
-                        if (typeof initCityAutocomplete === 'function') {
-                            initCityAutocomplete();
-                        }
+                        // Wait a bit more to ensure DOM is ready
+                        setTimeout(() => {
+                            if (typeof initCityAutocomplete === 'function') {
+                                console.log('Initializing city autocomplete...');
+                                initCityAutocomplete();
+                            } else {
+                                console.error('initCityAutocomplete function not found');
+                            }
+                        }, 50);
+                    } else {
+                        console.error('whereInput not found when trying to initialize autocomplete');
                     }
-                }, 150);
+                }, 200);
             } else if (section === 'checkin' || section === 'checkout') {
                 whereSection.classList.add('hidden');
                 whenSection.classList.remove('hidden');
@@ -848,8 +856,12 @@
                                 </svg>
                             </button>
                             <!-- Suggestions dropdown -->
-                            <div id="citySuggestions" class="absolute z-[100] w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-80 overflow-y-auto hidden" style="top: 100%;">
+                            <div id="citySuggestions" class="absolute z-[100] w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto hidden" style="top: 100%; left: 0;">
                                 <div id="suggestionsList" class="py-2"></div>
+                                <div id="citySuggestionsLoading" class="hidden px-4 py-3 text-center text-gray-500 text-sm">
+                                    <div class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-orange-600 mr-2"></div>
+                                    Recherche en cours...
+                                </div>
                             </div>
                         </div>
                         
@@ -1373,6 +1385,7 @@
             isSearchingCities = true;
             const citySuggestions = document.getElementById('citySuggestions');
             const suggestionsList = document.getElementById('suggestionsList');
+            const loadingIndicator = document.getElementById('citySuggestionsLoading');
 
             if (!citySuggestions || !suggestionsList) {
                 console.error('City suggestions elements not found');
@@ -1380,9 +1393,19 @@
                 return;
             }
 
+            // Show loading indicator
+            suggestionsList.innerHTML = '';
+            if (loadingIndicator) {
+                loadingIndicator.classList.remove('hidden');
+            }
+            citySuggestions.classList.remove('hidden');
+
             try {
                 console.log('Searching cities for query:', query);
-                const response = await fetch(`{{ route('public.cities.search') }}?q=${encodeURIComponent(query)}`, {
+                const apiUrl = `{{ route('public.cities.search') }}?q=${encodeURIComponent(query)}`;
+                console.log('API URL:', apiUrl);
+                
+                const response = await fetch(apiUrl, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json'
@@ -1396,15 +1419,20 @@
                 const data = await response.json();
                 console.log('Cities response:', data);
 
+                // Hide loading indicator
+                if (loadingIndicator) {
+                    loadingIndicator.classList.add('hidden');
+                }
+
                 if (data.success && data.cities && data.cities.length > 0) {
                     suggestionsList.innerHTML = '';
                     
                     data.cities.forEach((city, index) => {
                         const item = document.createElement('div');
-                        item.className = 'suggestion-item flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors';
+                        item.className = 'suggestion-item flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0';
                         item.dataset.city = city.name;
                         if (index === 0) {
-                            item.classList.add('active');
+                            item.classList.add('active', 'bg-gray-50');
                         }
                         
                         // Determine icon and subtitle based on city name (airport, county, etc.)
@@ -1430,8 +1458,8 @@
                         
                         item.innerHTML = `
                             ${iconSvg}
-                            <div class="flex-1">
-                                <p class="font-medium text-gray-900">${city.name}</p>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-900 truncate">${city.name}</p>
                                 ${subtitle ? `<p class="text-sm text-gray-500">${subtitle}</p>` : ''}
                             </div>
                         `;
@@ -1442,28 +1470,40 @@
                         });
                         
                         item.addEventListener('mouseenter', function() {
-                            suggestionsList.querySelectorAll('.suggestion-item').forEach(i => i.classList.remove('active'));
-                            this.classList.add('active');
+                            suggestionsList.querySelectorAll('.suggestion-item').forEach(i => {
+                                i.classList.remove('active', 'bg-gray-50');
+                            });
+                            this.classList.add('active', 'bg-gray-50');
+                        });
+                        
+                        item.addEventListener('mouseleave', function() {
+                            if (index !== 0) {
+                                this.classList.remove('bg-gray-50');
+                            }
                         });
                         
                         suggestionsList.appendChild(item);
                     });
                     
                     citySuggestions.classList.remove('hidden');
-                    console.log('Suggestions displayed:', data.cities.length);
+                    console.log('✅ Suggestions displayed:', data.cities.length, 'cities');
                 } else {
-                    console.log('No cities found or empty response');
+                    console.log('⚠️ No cities found or empty response');
                     // Show message if no results
                     if (data.success && data.cities && data.cities.length === 0) {
-                        suggestionsList.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500">Aucune ville trouvée</div>';
+                        suggestionsList.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 text-center">Aucune ville trouvée pour "' + query + '"</div>';
                         citySuggestions.classList.remove('hidden');
                     } else {
                         citySuggestions.classList.add('hidden');
                     }
                 }
             } catch (error) {
-                console.error('Error searching cities:', error);
-                citySuggestions.classList.add('hidden');
+                console.error('❌ Error searching cities:', error);
+                if (loadingIndicator) {
+                    loadingIndicator.classList.add('hidden');
+                }
+                suggestionsList.innerHTML = '<div class="px-4 py-3 text-sm text-red-500 text-center">Erreur lors de la recherche. Veuillez réessayer.</div>';
+                citySuggestions.classList.remove('hidden');
             } finally {
                 isSearchingCities = false;
             }
