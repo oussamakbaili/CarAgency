@@ -1122,7 +1122,7 @@
             whereInput.addEventListener('input', function() {
                 const query = this.value.trim();
                 
-                if (query.length < 2) {
+                if (query.length < 1) {
                     if (citySuggestions) citySuggestions.classList.add('hidden');
                     return;
                 }
@@ -1131,7 +1131,7 @@
                 clearTimeout(cityAutocompleteTimeout);
                 cityAutocompleteTimeout = setTimeout(() => {
                     searchCities(query);
-                }, 300);
+                }, 200);
             });
 
             // Hide suggestions when clicking outside
@@ -1210,13 +1210,32 @@
                             item.classList.add('active');
                         }
                         
-                        item.innerHTML = `
-                            <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        // Determine icon and subtitle based on city name (airport, county, etc.)
+                        let iconSvg = '';
+                        let subtitle = '';
+                        
+                        if (city.name.toLowerCase().includes('airport') || city.name.toLowerCase().includes('aéroport')) {
+                            iconSvg = `<svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                            </svg>`;
+                            subtitle = 'Airport';
+                        } else if (city.name.toLowerCase().includes('county') || city.name.toLowerCase().includes('comté')) {
+                            iconSvg = `<svg class="w-5 h-5 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>`;
+                            subtitle = 'County';
+                        } else {
+                            iconSvg = `<svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
+                            </svg>`;
+                        }
+                        
+                        item.innerHTML = `
+                            ${iconSvg}
                             <div class="flex-1">
                                 <p class="font-medium text-gray-900">${city.name}</p>
+                                ${subtitle ? `<p class="text-sm text-gray-500">${subtitle}</p>` : ''}
                             </div>
                         `;
                         

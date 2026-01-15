@@ -117,7 +117,7 @@
                                     </div>
 
                                     <div class="grid grid-cols-3 gap-3">
-                                        <div>
+                                        <div class="relative">
                                             <label for="city" class="block text-sm font-semibold text-gray-700 mb-2">Ville *</label>
                                             <input id="city" 
                                                 class="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200 bg-white" 
@@ -125,7 +125,12 @@
                                                 name="city" 
                                                 value="{{ old('city') }}" 
                                                 required 
-                                                placeholder="Ville" />
+                                                placeholder="Ville"
+                                                autocomplete="off" />
+                                            <!-- City suggestions dropdown -->
+                                            <div id="citySuggestionsAgency" class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-80 overflow-y-auto hidden">
+                                                <div id="suggestionsListAgency" class="py-2"></div>
+                                            </div>
                                             <x-input-error :messages="$errors->get('city')" class="mt-2 text-sm text-red-600" />
                                         </div>
 
@@ -503,6 +508,158 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     @endif
+
+    // City autocomplete for agency registration
+    const cityInput = document.getElementById('city');
+    const citySuggestionsAgency = document.getElementById('citySuggestionsAgency');
+    const suggestionsListAgency = document.getElementById('suggestionsListAgency');
+    let cityAutocompleteTimeoutAgency;
+    let isSearchingCitiesAgency = false;
+
+    if (cityInput && citySuggestionsAgency && suggestionsListAgency) {
+        // Search cities on input
+        cityInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            if (query.length < 1) {
+                if (citySuggestionsAgency) citySuggestionsAgency.classList.add('hidden');
+                return;
+            }
+
+            // Debounce search
+            clearTimeout(cityAutocompleteTimeoutAgency);
+            cityAutocompleteTimeoutAgency = setTimeout(() => {
+                searchCitiesAgency(query);
+            }, 200);
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (cityInput && citySuggestionsAgency && !cityInput.contains(e.target) && !citySuggestionsAgency.contains(e.target)) {
+                citySuggestionsAgency.classList.add('hidden');
+            }
+        });
+
+        // Handle keyboard navigation
+        cityInput.addEventListener('keydown', function(e) {
+            if (!suggestionsListAgency) return;
+            const suggestions = suggestionsListAgency.querySelectorAll('.suggestion-item');
+            const activeSuggestion = suggestionsListAgency.querySelector('.suggestion-item.active');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (activeSuggestion) {
+                    activeSuggestion.classList.remove('active');
+                    const next = activeSuggestion.nextElementSibling;
+                    if (next) {
+                        next.classList.add('active');
+                        next.scrollIntoView({ block: 'nearest' });
+                    }
+                } else if (suggestions.length > 0) {
+                    suggestions[0].classList.add('active');
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (activeSuggestion) {
+                    activeSuggestion.classList.remove('active');
+                    const prev = activeSuggestion.previousElementSibling;
+                    if (prev) {
+                        prev.classList.add('active');
+                        prev.scrollIntoView({ block: 'nearest' });
+                    }
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (activeSuggestion) {
+                    const cityName = activeSuggestion.dataset.city;
+                    cityInput.value = cityName;
+                    citySuggestionsAgency.classList.add('hidden');
+                }
+            } else if (e.key === 'Escape') {
+                citySuggestionsAgency.classList.add('hidden');
+            }
+        });
+    }
+
+    async function searchCitiesAgency(query) {
+        if (isSearchingCitiesAgency) return;
+        
+        isSearchingCitiesAgency = true;
+
+        try {
+            const response = await fetch(`{{ route('public.cities.search') }}?q=${encodeURIComponent(query)}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success && data.cities.length > 0) {
+                suggestionsListAgency.innerHTML = '';
+                
+                data.cities.forEach((city, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors';
+                    item.dataset.city = city.name;
+                    if (index === 0) {
+                        item.classList.add('active');
+                    }
+                    
+                    // Determine icon and subtitle based on city name
+                    let iconSvg = '';
+                    let subtitle = '';
+                    
+                    if (city.name.toLowerCase().includes('airport') || city.name.toLowerCase().includes('aéroport')) {
+                        iconSvg = `<svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>`;
+                        subtitle = 'Airport';
+                    } else if (city.name.toLowerCase().includes('county') || city.name.toLowerCase().includes('comté')) {
+                        iconSvg = `<svg class="w-5 h-5 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>`;
+                        subtitle = 'County';
+                    } else {
+                        iconSvg = `<svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>`;
+                    }
+                    
+                    item.innerHTML = `
+                        ${iconSvg}
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-900">${city.name}</p>
+                            ${subtitle ? `<p class="text-sm text-gray-500">${subtitle}</p>` : ''}
+                        </div>
+                    `;
+                    
+                    item.addEventListener('click', function() {
+                        cityInput.value = city.name;
+                        citySuggestionsAgency.classList.add('hidden');
+                    });
+                    
+                    item.addEventListener('mouseenter', function() {
+                        suggestionsListAgency.querySelectorAll('.suggestion-item').forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                    });
+                    
+                    suggestionsListAgency.appendChild(item);
+                });
+                
+                citySuggestionsAgency.classList.remove('hidden');
+            } else {
+                citySuggestionsAgency.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error('Error searching cities:', error);
+            citySuggestionsAgency.classList.add('hidden');
+        } finally {
+            isSearchingCitiesAgency = false;
+        }
+    }
 });
 </script>
 @endpush
