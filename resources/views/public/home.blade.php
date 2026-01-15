@@ -3,6 +3,137 @@
 @section('title', 'ToubCar - Premium Car Rental Platform')
 
 @section('content')
+    <!-- CRITICAL: Define functions IMMEDIATELY before HTML that uses them -->
+    <script>
+        // Define functions IMMEDIATELY and make them globally available
+        // This must execute BEFORE any HTML elements try to use onclick="openSearchModal()"
+        
+        // Global variables for calendar and dates
+        window.currentMonth = new Date();
+        window.checkInDate = null;
+        window.checkOutDate = null;
+        
+        // Switch between sections (where/checkin/checkout)
+        function switchToSection(section) {
+            const whereTab = document.getElementById('whereTab');
+            const checkInTab = document.getElementById('checkInTab');
+            const checkOutTab = document.getElementById('checkOutTab');
+            const whereSection = document.getElementById('whereSection');
+            const whenSection = document.getElementById('whenSection');
+            
+            if (!whereSection || !whenSection) {
+                console.error('Sections not found!');
+                return;
+            }
+            
+            // Reset all tabs
+            [whereTab, checkInTab, checkOutTab].forEach(tab => {
+                if (tab) {
+                    tab.classList.remove('bg-white', 'shadow-sm');
+                    const label = tab.querySelector('.text-xs.font-semibold');
+                    const value = tab.querySelector('.text-xs, .text-sm');
+                    if (label) {
+                        label.classList.remove('text-gray-900');
+                        label.classList.add('text-gray-500');
+                    }
+                    if (value) {
+                        value.classList.remove('text-gray-900', 'text-gray-500');
+                        value.classList.add('text-gray-400');
+                    }
+                }
+            });
+            
+            if (section === 'where') {
+                whereSection.classList.remove('hidden');
+                whenSection.classList.add('hidden');
+                
+                if (whereTab) {
+                    whereTab.classList.add('bg-white', 'shadow-sm');
+                    const whereLabel = whereTab.querySelector('.text-xs.font-semibold');
+                    const whereValue = whereTab.querySelector('.text-xs, .text-sm');
+                    if (whereLabel) {
+                        whereLabel.classList.remove('text-gray-500');
+                        whereLabel.classList.add('text-gray-900');
+                    }
+                    if (whereValue) {
+                        whereValue.classList.remove('text-gray-400');
+                        whereValue.classList.add('text-gray-500');
+                    }
+                }
+                
+                setTimeout(() => {
+                    const input = document.getElementById('whereInput');
+                    if (input) {
+                        input.focus();
+                        if (typeof initCityAutocomplete === 'function') {
+                            initCityAutocomplete();
+                        }
+                    }
+                }, 100);
+            } else if (section === 'checkin' || section === 'checkout') {
+                whereSection.classList.add('hidden');
+                whenSection.classList.remove('hidden');
+                
+                const activeTab = section === 'checkin' ? checkInTab : checkOutTab;
+                if (activeTab) {
+                    activeTab.classList.add('bg-white', 'shadow-sm');
+                    const label = activeTab.querySelector('.text-xs.font-semibold');
+                    const value = activeTab.querySelector('.text-xs, .text-sm');
+                    if (label) {
+                        label.classList.remove('text-gray-500');
+                        label.classList.add('text-gray-900');
+                    }
+                    if (value) {
+                        value.classList.remove('text-gray-400');
+                        value.classList.add('text-gray-500');
+                    }
+                }
+                
+                if (typeof generateCalendar === 'function') {
+                    generateCalendar();
+                }
+            }
+        }
+
+        // Open modal with specific section
+        function openSearchModal(section) {
+            try {
+                const modal = document.getElementById('searchModal');
+                if (!modal) {
+                    console.error('Search modal not found!');
+                    return;
+                }
+                
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                
+                setTimeout(function() {
+                    if (typeof switchToSection === 'function') {
+                        switchToSection(section || 'where');
+                    }
+                }, 50);
+            } catch (error) {
+                console.error('Error in openSearchModal:', error);
+            }
+        }
+
+        // Close modal
+        function closeSearchModal() {
+            const modal = document.getElementById('searchModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Make functions available globally IMMEDIATELY
+        window.openSearchModal = openSearchModal;
+        window.closeSearchModal = closeSearchModal;
+        window.switchToSection = switchToSection;
+        
+        console.log('Search modal functions initialized immediately');
+    </script>
+    
     <div class="home-mobile">
     <!-- Success/Error Messages -->
     @if (session('success'))
@@ -837,151 +968,20 @@
     </div>
 
     <script>
-        let currentMonth = new Date();
-        let checkInDate = null;
-        let checkOutDate = null;
-
-        // Switch between sections (where/checkin/checkout) - DEFINED FIRST
-        function switchToSection(section) {
-            console.log('switchToSection called with:', section);
-            const whereTab = document.getElementById('whereTab');
-            const checkInTab = document.getElementById('checkInTab');
-            const checkOutTab = document.getElementById('checkOutTab');
-            const whereSection = document.getElementById('whereSection');
-            const whenSection = document.getElementById('whenSection');
-            
-            // Check if elements exist
-            if (!whereSection || !whenSection) {
-                console.error('Sections not found! whereSection:', whereSection, 'whenSection:', whenSection);
-                return;
-            }
-            
-            // Reset all tabs
-            [whereTab, checkInTab, checkOutTab].forEach(tab => {
-                if (tab) {
-                    tab.classList.remove('bg-white', 'shadow-sm');
-                    const label = tab.querySelector('.text-xs.font-semibold');
-                    const value = tab.querySelector('.text-xs, .text-sm');
-                    if (label) {
-                        label.classList.remove('text-gray-900');
-                        label.classList.add('text-gray-500');
-                    }
-                    if (value) {
-                        value.classList.remove('text-gray-900', 'text-gray-500');
-                        value.classList.add('text-gray-400');
-                    }
-                }
-            });
-            
-            if (section === 'where') {
-                // Show where section
-                whereSection.classList.remove('hidden');
-                whenSection.classList.add('hidden');
-                
-                // Update tab styles
-                if (whereTab) {
-                    whereTab.classList.add('bg-white', 'shadow-sm');
-                    const whereLabel = whereTab.querySelector('.text-xs.font-semibold');
-                    const whereValue = whereTab.querySelector('.text-xs, .text-sm');
-                    if (whereLabel) {
-                        whereLabel.classList.remove('text-gray-500');
-                        whereLabel.classList.add('text-gray-900');
-                    }
-                    if (whereValue) {
-                        whereValue.classList.remove('text-gray-400');
-                        whereValue.classList.add('text-gray-500');
-                    }
-                }
-                
-                setTimeout(() => {
-                    const input = document.getElementById('whereInput');
-                    if (input) {
-                        input.focus();
-                        // Initialize autocomplete
-                        console.log('Initializing city autocomplete...');
-                        if (typeof initCityAutocomplete === 'function') {
-                            initCityAutocomplete();
-                        }
-                    } else {
-                        console.error('whereInput not found!');
-                    }
-                }, 100);
-            } else if (section === 'checkin' || section === 'checkout') {
-                // Show when section
-                whereSection.classList.add('hidden');
-                whenSection.classList.remove('hidden');
-                
-                // Update tab styles based on which date tab is active
-                const activeTab = section === 'checkin' ? checkInTab : checkOutTab;
-                if (activeTab) {
-                    activeTab.classList.add('bg-white', 'shadow-sm');
-                    const label = activeTab.querySelector('.text-xs.font-semibold');
-                    const value = activeTab.querySelector('.text-xs, .text-sm');
-                    if (label) {
-                        label.classList.remove('text-gray-500');
-                        label.classList.add('text-gray-900');
-                    }
-                    if (value) {
-                        value.classList.remove('text-gray-400');
-                        value.classList.add('text-gray-500');
-                    }
-                }
-                
-                if (typeof generateCalendar === 'function') {
-                    generateCalendar();
-                } else {
-                    console.warn('generateCalendar function not found');
-                }
-            }
-        }
-
-        // Open modal with specific section
-        function openSearchModal(section) {
-            console.log('openSearchModal called with section:', section);
-            try {
-                const modal = document.getElementById('searchModal');
-                if (!modal) {
-                    console.error('Search modal not found!');
-                    return;
-                }
-                
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; // Prevent background scroll
-                
-                // Use setTimeout to ensure DOM is ready
-                setTimeout(function() {
-                    if (typeof switchToSection === 'function') {
-                        switchToSection(section || 'where');
-                        console.log('Modal opened, section switched to:', section || 'where');
-                    } else {
-                        console.error('switchToSection function not available');
-                    }
-                }, 50);
-            } catch (error) {
-                console.error('Error in openSearchModal:', error);
-            }
-        }
-
-        // Close modal
-        function closeSearchModal() {
-            const modal = document.getElementById('searchModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                document.body.style.overflow = ''; // Restore scroll
-            }
-        }
-
-        // Ensure functions are available globally IMMEDIATELY
-        window.openSearchModal = openSearchModal;
-        window.closeSearchModal = closeSearchModal;
-        window.switchToSection = switchToSection;
+        // Note: openSearchModal, closeSearchModal, switchToSection are already defined
+        // in the script at the top of the file to ensure they're available immediately
         
-        // Debug: Verify functions are available
-        console.log('Functions initialized:', {
-            openSearchModal: typeof window.openSearchModal,
-            closeSearchModal: typeof window.closeSearchModal,
-            switchToSection: typeof window.switchToSection
-        });
+        // Create local references to global variables for convenience
+        let currentMonth = window.currentMonth || new Date();
+        let checkInDate = window.checkInDate || null;
+        let checkOutDate = window.checkOutDate || null;
+        
+        // Keep window variables in sync
+        function updateGlobalDates() {
+            window.checkInDate = checkInDate;
+            window.checkOutDate = checkOutDate;
+            window.currentMonth = currentMonth;
+        }
 
         // Add event listener when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
