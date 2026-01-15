@@ -948,11 +948,18 @@
 
         // Switch between sections (where/checkin/checkout)
         function switchToSection(section) {
+            console.log('switchToSection called with:', section);
             const whereTab = document.getElementById('whereTab');
             const checkInTab = document.getElementById('checkInTab');
             const checkOutTab = document.getElementById('checkOutTab');
             const whereSection = document.getElementById('whereSection');
             const whenSection = document.getElementById('whenSection');
+            
+            // Check if elements exist
+            if (!whereSection || !whenSection) {
+                console.error('Sections not found! whereSection:', whereSection, 'whenSection:', whenSection);
+                return;
+            }
             
             // Reset all tabs
             [whereTab, checkInTab, checkOutTab].forEach(tab => {
@@ -977,16 +984,18 @@
                 whenSection.classList.add('hidden');
                 
                 // Update tab styles
-                whereTab.classList.add('bg-white', 'shadow-sm');
-                const whereLabel = whereTab.querySelector('.text-xs.font-semibold');
-                const whereValue = whereTab.querySelector('.text-xs, .text-sm');
-                if (whereLabel) {
-                    whereLabel.classList.remove('text-gray-500');
-                    whereLabel.classList.add('text-gray-900');
-                }
-                if (whereValue) {
-                    whereValue.classList.remove('text-gray-400');
-                    whereValue.classList.add('text-gray-500');
+                if (whereTab) {
+                    whereTab.classList.add('bg-white', 'shadow-sm');
+                    const whereLabel = whereTab.querySelector('.text-xs.font-semibold');
+                    const whereValue = whereTab.querySelector('.text-xs, .text-sm');
+                    if (whereLabel) {
+                        whereLabel.classList.remove('text-gray-500');
+                        whereLabel.classList.add('text-gray-900');
+                    }
+                    if (whereValue) {
+                        whereValue.classList.remove('text-gray-400');
+                        whereValue.classList.add('text-gray-500');
+                    }
                 }
                 
                 setTimeout(() => {
@@ -995,7 +1004,9 @@
                         input.focus();
                         // Initialize autocomplete
                         console.log('Initializing city autocomplete...');
-                        initCityAutocomplete();
+                        if (typeof initCityAutocomplete === 'function') {
+                            initCityAutocomplete();
+                        }
                     } else {
                         console.error('whereInput not found!');
                     }
@@ -1021,9 +1032,16 @@
                     }
                 }
                 
-                generateCalendar();
+                if (typeof generateCalendar === 'function') {
+                    generateCalendar();
+                } else {
+                    console.warn('generateCalendar function not found');
+                }
             }
         }
+
+        // Make switchToSection available globally
+        window.switchToSection = switchToSection;
 
         // Update mobile search bar text
         function updateMobileSearchBar() {
