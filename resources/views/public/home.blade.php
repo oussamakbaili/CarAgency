@@ -65,11 +65,15 @@
                     const input = document.getElementById('whereInput');
                     if (input) {
                         input.focus();
+                        // Reinitialize autocomplete when modal opens
+                        if (input.dataset.autocompleteInitialized === 'true') {
+                            input.dataset.autocompleteInitialized = 'false';
+                        }
                         if (typeof initCityAutocomplete === 'function') {
                             initCityAutocomplete();
                         }
                     }
-                }, 100);
+                }, 150);
             } else if (section === 'checkin' || section === 'checkout') {
                 whereSection.classList.add('hidden');
                 whenSection.classList.remove('hidden');
@@ -688,7 +692,7 @@
                                 </svg>
                             </button>
                             <!-- Suggestions dropdown -->
-                            <div id="citySuggestions" class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-80 overflow-y-auto hidden">
+                            <div id="citySuggestions" class="absolute z-[100] w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-80 overflow-y-auto hidden" style="top: 100%;">
                                 <div id="suggestionsList" class="py-2"></div>
                             </div>
                         </div>
@@ -1088,6 +1092,16 @@
                 console.error('whereInput not found in initCityAutocomplete');
                 return;
             }
+
+            if (!citySuggestions) {
+                console.error('citySuggestions not found in initCityAutocomplete');
+                return;
+            }
+
+            if (!suggestionsList) {
+                console.error('suggestionsList not found in initCityAutocomplete');
+                return;
+            }
             
             console.log('City autocomplete initialized');
             
@@ -1119,8 +1133,10 @@
             }
 
             // Search cities on input
-            whereInput.addEventListener('input', function() {
+            whereInput.addEventListener('input', function(e) {
                 const query = this.value.trim();
+                
+                console.log('Input event triggered, query:', query);
                 
                 if (query.length < 1) {
                     if (citySuggestions) citySuggestions.classList.add('hidden');
@@ -1130,8 +1146,21 @@
                 // Debounce search
                 clearTimeout(cityAutocompleteTimeout);
                 cityAutocompleteTimeout = setTimeout(() => {
+                    console.log('Calling searchCities with query:', query);
                     searchCities(query);
                 }, 200);
+            });
+
+            // Also trigger on focus if there's already text
+            whereInput.addEventListener('focus', function() {
+                const query = this.value.trim();
+                if (query.length >= 1) {
+                    console.log('Focus event, searching for:', query);
+                    clearTimeout(cityAutocompleteTimeout);
+                    cityAutocompleteTimeout = setTimeout(() => {
+                        searchCities(query);
+                    }, 100);
+                }
             });
 
             // Hide suggestions when clicking outside
@@ -1189,7 +1218,14 @@
             const citySuggestions = document.getElementById('citySuggestions');
             const suggestionsList = document.getElementById('suggestionsList');
 
+            if (!citySuggestions || !suggestionsList) {
+                console.error('City suggestions elements not found');
+                isSearchingCities = false;
+                return;
+            }
+
             try {
+                console.log('Searching cities for query:', query);
                 const response = await fetch(`{{ route('public.cities.search') }}?q=${encodeURIComponent(query)}`, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -1197,9 +1233,14 @@
                     }
                 });
 
-                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-                if (data.success && data.cities.length > 0) {
+                const data = await response.json();
+                console.log('Cities response:', data);
+
+                if (data.success && data.cities && data.cities.length > 0) {
                     suggestionsList.innerHTML = '';
                     
                     data.cities.forEach((city, index) => {
@@ -1253,8 +1294,16 @@
                     });
                     
                     citySuggestions.classList.remove('hidden');
+                    console.log('Suggestions displayed:', data.cities.length);
                 } else {
-                    citySuggestions.classList.add('hidden');
+                    console.log('No cities found or empty response');
+                    // Show message if no results
+                    if (data.success && data.cities && data.cities.length === 0) {
+                        suggestionsList.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500">Aucune ville trouvée</div>';
+                        citySuggestions.classList.remove('hidden');
+                    } else {
+                        citySuggestions.classList.add('hidden');
+                    }
                 }
             } catch (error) {
                 console.error('Error searching cities:', error);
