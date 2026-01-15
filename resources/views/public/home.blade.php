@@ -841,112 +841,7 @@
         let checkInDate = null;
         let checkOutDate = null;
 
-        // Open modal with specific section
-        function openSearchModal(section) {
-            console.log('openSearchModal called with section:', section);
-            const modal = document.getElementById('searchModal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; // Prevent background scroll
-                switchToSection(section || 'where');
-                console.log('Modal opened, section switched to:', section || 'where');
-            } else {
-                console.error('Search modal not found!');
-            }
-        }
-
-        // Close modal
-        function closeSearchModal() {
-            const modal = document.getElementById('searchModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                document.body.style.overflow = ''; // Restore scroll
-            }
-        }
-
-        // Ensure functions are available globally
-        window.openSearchModal = openSearchModal;
-        window.closeSearchModal = closeSearchModal;
-
-        // Add event listener when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileSearchBar = document.getElementById('mobileSearchBar');
-            if (mobileSearchBar) {
-                // Utiliser capture phase pour intercepter avant ultimate-navigation-fix
-                mobileSearchBar.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation(); // Empêcher ultimate-navigation-fix
-                    openSearchModal('where');
-                    return false;
-                }, true); // true = capture phase (avant la phase de propagation)
-            }
-
-            // Add click handlers for desktop search fields using IDs
-            const whereDesktop = document.getElementById('whereDesktopBtn');
-            const checkInDesktop = document.getElementById('checkInDesktopBtn');
-            const checkOutDesktop = document.getElementById('checkOutDesktopBtn');
-            
-            if (whereDesktop) {
-                // Keep onclick as fallback, but add event listener with capture phase
-                whereDesktop.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    console.log('Where button clicked');
-                    openSearchModal('where');
-                    return false;
-                }, true); // Use capture phase to intercept before other handlers
-            } else {
-                console.warn('Where desktop button not found');
-            }
-            
-            if (checkInDesktop) {
-                // Keep onclick as fallback, but add event listener with capture phase
-                checkInDesktop.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    console.log('Check-in button clicked');
-                    openSearchModal('checkin');
-                    return false;
-                }, true); // Use capture phase to intercept before other handlers
-            } else {
-                console.warn('Check-in desktop button not found');
-            }
-            
-            if (checkOutDesktop) {
-                // Keep onclick as fallback, but add event listener with capture phase
-                checkOutDesktop.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    console.log('Check-out button clicked');
-                    openSearchModal('checkout');
-                    return false;
-                }, true); // Use capture phase to intercept before other handlers
-            } else {
-                console.warn('Check-out desktop button not found');
-            }
-
-            // Close modal when clicking outside
-            const searchModal = document.getElementById('searchModal');
-            if (searchModal) {
-                searchModal.addEventListener('click', function(e) {
-                    if (e.target === searchModal) {
-                        closeSearchModal();
-                    }
-                });
-            }
-
-            // Close modal on ESC key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    const modal = document.getElementById('searchModal');
-                    if (modal && !modal.classList.contains('hidden')) {
-                        closeSearchModal();
-                    }
-                }
-            });
-        });
-
-        // Switch between sections (where/checkin/checkout)
+        // Switch between sections (where/checkin/checkout) - DEFINED FIRST
         function switchToSection(section) {
             console.log('switchToSection called with:', section);
             const whereTab = document.getElementById('whereTab');
@@ -1040,8 +935,114 @@
             }
         }
 
-        // Make switchToSection available globally
+        // Open modal with specific section
+        function openSearchModal(section) {
+            console.log('openSearchModal called with section:', section);
+            try {
+                const modal = document.getElementById('searchModal');
+                if (!modal) {
+                    console.error('Search modal not found!');
+                    return;
+                }
+                
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent background scroll
+                
+                // Use setTimeout to ensure DOM is ready
+                setTimeout(function() {
+                    if (typeof switchToSection === 'function') {
+                        switchToSection(section || 'where');
+                        console.log('Modal opened, section switched to:', section || 'where');
+                    } else {
+                        console.error('switchToSection function not available');
+                    }
+                }, 50);
+            } catch (error) {
+                console.error('Error in openSearchModal:', error);
+            }
+        }
+
+        // Close modal
+        function closeSearchModal() {
+            const modal = document.getElementById('searchModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = ''; // Restore scroll
+            }
+        }
+
+        // Ensure functions are available globally IMMEDIATELY
+        window.openSearchModal = openSearchModal;
+        window.closeSearchModal = closeSearchModal;
         window.switchToSection = switchToSection;
+        
+        // Debug: Verify functions are available
+        console.log('Functions initialized:', {
+            openSearchModal: typeof window.openSearchModal,
+            closeSearchModal: typeof window.closeSearchModal,
+            switchToSection: typeof window.switchToSection
+        });
+
+        // Add event listener when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fallback: Add click handlers for desktop search fields (as backup to onclick)
+            const whereDesktop = document.getElementById('whereDesktopBtn');
+            const checkInDesktop = document.getElementById('checkInDesktopBtn');
+            const checkOutDesktop = document.getElementById('checkOutDesktopBtn');
+            
+            if (whereDesktop) {
+                whereDesktop.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    console.log('Where button clicked (event listener)');
+                    openSearchModal('where');
+                });
+            }
+            
+            if (checkInDesktop) {
+                checkInDesktop.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    console.log('Check-in button clicked (event listener)');
+                    openSearchModal('checkin');
+                });
+            }
+            
+            if (checkOutDesktop) {
+                checkOutDesktop.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    console.log('Check-out button clicked (event listener)');
+                    openSearchModal('checkout');
+                });
+            }
+
+            // Mobile search bar
+            const mobileSearchBar = document.getElementById('mobileSearchBar');
+            if (mobileSearchBar) {
+                mobileSearchBar.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    openSearchModal('where');
+                });
+            }
+
+            // Close modal when clicking outside
+            const searchModal = document.getElementById('searchModal');
+            if (searchModal) {
+                searchModal.addEventListener('click', function(e) {
+                    if (e.target === searchModal) {
+                        closeSearchModal();
+                    }
+                });
+            }
+
+            // Close modal on ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('searchModal');
+                    if (modal && !modal.classList.contains('hidden')) {
+                        closeSearchModal();
+                    }
+                }
+            });
+        });
 
         // Update mobile search bar text
         function updateMobileSearchBar() {
