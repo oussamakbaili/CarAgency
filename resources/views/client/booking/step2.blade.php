@@ -60,6 +60,7 @@
                         
                         <!-- Hidden field to redirect back to booking -->
                         <input type="hidden" name="redirect_to" value="{{ route('booking.step3') }}">
+                        <input type="hidden" name="return_url" value="{{ route('booking.step3') }}">
                         
                         <div class="space-y-4">
                             <div>

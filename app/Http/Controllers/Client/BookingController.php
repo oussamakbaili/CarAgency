@@ -153,8 +153,14 @@ class BookingController extends Controller
             ]
         ]);
 
-        // Si l'utilisateur est connecté, aller à l'étape 3
+        // Si l'utilisateur est connecté, vérifier qu'il est un client
         if (Auth::check()) {
+            // Si l'utilisateur n'est pas un client, le déconnecter et rediriger vers l'étape 2
+            if (!Auth::user()->isClient()) {
+                Auth::logout();
+                return redirect()->route('booking.step2')
+                    ->with('error', 'Seuls les clients peuvent réserver des véhicules. Veuillez vous connecter avec un compte client.');
+            }
             return redirect()->route('booking.step3');
         }
 
@@ -167,7 +173,15 @@ class BookingController extends Controller
      */
     public function step2()
     {
+        // Si l'utilisateur est connecté, vérifier qu'il est un client
         if (Auth::check()) {
+            // Si l'utilisateur n'est pas un client, le déconnecter et afficher un message
+            if (!Auth::user()->isClient()) {
+                Auth::logout();
+                return redirect()->route('booking.step2')
+                    ->with('error', 'Seuls les clients peuvent réserver des véhicules. Veuillez vous connecter avec un compte client.');
+            }
+            // Si c'est un client, rediriger vers l'étape 3
             return redirect()->route('booking.step3');
         }
 
@@ -184,6 +198,13 @@ class BookingController extends Controller
      */
     public function step3()
     {
+        // Vérifier que l'utilisateur est un client
+        if (!Auth::check() || !Auth::user()->isClient()) {
+            Auth::logout();
+            return redirect()->route('booking.step2')
+                ->with('error', 'Seuls les clients peuvent réserver des véhicules. Veuillez vous connecter avec un compte client.');
+        }
+
         $bookingData = session('booking_data');
         
         if (!$bookingData) {
@@ -210,6 +231,13 @@ class BookingController extends Controller
      */
     public function step4()
     {
+        // Vérifier que l'utilisateur est un client
+        if (!Auth::check() || !Auth::user()->isClient()) {
+            Auth::logout();
+            return redirect()->route('booking.step2')
+                ->with('error', 'Seuls les clients peuvent réserver des véhicules. Veuillez vous connecter avec un compte client.');
+        }
+
         $bookingData = session('booking_data');
         
         if (!$bookingData) {
@@ -325,6 +353,15 @@ document.addEventListener("DOMContentLoaded", function() {
      */
     public function initPayPalPayment(Request $request)
     {
+        // Vérifier que l'utilisateur est un client
+        if (!Auth::check() || !Auth::user()->isClient()) {
+            Auth::logout();
+            return response()->json([
+                'success' => false,
+                'message' => 'Seuls les clients peuvent réserver des véhicules.'
+            ], 403);
+        }
+
         try {
             $bookingData = session('booking_data');
             
@@ -538,6 +575,13 @@ document.addEventListener("DOMContentLoaded", function() {
      */
     public function processPayment(Request $request)
     {
+        // Vérifier que l'utilisateur est un client
+        if (!Auth::check() || !Auth::user()->isClient()) {
+            Auth::logout();
+            return redirect()->route('booking.step2')
+                ->with('error', 'Seuls les clients peuvent réserver des véhicules. Veuillez vous connecter avec un compte client.');
+        }
+
         $bookingData = session('booking_data');
         
         if (!$bookingData) {
@@ -642,6 +686,13 @@ document.addEventListener("DOMContentLoaded", function() {
      */
     public function step5()
     {
+        // Vérifier que l'utilisateur est un client
+        if (!Auth::check() || !Auth::user()->isClient()) {
+            Auth::logout();
+            return redirect()->route('booking.step2')
+                ->with('error', 'Seuls les clients peuvent réserver des véhicules. Veuillez vous connecter avec un compte client.');
+        }
+
         $bookingData = session('booking_data');
         
         if (!$bookingData || !isset($bookingData['rental_id'])) {

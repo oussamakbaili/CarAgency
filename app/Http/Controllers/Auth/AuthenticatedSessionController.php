@@ -37,6 +37,24 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         $role = $user->role;
 
+        // Vérifier s'il y a une redirection vers la réservation
+        $redirectTo = $request->input('redirect_to');
+        $returnUrl = $request->input('return_url');
+        $intendedUrl = session()->pull('url.intended');
+        
+        // Déterminer l'URL de redirection (priorité: redirect_to > return_url > intended)
+        $targetUrl = $redirectTo ?: ($returnUrl ?: $intendedUrl);
+        
+        // Si la redirection est vers booking, vérifier que l'utilisateur est un client
+        if ($targetUrl && (str_contains($targetUrl, 'booking') || str_contains($targetUrl, 'step3'))) {
+            if ($role !== 'client') {
+                Auth::logout();
+                return redirect()->route('booking.step2')
+                    ->with('error', 'Seuls les clients peuvent réserver des véhicules. Veuillez vous connecter avec un compte client.');
+            }
+            return redirect($targetUrl);
+        }
+
         if ($role === 'admin') {
             return redirect()->intended('/admin/dashboard');
         } elseif ($role === 'agence') {
@@ -54,8 +72,7 @@ class AuthenticatedSessionController extends Controller
 
             return redirect()->intended('/agence/dashboard');
         } elseif ($role === 'client') {
-            // Pour les clients, vérifier s'il y a une URL intended (par exemple depuis la page de réservation)
-            $intendedUrl = session()->pull('url.intended');
+            // Pour les clients, vérifier s'il y a une URL intended
             if ($intendedUrl) {
                 return redirect($intendedUrl);
             }

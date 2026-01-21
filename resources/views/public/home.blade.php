@@ -71,12 +71,12 @@
                         }
                         // Wait a bit more to ensure DOM is ready
                         setTimeout(() => {
-                            if (typeof initCityAutocomplete === 'function') {
+                        if (typeof initCityAutocomplete === 'function') {
                                 console.log('Initializing city autocomplete...');
-                                initCityAutocomplete();
+                            initCityAutocomplete();
                             } else {
                                 console.error('initCityAutocomplete function not found');
-                            }
+                        }
                         }, 50);
                     } else {
                         console.error('whereInput not found when trying to initialize autocomplete');
@@ -1492,9 +1492,9 @@
                     // Show message if no results
                     if (data.success && data.cities && data.cities.length === 0) {
                         suggestionsList.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 text-center">Aucune ville trouvée pour "' + query + '"</div>';
-                        citySuggestions.classList.remove('hidden');
-                    } else {
-                        citySuggestions.classList.add('hidden');
+                    citySuggestions.classList.remove('hidden');
+                } else {
+                    citySuggestions.classList.add('hidden');
                     }
                 }
             } catch (error) {
