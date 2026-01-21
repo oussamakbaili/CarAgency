@@ -45,14 +45,23 @@ class AuthenticatedSessionController extends Controller
         // Déterminer l'URL de redirection (priorité: redirect_to > return_url > intended)
         $targetUrl = $redirectTo ?: ($returnUrl ?: $intendedUrl);
         
-        // Si la redirection est vers booking, vérifier que l'utilisateur est un client
-        if ($targetUrl && (str_contains($targetUrl, 'booking') || str_contains($targetUrl, 'step3'))) {
+        // Vérifier s'il y a une session de réservation active
+        $hasBookingSession = session()->has('booking_data');
+        
+        // Si la redirection est vers booking OU s'il y a une session de réservation, vérifier que l'utilisateur est un client
+        if (($targetUrl && (str_contains($targetUrl, 'booking') || str_contains($targetUrl, 'step3'))) || $hasBookingSession) {
             if ($role !== 'client') {
                 Auth::logout();
                 return redirect()->route('booking.step2')
                     ->with('error', 'Seuls les clients peuvent réserver des véhicules. Veuillez vous connecter avec un compte client.');
             }
-            return redirect($targetUrl);
+            // Si c'est un client et qu'il y a une session de réservation, rediriger vers step3
+            if ($hasBookingSession && !$targetUrl) {
+                return redirect()->route('booking.step3');
+            }
+            if ($targetUrl) {
+                return redirect($targetUrl);
+            }
         }
 
         if ($role === 'admin') {
