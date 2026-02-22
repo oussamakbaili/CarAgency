@@ -17,12 +17,20 @@ class Agency extends Model
     protected $fillable = [
         'user_id',
         'agency_name',
+        'registration_number',
+        'description',
         'responsable_name',
         'email',
         'phone',
         'address',
         'city',
         'postal_code',
+        'country',
+        'latitude',
+        'longitude',
+        'opening_hours',
+        'documents',
+        'profile_picture',
         'tax_number',
         'commercial_register_number',
         'responsable_phone',
@@ -48,6 +56,10 @@ class Agency extends Model
     protected $casts = [
         'status' => 'string',
         'additional_docs' => 'array',
+        'opening_hours' => 'array',
+        'documents' => 'array',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
         'balance' => 'decimal:2',
         'total_earnings' => 'decimal:2',
         'pending_earnings' => 'decimal:2',
@@ -73,6 +85,11 @@ class Agency extends Model
     public function rentals()
     {
         return $this->hasMany(Rental::class);
+    }
+
+    public function maintenances()
+    {
+        return $this->hasMany(Maintenance::class);
     }
 
     public function isPending()

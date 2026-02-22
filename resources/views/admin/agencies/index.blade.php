@@ -1,4 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('header', 'Gestion des Agences')
 
 @section('content')
 <div class="py-12">

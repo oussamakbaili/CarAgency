@@ -39,8 +39,10 @@ class ClientRegisterController extends Controller
             'password' => Hash::make($request->password),
             'role' => 'client',
         ]);
+        
 
         $client = Client::create([
+            'name' => $request->name,  
             'user_id' => $user->id,
             'cin' => $request->cin,
             'birthday' => $request->birthday,
@@ -50,8 +52,7 @@ class ClientRegisterController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(RouteServiceProvider::HOME);
+        // Don't log in immediately - redirect to email verification
+        return redirect()->route('verification.notice')->with('status', 'Vérifiez votre email pour continuer.');
     }
 }

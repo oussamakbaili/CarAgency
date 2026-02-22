@@ -11,15 +11,34 @@ class Client extends Model
     
     protected $fillable = [
         'user_id',
-        'name',
         'cin',
         'birthday',
         'phone',
-        'address'
+        'address',
+        'city',
+        'postal_code',
+        'date_of_birth',
+        'driving_license_number',
+        'driving_license_expiry',
+        'profile_picture',
+        'preferences',
+        'documents',
+        'bio',
+        'occupation',
+        'company',
+        'nationality',
+        'gender',
+        'emergency_contact_name',
+        'emergency_contact_phone',
+        'emergency_contact_relation',
     ];
 
     protected $casts = [
         'birthday' => 'date',
+        'date_of_birth' => 'date',
+        'driving_license_expiry' => 'date',
+        'preferences' => 'array',
+        'documents' => 'array',
     ];
 
     public function user()

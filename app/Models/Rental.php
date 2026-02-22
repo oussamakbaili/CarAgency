@@ -23,13 +23,17 @@ class Rental extends Model
         'start_date',
         'end_date',
         'total_price',
-        'status' // pending, approved, active, completed, rejected, cancelled
+        'status', // pending, approved, active, completed, rejected, cancelled
+        'approved_at',
+        'rejected_at'
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
-        'total_price' => 'decimal:2'
+        'total_price' => 'decimal:2',
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime'
     ];
 
     public function user()
