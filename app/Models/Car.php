@@ -183,12 +183,16 @@ class Car extends Model
             return false;
         }
 
-        // Vérifier s'il y a des réservations pending ou active pour aujourd'hui ou dans le futur
-        // Une réservation pending bloque la voiture jusqu'à ce qu'elle soit complétée ou annulée
-        // Les réservations rejected, cancelled ou completed ne bloquent pas la disponibilité
+        // Réservations qui bloquent : active ; ou pending seulement si créée il y a moins de 15 min (non payée = libérée après 15 min)
+        $pendingCutoff = now()->subMinutes(15);
         $hasActiveReservations = $this->rentals()
-            ->whereIn('status', ['pending', 'active'])
             ->where('end_date', '>=', now()->startOfDay())
+            ->where(function ($q) use ($pendingCutoff) {
+                $q->where('status', 'active')
+                    ->orWhere(function ($q2) use ($pendingCutoff) {
+                        $q2->where('status', 'pending')->where('created_at', '>=', $pendingCutoff);
+                    });
+            })
             ->exists();
 
         // Si une réservation est en cours (pending ou active), la voiture n'est pas disponible

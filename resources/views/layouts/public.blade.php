@@ -11,13 +11,15 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
+    <!-- Scripts: only load Vite assets when built (npm run build) or when dev server runs (npm run dev) -->
+    @if(file_exists(public_path('build/manifest.json')))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @endif
+
     <!-- ULTIMATE NAVIGATION FIX - SOLUTION ULTIME POUR DOUBLE-CLIC -->
     <script src="{{ asset('js/ultimate-navigation-fix.js') }}"></script>
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (CDN; for production use: npm run build + PostCSS/CLI to avoid console warning) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- GSAP -->

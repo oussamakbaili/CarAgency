@@ -15,29 +15,34 @@ class CleanExpiredPendingRentals extends Command
      *
      * @var string
      */
-    protected $signature = 'rentals:clean-expired-pending {--hours=24 : Nombre d\'heures avant d\'expirer}';
+    protected $signature = 'rentals:clean-expired-pending {--hours= : Nombre d\'heures avant d\'expirer} {--minutes=15 : Nombre de minutes (utilisé si --hours non fourni, défaut 15)}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Nettoie les réservations pending qui n\'ont pas été complétées après un certain délai';
+    protected $description = 'Nettoie les réservations pending non payées après 15 min (ou --hours) pour libérer les voitures';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $hours = (int) $this->option('hours');
-        $expirationTime = Carbon::now()->subHours($hours);
+        $hoursOption = $this->option('hours');
+        if ($hoursOption !== null && $hoursOption !== '') {
+            $expirationTime = Carbon::now()->subHours((int) $hoursOption);
+        } else {
+            $minutes = (int) $this->option('minutes');
+            $expirationTime = Carbon::now()->subMinutes($minutes);
+        }
 
-        $this->info("Nettoyage des réservations pending créées avant {$expirationTime->format('Y-m-d H:i:s')}...");
+        $this->info("Nettoyage des réservations pending créées avant {$expirationTime->format('Y-m-d H:i:s')} (sans paiement complété)...");
 
         // Trouver les réservations pending qui n'ont pas de paiement complété
         $expiredRentals = Rental::where('status', 'pending')
             ->where('created_at', '<', $expirationTime)
-            ->whereDoesntHave('payments', function($query) {
+            ->whereDoesntHave('payments', function ($query) {
                 $query->where('status', Payment::STATUS_COMPLETED);
             })
             ->with(['car', 'payments'])
@@ -46,24 +51,24 @@ class CleanExpiredPendingRentals extends Command
         $cleanedCount = 0;
 
         foreach ($expiredRentals as $rental) {
-            // Vérifier si le paiement est toujours pending ou a échoué
-            $hasFailedPayment = $rental->payments()
-                ->whereIn('status', [Payment::STATUS_FAILED, Payment::STATUS_CANCELLED])
-                ->exists();
-
-            // Si le paiement a échoué ou n'existe pas, annuler la réservation
-            if ($hasFailedPayment || $rental->payments()->count() === 0) {
-                $rental->update(['status' => 'rejected']);
-                
-                Log::info('Expired pending rental cleaned', [
-                    'rental_id' => $rental->id,
-                    'car_id' => $rental->car_id,
-                    'created_at' => $rental->created_at,
-                    'reason' => 'Payment not completed within time limit',
-                ]);
-
-                $cleanedCount++;
+            // Marquer les paiements pending de cette réservation comme annulés
+            foreach ($rental->payments()->where('status', Payment::STATUS_PENDING)->get() as $payment) {
+                $meta = $payment->metadata ?? [];
+                $meta['expired_at'] = now()->toIso8601String();
+                $meta['expired_reason'] = 'Unpaid pending rental expired';
+                $payment->update(['status' => Payment::STATUS_CANCELLED, 'metadata' => $meta]);
             }
+
+            $rental->update(['status' => 'rejected']);
+
+            Log::info('Expired pending rental cleaned', [
+                'rental_id' => $rental->id,
+                'car_id' => $rental->car_id,
+                'created_at' => $rental->created_at,
+                'reason' => 'Payment not completed within time limit',
+            ]);
+
+            $cleanedCount++;
         }
 
         if ($cleanedCount > 0) {

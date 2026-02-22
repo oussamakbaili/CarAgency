@@ -49,6 +49,8 @@ return [
         'client_id' => env('PAYPAL_CLIENT_ID'),
         'client_secret' => env('PAYPAL_CLIENT_SECRET'),
         'test_mode' => filter_var(env('PAYPAL_TEST_MODE', true), FILTER_VALIDATE_BOOLEAN),
+        // MAD to EUR rate for PayPal (prices are in MAD; PayPal is charged in EUR). 1 EUR = X MAD.
+        'mad_to_eur_rate' => (float) (env('PAYPAL_MAD_TO_EUR_RATE', 11)),
     ],
 
 ];

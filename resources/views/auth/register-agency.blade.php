@@ -1,3 +1,6 @@
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+@endpush
 <x-guest-layout>
     <div class="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 py-8 px-4 sm:px-6 lg:px-8">
         <div class="max-w-7xl mx-auto">
@@ -104,10 +107,10 @@
                                             placeholder="Adresse complète" />
                                         <x-input-error :messages="$errors->get('address')" class="mt-2 text-sm text-red-600" />
                                         
-                                        <!-- Google Maps -->
+                                        <!-- Carte (Leaflet / OpenStreetMap - pas de clé API requise) -->
                                         <div class="mt-4">
                                             <label class="block text-sm font-semibold text-gray-700 mb-2">Localisation sur la carte *</label>
-                                            <div id="map" class="w-full h-64 rounded-xl border border-gray-300"></div>
+                                            <div id="agency-map" class="w-full rounded-xl border border-gray-300 bg-gray-100" style="min-height: 256px; height: 256px;"></div>
                                             <p class="text-xs text-gray-500 mt-2">Cliquez sur la carte pour définir l'emplacement exact de votre agence</p>
                                             <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}" required>
                                             <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}" required>
@@ -385,132 +388,71 @@
             </div>
         </div>
     </div>
-</x-guest-layout>
+    <!-- Carte: Leaflet (script dans la page pour garantir le chargement) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+    (function() {
+        function initAgencyMap() {
+            var mapEl = document.getElementById('agency-map');
+            var addressInput = document.getElementById('address');
+            var latitudeInput = document.getElementById('latitude');
+            var longitudeInput = document.getElementById('longitude');
+            if (!mapEl || !latitudeInput || !longitudeInput) return;
+            if (typeof L === 'undefined') return;
 
-@push('scripts')
-<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key', 'YOUR_API_KEY') }}&libraries=places"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const addressInput = document.getElementById('address');
-    const latitudeInput = document.getElementById('latitude');
-    const longitudeInput = document.getElementById('longitude');
-    
-    // Initialize map centered on Morocco
-    const map = new google.maps.Map(document.getElementById('map'), {
-        center: { lat: 31.7917, lng: -7.0926 }, // Morocco center
-        zoom: 6,
-        mapTypeControl: false,
-        streetViewControl: false
-    });
-    
-    let marker = null;
-    
-    // Geocoder for address search
-    const geocoder = new google.maps.Geocoder();
-    const autocomplete = new google.maps.places.Autocomplete(addressInput);
-    
-    autocomplete.bindTo('bounds', map);
-    autocomplete.addListener('place_changed', function() {
-        const place = autocomplete.getPlace();
-        if (!place.geometry) {
-            return;
-        }
-        
-        if (place.geometry.viewport) {
-            map.fitBounds(place.geometry.viewport);
-        } else {
-            map.setCenter(place.geometry.location);
-            map.setZoom(17);
-        }
-        
-        // Set marker
-        if (marker) {
-            marker.setPosition(place.geometry.location);
-        } else {
-            marker = new google.maps.Marker({
-                position: place.geometry.location,
-                map: map,
-                draggable: true
-            });
-        }
-        
-        // Update coordinates
-        latitudeInput.value = place.geometry.location.lat();
-        longitudeInput.value = place.geometry.location.lng();
-    });
-    
-    // Click on map to set location
-    map.addListener('click', function(event) {
-        const location = event.latLng;
-        
-        if (marker) {
-            marker.setPosition(location);
-        } else {
-            marker = new google.maps.Marker({
-                position: location,
-                map: map,
-                draggable: true
-            });
-        }
-        
-        // Update coordinates
-        latitudeInput.value = location.lat();
-        longitudeInput.value = location.lng();
-        
-        // Reverse geocode to update address
-        geocoder.geocode({ location: location }, function(results, status) {
-            if (status === 'OK' && results[0]) {
-                addressInput.value = results[0].formatted_address;
+            var map = L.map('agency-map').setView([31.7917, -7.0926], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+            setTimeout(function() { map.invalidateSize(); }, 100);
+
+            var marker = null;
+
+            function updateFromLatLng(lat, lng) {
+                latitudeInput.value = lat;
+                longitudeInput.value = lng;
+                fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=18&addressdetails=1', {
+                    headers: { 'Accept': 'application/json' }
+                }).then(function(r) { return r.json(); }).then(function(data) {
+                    if (data && data.display_name && addressInput) {
+                        addressInput.value = data.display_name;
+                    }
+                }).catch(function() {});
             }
-        });
-    });
-    
-    // Allow dragging marker
-    if (marker) {
-        marker.addListener('dragend', function(event) {
-            const location = event.latLng;
-            latitudeInput.value = location.lat();
-            longitudeInput.value = location.lng();
-            
-            // Reverse geocode
-            geocoder.geocode({ location: location }, function(results, status) {
-                if (status === 'OK' && results[0]) {
-                    addressInput.value = results[0].formatted_address;
-                }
-            });
-        });
-    }
-    
-    // If old values exist, set marker
-    @if(old('latitude') && old('longitude'))
-        const oldLat = {{ old('latitude') }};
-        const oldLng = {{ old('longitude') }};
-        const oldLocation = { lat: oldLat, lng: oldLng };
-        
-        map.setCenter(oldLocation);
-        map.setZoom(17);
-        
-        marker = new google.maps.Marker({
-            position: oldLocation,
-            map: map,
-            draggable: true
-        });
-        
-        marker.addListener('dragend', function(event) {
-            const location = event.latLng;
-            latitudeInput.value = location.lat();
-            longitudeInput.value = location.lng();
-            
-            geocoder.geocode({ location: location }, function(results, status) {
-                if (status === 'OK' && results[0]) {
-                    addressInput.value = results[0].formatted_address;
-                }
-            });
-        });
-    @endif
 
-    // City autocomplete for agency registration
-    const cityInput = document.getElementById('city');
+            map.on('click', function(e) {
+                var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
+                if (marker) {
+                    marker.setLatLng(e.latlng);
+                } else {
+                    marker = L.marker(e.latlng, { draggable: true }).addTo(map);
+                    marker.on('dragend', function(ev) {
+                        var p = ev.target.getLatLng();
+                        updateFromLatLng(p.lat, p.lng);
+                    });
+                }
+                updateFromLatLng(lat, lng);
+            });
+
+            @if(old('latitude') && old('longitude'))
+            (function() {
+                var oldLat = {{ old('latitude') }};
+                var oldLng = {{ old('longitude') }};
+                map.setView([oldLat, oldLng], 17);
+                marker = L.marker([oldLat, oldLng], { draggable: true }).addTo(map);
+                latitudeInput.value = oldLat;
+                longitudeInput.value = oldLng;
+                marker.on('dragend', function(ev) {
+                    var p = ev.target.getLatLng();
+                    updateFromLatLng(p.lat, p.lng);
+                });
+            })();
+            @endif
+        }
+
+        // City autocomplete for agency registration
+        var cityInput = document.getElementById('city');
     const citySuggestionsAgency = document.getElementById('citySuggestionsAgency');
     const suggestionsListAgency = document.getElementById('suggestionsListAgency');
     let cityAutocompleteTimeoutAgency;
@@ -660,6 +602,14 @@ document.addEventListener('DOMContentLoaded', function() {
             isSearchingCitiesAgency = false;
         }
     }
-});
-</script>
-@endpush
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                initAgencyMap();
+            });
+        } else {
+            initAgencyMap();
+        }
+    })();
+    </script>
+</x-guest-layout>

@@ -372,33 +372,66 @@ class PublicController extends Controller
     }
 
     /**
-     * API endpoint to search cities by name prefix
-     * Used for autocomplete in search forms
+     * API endpoint to search cities by name prefix (min 2 characters)
+     * Used for autocomplete in search forms on the home page
      */
     public function searchCities(Request $request)
     {
         $request->validate([
-            'q' => 'required|string|min:1|max:100',
+            'q' => 'required|string|min:2|max:100',
         ]);
 
-        $query = $request->input('q');
-        
-        // Search cities from approved agencies
+        $query = trim($request->input('q'));
+        if (strlen($query) < 2) {
+            return response()->json(['success' => true, 'cities' => []]);
+        }
+
+        $searchTerm = strtolower($query) . '%';
+        // Search cities from approved agencies (case-insensitive prefix match, e.g. "cas" → "Casablanca")
         $cities = Agency::where('status', 'approved')
             ->whereNotNull('city')
-            ->where('city', 'like', $query . '%')
-            ->select('city', DB::raw('COUNT(*) as count'))
-            ->groupBy('city')
+            ->whereRaw('LOWER(TRIM(city)) LIKE ?', [$searchTerm])
+            ->select('city', 'country', DB::raw('COUNT(*) as count'))
+            ->groupBy('city', 'country')
             ->orderBy('count', 'desc')
             ->orderBy('city', 'asc')
             ->limit(10)
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
+                $name = trim($item->city);
+                if (!empty(trim((string) $item->country))) {
+                    $name .= ', ' . trim($item->country);
+                }
                 return [
-                    'name' => $item->city,
+                    'name' => $name,
                     'count' => $item->count,
                 ];
-            });
+            })
+            ->values()
+            ->all();
+
+        // Fallback: if no agencies match, suggest from full list of Moroccan cities (prefix match: e.g. "raba" → Rabat)
+        if ($cities === []) {
+            $moroccoCities = [
+                'Agadir', 'Al Hoceïma', 'Azrou', 'Beni Mellal', 'Berkane', 'Berrechid', 'Bouskoura', 'Casablanca',
+                'Chefchaouen', 'Dakhla', 'El Jadida', 'Errachidia', 'Essaouira', 'Fès', 'Fnideq', 'Guelmim',
+                'Ifrane', 'Inezgane', 'Kénitra', 'Khemisset', 'Khouribga', 'Ksar El Kebir', 'Laâyoune', 'Larache',
+                'Marrakesh', 'Martil', 'Meknès', 'Midelt', 'Mohammedia', 'Nador', 'Ouarzazate', 'Oued Zem',
+                'Oujda', 'Rabat', 'Safi', 'Salé', 'Sefrou', 'Settat', 'Sidi Kacem', 'Sidi Slimane', 'Tangier',
+                'Tan-Tan', 'Taroudant', 'Taza', 'Témara', 'Tétouan', 'Tinghir', 'Tiznit', 'Youssoufia', 'Zagora',
+            ];
+            $q = strtolower($query);
+            $cities = collect($moroccoCities)
+                ->filter(function ($city) use ($q) {
+                    return str_starts_with(strtolower($city), $q);
+                })
+                ->take(10)
+                ->map(function ($city) {
+                    return ['name' => $city, 'count' => 0];
+                })
+                ->values()
+                ->all();
+        }
 
         return response()->json([
             'success' => true,

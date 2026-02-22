@@ -90,6 +90,15 @@ class Agency extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Get the best email to use for contacting the agency (agency email or linked user email).
+     */
+    public function getContactEmail(): ?string
+    {
+        $email = $this->email ?? $this->user?->email;
+        return $email ? (string) $email : null;
+    }
+
     public function cars()
     {
         return $this->hasMany(Car::class);

@@ -238,13 +238,15 @@ class PayPalController extends Controller
             }
 
             return redirect()->route('booking.step4')
-                ->with('info', 'Paiement PayPal annulé. Vous pouvez choisir une autre méthode de paiement.');
+                ->with('paypal_not_completed', true)
+                ->with('info', 'Le paiement n\'a pas été effectué. Vous pouvez réessayer ou choisir une autre méthode de paiement.');
         } catch (\Exception $e) {
             Log::error('PayPal cancel redirect error', [
                 'error' => $e->getMessage(),
             ]);
 
             return redirect()->route('booking.step4')
+                ->with('paypal_not_completed', true)
                 ->with('error', 'Une erreur est survenue lors de l\'annulation.');
         }
     }

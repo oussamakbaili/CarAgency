@@ -12,9 +12,12 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Nettoyer les réservations pending expirées toutes les heures
+        // Libérer les voitures : réservations non payées après 15 min (toutes les 5 min)
+        $schedule->command('rentals:clean-expired-pending --minutes=15')->everyFiveMinutes();
+
+        // Nettoyer aussi les réservations pending très anciennes (24h) toutes les heures
         $schedule->command('rentals:clean-expired-pending --hours=24')->hourly();
-        
+
         // Traiter les réservations expirées
         $schedule->command('rentals:process-expired')->daily();
     }

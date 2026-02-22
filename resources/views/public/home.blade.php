@@ -65,23 +65,12 @@
                     const input = document.getElementById('whereInput');
                     if (input) {
                         input.focus();
-                        // Reinitialize autocomplete when modal opens
-                        if (input.dataset.autocompleteInitialized === 'true') {
-                            input.dataset.autocompleteInitialized = 'false';
-                        }
-                        // Wait a bit more to ensure DOM is ready
-                        setTimeout(() => {
+                        // Ensure city autocomplete is active when modal opens (in case DOMContentLoaded ran before modal was ready)
                         if (typeof initCityAutocomplete === 'function') {
-                                console.log('Initializing city autocomplete...');
                             initCityAutocomplete();
-                            } else {
-                                console.error('initCityAutocomplete function not found');
                         }
-                        }, 50);
-                    } else {
-                        console.error('whereInput not found when trying to initialize autocomplete');
                     }
-                }, 200);
+                }, 100);
             } else if (section === 'checkin' || section === 'checkout') {
                 whereSection.classList.add('hidden');
                 whenSection.classList.remove('hidden');
@@ -142,6 +131,92 @@
         window.openSearchModal = openSearchModal;
         window.closeSearchModal = closeSearchModal;
         window.switchToSection = switchToSection;
+
+        // Hero search bar city suggestions (runs when called after hero form is in DOM)
+        window.initHeroCityAutocomplete = function() {
+            var heroWhereInput = document.getElementById('heroWhereInput');
+            var heroCitySuggestions = document.getElementById('heroCitySuggestions');
+            var heroSuggestionsList = document.getElementById('heroSuggestionsList');
+            var heroCitySuggestionsLoading = document.getElementById('heroCitySuggestionsLoading');
+            if (!heroWhereInput || !heroCitySuggestions || !heroSuggestionsList) return;
+            if (heroWhereInput.dataset.heroAutocompleteInit === 'true') return;
+            heroWhereInput.dataset.heroAutocompleteInit = 'true';
+            var heroSuggestTimeout;
+            var heroSearching = false;
+            var citiesSearchUrl = '{{ route("public.cities.search") }}';
+            function positionHeroSuggestions() {
+                // Move dropdown to body so position:fixed is viewport-relative (hero form has GSAP transform on desktop)
+                if (heroCitySuggestions.parentNode !== document.body) document.body.appendChild(heroCitySuggestions);
+                var rect = heroWhereInput.getBoundingClientRect();
+                heroCitySuggestions.style.top = (rect.bottom + 8) + 'px';
+                heroCitySuggestions.style.left = rect.left + 'px';
+                heroCitySuggestions.style.width = Math.max(rect.width, 280) + 'px';
+            }
+            function hideHeroSuggestions() { heroCitySuggestions.classList.add('hidden'); }
+            function selectHeroCity(name) { heroWhereInput.value = name; hideHeroSuggestions(); }
+            heroWhereInput.addEventListener('input', function() {
+                var q = this.value.trim();
+                if (q.length < 2) { hideHeroSuggestions(); return; }
+                clearTimeout(heroSuggestTimeout);
+                heroSuggestTimeout = setTimeout(function() { searchHeroCities(q); }, 200);
+            });
+            heroWhereInput.addEventListener('focus', function() {
+                var q = this.value.trim();
+                if (q.length >= 2) { clearTimeout(heroSuggestTimeout); heroSuggestTimeout = setTimeout(function() { searchHeroCities(q); }, 100); }
+            });
+            document.addEventListener('click', function(e) {
+                if (!heroWhereInput.contains(e.target) && !heroCitySuggestions.contains(e.target)) hideHeroSuggestions();
+            });
+            heroWhereInput.addEventListener('keydown', function(e) {
+                var items = heroSuggestionsList.querySelectorAll('.suggestion-item');
+                var active = heroSuggestionsList.querySelector('.suggestion-item.active');
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (active) { active.classList.remove('active', 'bg-gray-50'); var next = active.nextElementSibling; if (next) { next.classList.add('active', 'bg-gray-50'); next.scrollIntoView({ block: 'nearest' }); } } else if (items.length) items[0].classList.add('active', 'bg-gray-50');
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (active) { active.classList.remove('active', 'bg-gray-50'); var prev = active.previousElementSibling; if (prev) { prev.classList.add('active', 'bg-gray-50'); prev.scrollIntoView({ block: 'nearest' }); } }
+                } else if (e.key === 'Enter' && active) { e.preventDefault(); selectHeroCity(active.dataset.city); } else if (e.key === 'Escape') hideHeroSuggestions();
+            });
+            function searchHeroCities(query) {
+                if (heroSearching) return;
+                heroSearching = true;
+                heroSuggestionsList.innerHTML = '';
+                if (heroCitySuggestionsLoading) heroCitySuggestionsLoading.classList.remove('hidden');
+                positionHeroSuggestions();
+                heroCitySuggestions.classList.remove('hidden');
+                fetch(citiesSearchUrl + '?q=' + encodeURIComponent(query), { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (heroCitySuggestionsLoading) heroCitySuggestionsLoading.classList.add('hidden');
+                        if (data.success && data.cities && data.cities.length > 0) {
+                            heroSuggestionsList.innerHTML = '';
+                            data.cities.forEach(function(city, idx) {
+                                var item = document.createElement('div');
+                                item.className = 'suggestion-item flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0' + (idx === 0 ? ' active bg-gray-50' : '');
+                                item.dataset.city = city.name;
+                                item.innerHTML = '<svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg><div class="flex-1 min-w-0"><p class="font-medium text-gray-900 truncate">' + city.name + '</p></div>';
+                                item.addEventListener('click', function() { selectHeroCity(city.name); });
+                                item.addEventListener('mouseenter', function() { heroSuggestionsList.querySelectorAll('.suggestion-item').forEach(function(i) { i.classList.remove('active', 'bg-gray-50'); }); this.classList.add('active', 'bg-gray-50'); });
+                                heroSuggestionsList.appendChild(item);
+                            });
+                            positionHeroSuggestions();
+                            heroCitySuggestions.classList.remove('hidden');
+                        } else {
+                            if (data.success && data.cities && data.cities.length === 0) {
+                                heroSuggestionsList.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 text-center">Aucune ville trouvée</div>';
+                                heroCitySuggestions.classList.remove('hidden');
+                            } else hideHeroSuggestions();
+                        }
+                    })
+                    .catch(function() {
+                        if (heroCitySuggestionsLoading) heroCitySuggestionsLoading.classList.add('hidden');
+                        heroSuggestionsList.innerHTML = '<div class="px-4 py-3 text-sm text-red-500 text-center">Erreur.</div>';
+                        heroCitySuggestions.classList.remove('hidden');
+                    })
+                    .finally(function() { heroSearching = false; });
+            }
+        };
         
         // Car Details Modal Functions - Define early to avoid ReferenceError
         function openCarDetailsModal(agencyId, carId) {
@@ -349,7 +424,7 @@
                     <!-- Left Content -->
                     <div class="space-y-6 sm:space-y-8 w-full" id="hero-content">
                         <div class="w-full">
-                            <h1 class="text-left mb-6 sm:mb-8">
+                            <h1 class="hero-title text-left mb-6 sm:mb-8">
                                 <span class="block text-5xl sm:text-5xl md:text-6xl font-bold text-white mb-2 leading-tight">{{ __('home.hero.title_line1') }}</span>
                                 <span class="block text-5xl sm:text-5xl md:text-6xl font-bold text-white mb-3 leading-tight">{{ __('home.hero.title_line2') }}</span>
                                 <span class="block text-7xl sm:text-6xl md:text-8xl font-bold text-orange-500 leading-tight">
@@ -357,7 +432,7 @@
                                 </span>
                             </h1>
                             
-                            <div class="space-y-1 text-left max-w-lg">
+                            <div class="hero-subtitle space-y-1 text-left max-w-lg">
                                 <p class="text-base sm:text-lg text-gray-100 leading-relaxed font-normal">
                                     {{ __('home.hero.subtitle_line1') }}
                                 </p>
@@ -370,64 +445,54 @@
                             </div>
                         </div>
                     
-                        <!-- Simple Search Bar - Mobile Only (Airbnb Style) -->
-                        <div class="md:hidden bg-white rounded-full shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-200 hero-search cursor-pointer" id="mobileSearchBar" onclick="openSearchModal('where')">
-                            <div class="w-full flex items-center gap-3 px-5 py-4">
-                                <svg class="w-5 h-5 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
-                                <div class="flex-1 min-w-0">
-                                    <div class="text-sm font-medium text-gray-900 truncate" id="mobileSearchBarText">
-                                        @if(request('where') || request('check_in') || request('check_out'))
-                                            @if(request('where'))
-                                                {{ request('where') }}
-                                                @if(request('check_in') || request('check_out'))
-                                                    · 
-                                                @endif
-                                            @endif
-                                            @if(request('check_in') && request('check_out'))
-                                                {{ \Carbon\Carbon::parse(request('check_in'))->format('M d') }} - {{ \Carbon\Carbon::parse(request('check_out'))->format('M d') }}
-                                            @elseif(request('check_in'))
-                                                {{ \Carbon\Carbon::parse(request('check_in'))->format('M d') }}
-                                            @endif
-                                        @else
-                                            <span class="text-gray-500">{{ __('home.hero.search_placeholder') }}</span>
-                                        @endif
+                        <!-- Hero Search Form: same on mobile and desktop — writable Where + city suggestions, no popup -->
+                        <form action="{{ route('public.cars.search') }}" method="GET" id="heroSearchForm" class="block w-full bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-full shadow-2xl border border-gray-200 p-3 md:p-2 hero-search">
+                            <input type="hidden" name="check_in" id="heroCheckIn" value="{{ request('check_in') }}">
+                            <input type="hidden" name="check_out" id="heroCheckOut" value="{{ request('check_out') }}">
+                            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+                                <!-- Where: writable input with city suggestions (z-20 so it's above Check in/out on desktop) -->
+                                <div class="flex-1 px-4 md:px-6 py-3 md:border-r border-gray-200 rounded-xl md:rounded-l-full relative min-w-0 border-b md:border-b-0 border-gray-200 z-20">
+                                    <label for="heroWhereInput" class="block text-xs font-semibold text-gray-900 mb-1 cursor-text">{{ __('home.hero.where') }}</label>
+                                    <input type="text" name="where" id="heroWhereInput" placeholder="{{ __('home.hero.where_placeholder') }}"
+                                           value="{{ request('where') }}"
+                                           autocomplete="off"
+                                           class="w-full text-sm text-gray-600 placeholder-gray-400 border-0 p-0 focus:ring-0 focus:outline-none bg-transparent">
+                                    <div id="heroCitySuggestions" class="fixed z-[9999] mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto hidden" style="min-width: 200px;">
+                                        <div id="heroSuggestionsList" class="py-2"></div>
+                                        <div id="heroCitySuggestionsLoading" class="hidden px-4 py-3 text-center text-gray-500 text-sm">
+                                            <span class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-orange-600 align-middle mr-2"></span>
+                                            Recherche...
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Full Search Form - Desktop Only (Airbnb Style) -->
-                        <div class="hidden md:block bg-white/95 backdrop-blur-sm rounded-full shadow-2xl border border-gray-200 p-2 hero-search">
-                            <div class="flex flex-row items-center gap-2">
-                                <!-- Where -->
-                                <div id="whereDesktopBtn" class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 rounded-l-full transition-colors" onclick="openSearchModal('where')" style="pointer-events: auto; position: relative; z-index: 1;">
-                                    <label class="block text-xs font-semibold text-gray-900 mb-1 pointer-events-none">{{ __('home.hero.where') }}</label>
-                                    <div class="text-sm text-gray-600 pointer-events-none" id="whereDisplayDesktop">{{ __('home.hero.where_placeholder') }}</div>
-                                </div>
-                                
                                 <!-- Check in -->
-                                <div id="checkInDesktopBtn" class="flex-1 px-6 py-3 border-r border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkin')" style="pointer-events: auto; position: relative; z-index: 1;">
+                                <div id="checkInDesktopBtn" class="flex-1 px-4 md:px-6 py-3 border-b md:border-b-0 border-r border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors rounded-xl md:rounded-full" onclick="openSearchModal('checkin')" style="pointer-events: auto;">
                                     <label class="block text-xs font-semibold text-gray-900 mb-1 pointer-events-none">{{ __('home.hero.check_in') }}</label>
-                                    <div class="text-sm text-gray-400 pointer-events-none" id="checkInDisplayDesktop">{{ __('home.hero.add_dates') }}</div>
+                                    <div class="text-sm text-gray-400 pointer-events-none" id="checkInDisplayDesktop">{{ request('check_in') ? \Carbon\Carbon::parse(request('check_in'))->format('M d') : __('home.hero.add_dates') }}</div>
                                 </div>
-                                
                                 <!-- Check out -->
-                                <div id="checkOutDesktopBtn" class="flex-1 px-6 py-3 cursor-pointer hover:bg-gray-50 transition-colors" onclick="openSearchModal('checkout')" style="pointer-events: auto; position: relative; z-index: 1;">
+                                <div id="checkOutDesktopBtn" class="flex-1 px-4 md:px-6 py-3 cursor-pointer hover:bg-gray-50 transition-colors rounded-xl md:rounded-full" onclick="openSearchModal('checkout')" style="pointer-events: auto;">
                                     <label class="block text-xs font-semibold text-gray-900 mb-1 pointer-events-none">{{ __('home.hero.check_out') }}</label>
-                                    <div class="text-sm text-gray-400 pointer-events-none" id="checkOutDisplayDesktop">{{ __('home.hero.add_dates') }}</div>
+                                    <div class="text-sm text-gray-400 pointer-events-none" id="checkOutDisplayDesktop">{{ request('check_out') ? \Carbon\Carbon::parse(request('check_out'))->format('M d') : __('home.hero.add_dates') }}</div>
                                 </div>
-                                
                                 <!-- Search Button -->
-                                <button type="button" onclick="performSearch()" class="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-full font-semibold flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl">
+                                <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-6 md:px-8 py-3 rounded-xl md:rounded-full font-semibold flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                     </svg>
                                     <span>{{ __('home.hero.search') }}</span>
                                 </button>
                             </div>
-                        </div>
+                        </form>
+                        <script>
+                        (function() {
+                            if (window.initHeroCityAutocomplete) window.initHeroCityAutocomplete();
+                            // Also init when DOM is ready (ensures desktop gets it if script order differs)
+                            if (document.readyState === 'loading') {
+                                document.addEventListener('DOMContentLoaded', function() { if (window.initHeroCityAutocomplete) window.initHeroCityAutocomplete(); });
+                            }
+                        })();
+                        </script>
                     </div>
                     
                     <!-- Right side - Empty space for car -->
@@ -855,8 +920,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
                             </button>
-                            <!-- Suggestions dropdown -->
-                            <div id="citySuggestions" class="absolute z-[100] w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto hidden" style="top: 100%; left: 0;">
+                            <!-- Suggestions dropdown: positioned by JS so it is not clipped by modal overflow -->
+                            <div id="citySuggestions" class="fixed z-[9999] mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto hidden" style="min-width: 200px;">
                                 <div id="suggestionsList" class="py-2"></div>
                                 <div id="citySuggestionsLoading" class="hidden px-4 py-3 text-center text-gray-500 text-sm">
                                     <div class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-orange-600 mr-2"></div>
@@ -865,14 +930,15 @@
                             </div>
                         </div>
                         
-                        <!-- Recent searches (Dynamic) -->
+                        <!-- Recent searches (Dynamic) - hidden while city dropdown is open -->
+                        <div id="whereSectionStatic" class="mb-6">
                         <div class="mb-6">
                             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Recent searches</p>
                             <div id="recentSearchesContainer" class="space-y-2"></div>
                         </div>
 
                         <!-- Suggested Destinations -->
-                        <div>
+                        <div class="mb-6">
                             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Suggested destinations</p>
                             <div class="space-y-2">
                                 <button type="button" onclick="selectDestination('Nearby')" class="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors">
@@ -936,6 +1002,7 @@
                                     </div>
                                 </button>
                             </div>
+                        </div>
                         </div>
                     </div>
 
@@ -1214,6 +1281,29 @@
                     }
                 }
             });
+
+            // Initialize city autocomplete once so it works as soon as user opens the modal
+            if (typeof initCityAutocomplete === 'function') {
+                initCityAutocomplete();
+            }
+
+            // Hero search form: ensure submit sends data to same cars-search as cars-search.blade.php
+            const heroSearchForm = document.getElementById('heroSearchForm');
+            if (heroSearchForm) {
+                heroSearchForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var where = (document.getElementById('heroWhereInput') && document.getElementById('heroWhereInput').value) ? document.getElementById('heroWhereInput').value.trim() : '';
+                    var checkIn = (document.getElementById('heroCheckIn') && document.getElementById('heroCheckIn').value) ? document.getElementById('heroCheckIn').value : '';
+                    var checkOut = (document.getElementById('heroCheckOut') && document.getElementById('heroCheckOut').value) ? document.getElementById('heroCheckOut').value : '';
+                    var url = new URL('{{ route("public.cars.search") }}', window.location.origin);
+                    if (where) url.searchParams.set('where', where);
+                    if (checkIn) url.searchParams.set('check_in', checkIn);
+                    if (checkOut) url.searchParams.set('check_out', checkOut);
+                    window.location.href = url.toString();
+                });
+            }
+
+            // Hero city suggestions are initialized by script right after the hero form (initHeroCityAutocomplete)
         });
 
         // Update mobile search bar text
@@ -1286,7 +1376,7 @@
                     if (clearButton) clearButton.classList.remove('hidden');
                 } else {
                     if (clearButton) clearButton.classList.add('hidden');
-                    if (citySuggestions) citySuggestions.classList.add('hidden');
+                    hideCitySuggestions();
                 }
             });
 
@@ -1294,36 +1384,32 @@
             if (clearButton) {
                 clearButton.addEventListener('click', function() {
                     whereInput.value = '';
-                    if (citySuggestions) citySuggestions.classList.add('hidden');
+                    hideCitySuggestions();
                     clearButton.classList.add('hidden');
                     whereInput.focus();
                 });
             }
 
-            // Search cities on input
+            // Search cities on input (show suggestions only when 2+ letters typed)
             whereInput.addEventListener('input', function(e) {
                 const query = this.value.trim();
                 
-                console.log('Input event triggered, query:', query);
-                
-                if (query.length < 1) {
-                    if (citySuggestions) citySuggestions.classList.add('hidden');
+                if (query.length < 2) {
+                    hideCitySuggestions();
                     return;
                 }
 
                 // Debounce search
                 clearTimeout(cityAutocompleteTimeout);
                 cityAutocompleteTimeout = setTimeout(() => {
-                    console.log('Calling searchCities with query:', query);
                     searchCities(query);
                 }, 200);
             });
 
-            // Also trigger on focus if there's already text
+            // Also trigger on focus if there's already 2+ characters
             whereInput.addEventListener('focus', function() {
                 const query = this.value.trim();
-                if (query.length >= 1) {
-                    console.log('Focus event, searching for:', query);
+                if (query.length >= 2) {
                     clearTimeout(cityAutocompleteTimeout);
                     cityAutocompleteTimeout = setTimeout(() => {
                         searchCities(query);
@@ -1334,7 +1420,7 @@
             // Hide suggestions when clicking outside
             document.addEventListener('click', function(e) {
                 if (whereInput && citySuggestions && !whereInput.contains(e.target) && !citySuggestions.contains(e.target)) {
-                    citySuggestions.classList.add('hidden');
+                    hideCitySuggestions();
                 }
             });
 
@@ -1371,12 +1457,29 @@
                     if (activeSuggestion) {
                         const cityName = activeSuggestion.dataset.city;
                         selectDestination(cityName);
-                        citySuggestions.classList.add('hidden');
+                        hideCitySuggestions();
                     }
                 } else if (e.key === 'Escape') {
-                    citySuggestions.classList.add('hidden');
+                    hideCitySuggestions();
                 }
             });
+        }
+
+        function positionCitySuggestions() {
+            const whereInput = document.getElementById('whereInput');
+            const citySuggestions = document.getElementById('citySuggestions');
+            if (!whereInput || !citySuggestions) return;
+            const rect = whereInput.getBoundingClientRect();
+            citySuggestions.style.top = (rect.bottom + 8) + 'px';
+            citySuggestions.style.left = rect.left + 'px';
+            citySuggestions.style.width = Math.max(rect.width, 280) + 'px';
+        }
+
+        function hideCitySuggestions() {
+            const citySuggestions = document.getElementById('citySuggestions');
+            const whereSectionStatic = document.getElementById('whereSectionStatic');
+            if (citySuggestions) citySuggestions.classList.add('hidden');
+            if (whereSectionStatic) whereSectionStatic.classList.remove('hidden');
         }
 
         async function searchCities(query) {
@@ -1386,6 +1489,7 @@
             const citySuggestions = document.getElementById('citySuggestions');
             const suggestionsList = document.getElementById('suggestionsList');
             const loadingIndicator = document.getElementById('citySuggestionsLoading');
+            const whereSectionStatic = document.getElementById('whereSectionStatic');
 
             if (!citySuggestions || !suggestionsList) {
                 console.error('City suggestions elements not found');
@@ -1393,12 +1497,14 @@
                 return;
             }
 
-            // Show loading indicator
+            // Show loading indicator and position dropdown below input (fixed so not clipped by modal)
             suggestionsList.innerHTML = '';
             if (loadingIndicator) {
                 loadingIndicator.classList.remove('hidden');
             }
+            positionCitySuggestions();
             citySuggestions.classList.remove('hidden');
+            if (whereSectionStatic) whereSectionStatic.classList.add('hidden');
 
             try {
                 console.log('Searching cities for query:', query);
@@ -1466,7 +1572,7 @@
                         
                         item.addEventListener('click', function() {
                             selectDestination(city.name);
-                            citySuggestions.classList.add('hidden');
+                            hideCitySuggestions();
                         });
                         
                         item.addEventListener('mouseenter', function() {
@@ -1485,16 +1591,20 @@
                         suggestionsList.appendChild(item);
                     });
                     
+                    positionCitySuggestions();
                     citySuggestions.classList.remove('hidden');
+                    if (whereSectionStatic) whereSectionStatic.classList.add('hidden');
                     console.log('✅ Suggestions displayed:', data.cities.length, 'cities');
                 } else {
                     console.log('⚠️ No cities found or empty response');
                     // Show message if no results
                     if (data.success && data.cities && data.cities.length === 0) {
                         suggestionsList.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 text-center">Aucune ville trouvée pour "' + query + '"</div>';
-                    citySuggestions.classList.remove('hidden');
-                } else {
-                    citySuggestions.classList.add('hidden');
+                        positionCitySuggestions();
+                        citySuggestions.classList.remove('hidden');
+                        if (whereSectionStatic) whereSectionStatic.classList.add('hidden');
+                    } else {
+                        hideCitySuggestions();
                     }
                 }
             } catch (error) {
@@ -1503,7 +1613,9 @@
                     loadingIndicator.classList.add('hidden');
                 }
                 suggestionsList.innerHTML = '<div class="px-4 py-3 text-sm text-red-500 text-center">Erreur lors de la recherche. Veuillez réessayer.</div>';
+                positionCitySuggestions();
                 citySuggestions.classList.remove('hidden');
+                if (whereSectionStatic) whereSectionStatic.classList.add('hidden');
             } finally {
                 isSearchingCities = false;
             }
@@ -1511,12 +1623,11 @@
 
         // Select destination
         function selectDestination(city) {
-            document.getElementById('whereInput').value = city;
+            const whereInput = document.getElementById('whereInput');
+            if (whereInput) whereInput.value = city;
             
-            // Update mobile search bar
             updateMobileSearchBar();
             
-            // Update desktop displays
             const whereDisplayDesktop = document.getElementById('whereDisplayDesktop');
             if (whereDisplayDesktop) {
                 whereDisplayDesktop.textContent = city;
@@ -1524,71 +1635,62 @@
                 whereDisplayDesktop.classList.add('text-gray-900');
             }
             
-            // Update modal tab display
-            document.getElementById('whereTabDisplay').textContent = city;
-            document.getElementById('whereDisplay').textContent = city;
-            document.getElementById('whereDisplay').classList.remove('text-gray-600');
-            document.getElementById('whereDisplay').classList.add('text-gray-900');
+            const whereTabDisplay = document.getElementById('whereTabDisplay');
+            if (whereTabDisplay) whereTabDisplay.textContent = city;
+            
+            // Guard: whereDisplay may not exist
+            const whereDisplay = document.getElementById('whereDisplay');
+            if (whereDisplay) {
+                whereDisplay.textContent = city;
+                whereDisplay.classList.remove('text-gray-600');
+                whereDisplay.classList.add('text-gray-900');
+            }
 
-            // Save to recent searches
             addRecentSearch(city);
             renderRecentSearches();
             
-            // Switch to dates section
             switchToSection('checkin');
         }
 
-        // Perform search
+        // Perform search (used when modal has a Search button; hero form submits directly)
         function performSearch() {
-            // Get values from modal inputs if modal is open
+            const heroWhereInput = document.getElementById('heroWhereInput');
             const whereInput = document.getElementById('whereInput');
             const checkInInput = document.getElementById('checkInInput');
             const checkOutInput = document.getElementById('checkOutInput');
+            const heroCheckIn = document.getElementById('heroCheckIn');
+            const heroCheckOut = document.getElementById('heroCheckOut');
             const searchModal = document.getElementById('searchModal');
             const form = document.getElementById('searchForm');
             
-            // If modal is open and form exists, submit the form
+            // Prefer hero form values when available (desktop: no modal for Where)
+            let where = (heroWhereInput && heroWhereInput.value.trim()) ? heroWhereInput.value.trim() : (whereInput && whereInput.value.trim()) ? whereInput.value.trim() : '';
+            let checkIn = (heroCheckIn && heroCheckIn.value) ? heroCheckIn.value : (checkInInput && checkInInput.value) ? checkInInput.value : '';
+            let checkOut = (heroCheckOut && heroCheckOut.value) ? heroCheckOut.value : (checkOutInput && checkOutInput.value) ? checkOutInput.value : '';
+            
+            // If modal is open and form exists, submit the form (with hero values if set)
             if (searchModal && !searchModal.classList.contains('hidden') && form) {
-                const whereValue = whereInput ? whereInput.value.trim() : '';
-                if (whereValue) {
-                    addRecentSearch(whereValue);
-                    renderRecentSearches();
-                }
+                if (where && heroWhereInput) heroWhereInput.value = where;
+                if (where) { addRecentSearch(where); renderRecentSearches(); }
+                if (checkIn && form.querySelector('input[name="check_in"]')) form.querySelector('input[name="check_in"]').value = checkIn;
+                if (checkOut && form.querySelector('input[name="check_out"]')) form.querySelector('input[name="check_out"]').value = checkOut;
+                if (whereInput) whereInput.value = where || whereInput.value;
                 form.submit();
                 return;
             }
             
             // If modal is closed, build URL from stored values
-            let where = '';
-            let checkIn = '';
-            let checkOut = '';
-            
-            // Get where value from input or display
-            if (whereInput && whereInput.value.trim()) {
-                where = whereInput.value.trim();
-            } else {
+            if (!where) {
                 const whereDisplayDesktop = document.getElementById('whereDisplayDesktop');
                 if (whereDisplayDesktop) {
                     const displayText = whereDisplayDesktop.textContent.trim();
-                    // Check if it's not the placeholder
                     if (displayText && displayText !== 'Search destinations' && displayText !== 'Rechercher des destinations') {
                         where = displayText;
                     }
                 }
             }
-            
-            // Get dates from global variables or hidden inputs
-            if (checkInDate) {
-                checkIn = new Date(checkInDate).toISOString().split('T')[0];
-            } else if (checkInInput && checkInInput.value) {
-                checkIn = checkInInput.value;
-            }
-            
-            if (checkOutDate) {
-                checkOut = new Date(checkOutDate).toISOString().split('T')[0];
-            } else if (checkOutInput && checkOutInput.value) {
-                checkOut = checkOutInput.value;
-            }
+            if (!checkIn) checkIn = checkInDate ? new Date(checkInDate).toISOString().split('T')[0] : (checkInInput && checkInInput.value) ? checkInInput.value : '';
+            if (!checkOut) checkOut = checkOutDate ? new Date(checkOutDate).toISOString().split('T')[0] : (checkOutInput && checkOutInput.value) ? checkOutInput.value : '';
             
             // Build search URL
             const searchUrl = new URL('{{ route("public.cars.search") }}', window.location.origin);
@@ -1775,6 +1877,8 @@
                 }
                 
                 checkInInput.value = checkInDate;
+                const heroCheckIn = document.getElementById('heroCheckIn');
+                if (heroCheckIn) heroCheckIn.value = checkInDate;
             }
 
             if (checkOutDate) {
@@ -1803,6 +1907,8 @@
                 }
                 
                 checkOutInput.value = checkOutDate;
+                const heroCheckOut = document.getElementById('heroCheckOut');
+                if (heroCheckOut) heroCheckOut.value = checkOutDate;
                 
                 // Update check in tab to show check in → check out if both dates are set
                 if (checkInDate && checkInTabDisplay) {
@@ -1861,6 +1967,10 @@
                 checkOutDisplayDesktop.classList.remove('text-gray-900');
                 checkOutDisplayDesktop.classList.add('text-gray-400');
             }
+            const heroCheckIn = document.getElementById('heroCheckIn');
+            const heroCheckOut = document.getElementById('heroCheckOut');
+            if (heroCheckIn) heroCheckIn.value = '';
+            if (heroCheckOut) heroCheckOut.value = '';
             if (whereDisplayDesktop) {
                 whereDisplayDesktop.textContent = 'Search destinations';
                 whereDisplayDesktop.classList.remove('text-gray-900');
@@ -2174,26 +2284,16 @@
                 ease: "none"
             });
 
-            // Hero Content Animation (On Load) - Animate FROM hidden TO visible
-            gsap.timeline({delay: 0.3})
-                .to(".hero-title", {
-                    opacity: 1,
-                    y: 0,
-                    duration: 1,
-                    ease: "power3.out"
-                })
-                .to(".hero-subtitle", {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.8,
-                    ease: "power3.out"
-                }, "-=0.5")
-                .to(".hero-search", {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.8,
-                    ease: "power3.out"
-                }, "-=0.5");
+            // Hero Content Animation (On Load) - only run if targets exist
+            var heroTitle = document.querySelector(".hero-title");
+            var heroSubtitle = document.querySelector(".hero-subtitle");
+            var heroSearch = document.querySelector(".hero-search");
+            if (heroTitle || heroSubtitle || heroSearch) {
+                var tl = gsap.timeline({delay: 0.3});
+                if (heroTitle) tl.to(".hero-title", { opacity: 1, y: 0, duration: 1, ease: "power3.out" });
+                if (heroSubtitle) tl.to(".hero-subtitle", { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, "-=0.5");
+                if (heroSearch) tl.to(".hero-search", { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, "-=0.5");
+            }
 
             // Scroll Indicator fade out
             gsap.to("#scroll-indicator", {
@@ -2743,6 +2843,7 @@
                 closeCarDetailsModal();
             }
         });
+    </script>
 
     <!-- Car Details Modal -->
     <div id="carDetailsModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center px-4 py-8" style="background-color: rgba(0, 0, 0, 0.75);" onclick="if(event.target === this) closeCarDetailsModal()">

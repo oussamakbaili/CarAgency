@@ -40,9 +40,12 @@
             }
         </script>
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-        
+        <!-- Vite: only when build exists -->
+        @if(file_exists(public_path('build/manifest.json')))
+            @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @endif
+        @stack('styles')
+
         <style>
             .hero-gradient {
                 background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1d4ed8 100%);
@@ -136,5 +139,6 @@
                 </div>
             </div>
         </div>
+        @stack('scripts')
     </body>
 </html>

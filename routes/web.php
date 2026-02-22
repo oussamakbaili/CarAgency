@@ -564,6 +564,7 @@ Route::prefix('booking')->name('booking.')->group(function () {
         Route::get('/step4', [App\Http\Controllers\Client\BookingController::class, 'step4'])->name('step4');
         Route::get('/step5', [App\Http\Controllers\Client\BookingController::class, 'step5'])->name('step5');
         Route::post('/init-paypal-payment', [App\Http\Controllers\Client\BookingController::class, 'initPayPalPayment'])->name('init-paypal-payment');
+        Route::post('/init-stripe-payment', [App\Http\Controllers\Client\BookingController::class, 'initStripePayment'])->name('init-stripe-payment');
         Route::post('/process-payment', [App\Http\Controllers\Client\BookingController::class, 'processPayment'])->name('process-payment');
         Route::post('/cancel', [App\Http\Controllers\Client\BookingController::class, 'cancel'])->name('cancel');
         

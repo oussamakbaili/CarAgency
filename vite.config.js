@@ -11,4 +11,9 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        // En dev, servir en HTTPS pour éviter le contenu mixte si la page est en HTTPS
+        https: true,
+        host: true,
+    },
 });

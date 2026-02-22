@@ -161,11 +161,19 @@ class AgencyController extends Controller
         ]);
 
         // Send approval email
-        try {
-            Mail::to($agency->email)->send(new \App\Mail\AgencyApproved($agency));
-        } catch (\Exception $e) {
-            // Log email error but don't fail the approval
-            \Log::error('Failed to send approval email: ' . $e->getMessage());
+        $contactEmail = $agency->getContactEmail();
+        if ($contactEmail) {
+            try {
+                Mail::to($contactEmail)->send(new \App\Mail\AgencyApproved($agency));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send approval email', [
+                    'agency_id' => $agency->id,
+                    'email' => $contactEmail,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        } else {
+            \Log::warning('Skipped approval email: no contact email for agency', ['agency_id' => $agency->id]);
         }
 
         // If the request expects JSON (AJAX), return the updated row data
@@ -222,10 +230,19 @@ class AgencyController extends Controller
         // Check if agency has reached maximum tries
         if ($agency->tries_count >= Agency::MAX_TRIES) {
             // Send permanent rejection email
-            try {
-                Mail::to($agency->email)->send(new \App\Mail\AgencyPermanentlyRejected($agency));
-            } catch (\Exception $e) {
-                \Log::error('Failed to send permanent rejection email: ' . $e->getMessage());
+            $contactEmail = $agency->getContactEmail();
+            if ($contactEmail) {
+                try {
+                    Mail::to($contactEmail)->send(new \App\Mail\AgencyPermanentlyRejected($agency));
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send permanent rejection email', [
+                        'agency_id' => $agency->id,
+                        'email' => $contactEmail,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            } else {
+                \Log::warning('Skipped permanent rejection email: no contact email for agency', ['agency_id' => $agency->id]);
             }
             
             // Delete the agency and its user
@@ -238,10 +255,19 @@ class AgencyController extends Controller
         }
 
         // Send regular rejection email
-        try {
-            Mail::to($agency->email)->send(new \App\Mail\AgencyRejected($agency));
-        } catch (\Exception $e) {
-            \Log::error('Failed to send rejection email: ' . $e->getMessage());
+        $contactEmail = $agency->getContactEmail();
+        if ($contactEmail) {
+            try {
+                Mail::to($contactEmail)->send(new \App\Mail\AgencyRejected($agency));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send rejection email', [
+                    'agency_id' => $agency->id,
+                    'email' => $contactEmail,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        } else {
+            \Log::warning('Skipped rejection email: no contact email for agency', ['agency_id' => $agency->id]);
         }
 
         if ($request->wantsJson() || $request->ajax()) {

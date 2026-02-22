@@ -189,10 +189,15 @@ class RentalService
             return false;
         }
 
-        // Compter les réservations conflictuelles (pending, active)
-        // Les réservations rejected, cancelled ou completed ne bloquent pas la disponibilité
+        // Réservations conflictuelles : active toujours ; pending seulement si créée il y a moins de 15 min (sinon considérée expirée)
+        $pendingCutoff = now()->subMinutes(15);
         $conflictingRentals = Rental::where('car_id', $car->id)
-            ->whereIn('status', ['pending', 'active'])
+            ->where(function ($q) use ($pendingCutoff) {
+                $q->where('status', 'active')
+                    ->orWhere(function ($q2) use ($pendingCutoff) {
+                        $q2->where('status', 'pending')->where('created_at', '>=', $pendingCutoff);
+                    });
+            })
             ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
                     ->orWhereBetween('end_date', [$startDate, $endDate])

@@ -33,6 +33,12 @@
                         </div>
                     @endif
 
+                    @if(session('paypal_not_completed') || session('info'))
+                        <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                            <p class="text-amber-800 font-medium">{{ session('info', 'Le paiement n\'a pas été effectué. Vous pouvez réessayer ou choisir une autre méthode de paiement.') }}</p>
+                        </div>
+                    @endif
+
                     <!-- Payment Method Selection - Radio Buttons (Shown First) -->
                     <div id="payment-method-selection" class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-4">Choisissez votre méthode de paiement</label>
@@ -69,7 +75,8 @@
                                     </p>
                                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                                         <p class="text-sm text-blue-800">
-                                            <strong>{{ __('booking.step4.paypal.amount') }}</strong> {{ number_format($bookingData['total_with_fees'], 2, ',', ' ') }} EUR
+                                            <strong>{{ __('booking.step4.paypal.amount') }}</strong> {{ number_format($totalPayPalEur ?? 0, 2, ',', ' ') }} EUR
+                                            <span class="text-blue-600">({{ number_format($bookingData['total_with_fees'] ?? 0, 0, ',', ' ') }} MAD)</span>
                                         </p>
                                         <p class="text-sm text-blue-800 mt-2">
                                             {{ __('booking.step4.gateways.paypal.desc') }}
@@ -95,7 +102,7 @@
 
                                 <!-- Submit Button -->
                                 <button type="submit" id="paypal-submit-button" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-lg font-semibold transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <span id="paypal-button-text">{{ __('booking.step4.paypal.pay', ['amount' => number_format($bookingData['total_with_fees'], 2, ',', ' ')]) }}</span>
+                                    <span id="paypal-button-text">{{ __('booking.step4.paypal.pay', ['amount' => number_format($totalPayPalEur ?? 0, 2, ',', ' ')]) }}</span>
                                     <span id="paypal-spinner" class="hidden">
                                         <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

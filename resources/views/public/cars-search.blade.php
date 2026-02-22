@@ -9,12 +9,21 @@
             <!-- Compact Search Form -->
             <div class="bg-white rounded-full shadow-lg border border-gray-200 p-1.5 sm:p-2">
                 <form action="{{ route('public.cars.search') }}" method="GET" class="flex flex-col md:flex-row items-stretch md:items-center gap-1.5 sm:gap-2">
-                    <!-- Where -->
-                    <div class="flex-1 px-3 sm:px-4 py-2 border-r border-gray-200">
+                    <!-- Where (with city autocomplete) -->
+                    <div class="flex-1 px-3 sm:px-4 py-2 border-r border-gray-200 relative">
                         <label class="block text-xs font-semibold text-gray-900 mb-0.5 sm:mb-1">Where</label>
-                        <input type="text" name="where" placeholder="Marrakesh, Morocco" 
+                        <input type="text" name="where" id="whereInput" placeholder="Marrakesh, Morocco" 
                                value="{{ request('where') }}"
+                               autocomplete="off"
                                class="w-full text-xs sm:text-sm text-gray-600 placeholder-gray-400 border-0 p-0 focus:ring-0 focus:outline-none">
+                        <!-- City suggestions dropdown -->
+                        <div id="citySuggestions" class="fixed z-[9999] mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto hidden" style="min-width: 200px;">
+                            <div id="suggestionsList" class="py-2"></div>
+                            <div id="citySuggestionsLoading" class="hidden px-4 py-3 text-center text-gray-500 text-sm">
+                                <div class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-orange-600 mr-2"></div>
+                                Recherche en cours...
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Check in -->
@@ -166,5 +175,131 @@
             @endif
         </div>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var whereInput = document.getElementById('whereInput');
+        var citySuggestions = document.getElementById('citySuggestions');
+        var suggestionsList = document.getElementById('suggestionsList');
+        var loadingIndicator = document.getElementById('citySuggestionsLoading');
+        if (!whereInput || !citySuggestions || !suggestionsList) return;
+
+        var cityAutocompleteTimeout;
+        var isSearchingCities = false;
+
+        function positionCitySuggestions() {
+            var rect = whereInput.getBoundingClientRect();
+            citySuggestions.style.top = (rect.bottom + 8) + 'px';
+            citySuggestions.style.left = rect.left + 'px';
+            citySuggestions.style.width = Math.max(rect.width, 280) + 'px';
+        }
+
+        function hideCitySuggestions() {
+            citySuggestions.classList.add('hidden');
+        }
+
+        function selectCity(name) {
+            whereInput.value = name;
+            hideCitySuggestions();
+        }
+
+        whereInput.addEventListener('input', function() {
+            var query = this.value.trim();
+            if (query.length < 2) {
+                hideCitySuggestions();
+                return;
+            }
+            clearTimeout(cityAutocompleteTimeout);
+            cityAutocompleteTimeout = setTimeout(function() { searchCities(query); }, 200);
+        });
+
+        whereInput.addEventListener('focus', function() {
+            var query = this.value.trim();
+            if (query.length >= 2) {
+                clearTimeout(cityAutocompleteTimeout);
+                cityAutocompleteTimeout = setTimeout(function() { searchCities(query); }, 100);
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!whereInput.contains(e.target) && !citySuggestions.contains(e.target)) {
+                hideCitySuggestions();
+            }
+        });
+
+        whereInput.addEventListener('keydown', function(e) {
+            var items = suggestionsList.querySelectorAll('.suggestion-item');
+            var active = suggestionsList.querySelector('.suggestion-item.active');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (active) {
+                    active.classList.remove('active', 'bg-gray-50');
+                    var next = active.nextElementSibling;
+                    if (next) { next.classList.add('active', 'bg-gray-50'); next.scrollIntoView({ block: 'nearest' }); }
+                } else if (items.length) { items[0].classList.add('active', 'bg-gray-50'); }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (active) {
+                    active.classList.remove('active', 'bg-gray-50');
+                    var prev = active.previousElementSibling;
+                    if (prev) { prev.classList.add('active', 'bg-gray-50'); prev.scrollIntoView({ block: 'nearest' }); }
+                }
+            } else if (e.key === 'Enter' && active) {
+                e.preventDefault();
+                selectCity(active.dataset.city);
+            } else if (e.key === 'Escape') {
+                hideCitySuggestions();
+            }
+        });
+
+        function searchCities(query) {
+            if (isSearchingCities) return;
+            isSearchingCities = true;
+            suggestionsList.innerHTML = '';
+            if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+            positionCitySuggestions();
+            citySuggestions.classList.remove('hidden');
+
+            fetch('{{ route("public.cities.search") }}?q=' + encodeURIComponent(query), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (loadingIndicator) loadingIndicator.classList.add('hidden');
+                if (data.success && data.cities && data.cities.length > 0) {
+                    suggestionsList.innerHTML = '';
+                    data.cities.forEach(function(city, index) {
+                        var item = document.createElement('div');
+                        item.className = 'suggestion-item flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0' + (index === 0 ? ' active bg-gray-50' : '');
+                        item.dataset.city = city.name;
+                        item.innerHTML = '<svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg><div class="flex-1 min-w-0"><p class="font-medium text-gray-900 truncate">' + city.name + '</p></div>';
+                        item.addEventListener('click', function() { selectCity(city.name); });
+                        item.addEventListener('mouseenter', function() {
+                            suggestionsList.querySelectorAll('.suggestion-item').forEach(function(i) { i.classList.remove('active', 'bg-gray-50'); });
+                            this.classList.add('active', 'bg-gray-50');
+                        });
+                        suggestionsList.appendChild(item);
+                    });
+                    positionCitySuggestions();
+                    citySuggestions.classList.remove('hidden');
+                } else {
+                    if (data.success && data.cities && data.cities.length === 0) {
+                        suggestionsList.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500 text-center">Aucune ville trouvée pour &quot;' + query + '&quot;</div>';
+                        citySuggestions.classList.remove('hidden');
+                    } else {
+                        hideCitySuggestions();
+                    }
+                }
+            })
+            .catch(function(err) {
+                if (loadingIndicator) loadingIndicator.classList.add('hidden');
+                suggestionsList.innerHTML = '<div class="px-4 py-3 text-sm text-red-500 text-center">Erreur lors de la recherche.</div>';
+                positionCitySuggestions();
+                citySuggestions.classList.remove('hidden');
+            })
+            .finally(function() { isSearchingCities = false; });
+        }
+    });
+    </script>
 @endsection
 

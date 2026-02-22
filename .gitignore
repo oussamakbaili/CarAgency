@@ -6,8 +6,8 @@
 /storage/*.key
 /vendor
 .env
-.env.backup
-.env.production
+.env.*
+!.env.example
 Homestead.json
 Homestead.yaml
 auth.json
@@ -19,3 +19,5 @@ yarn-error.log
 *.log
 /storage/logs/*.log
 /storage/logs/laravel.log  
+*.zip
+*.swp

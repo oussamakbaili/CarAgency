@@ -31,12 +31,52 @@ class BookingController extends Controller
         // Charger la relation agency
         $car->load('agency');
 
-        // Vérifier disponibilité de base
-        if (!$car->is_available || !$car->agency || $car->agency->status !== 'approved') {
-            return redirect()->back()->with('error', 'Cette voiture n\'est pas disponible pour la location.');
+        $bookingData = session('booking_data');
+
+        // If user has a pending PayPal (rental_id in session) and lands on main with same car, send them to step4 first
+        // (before availability check: their own pending rental may make the car appear unavailable)
+        if (Auth::check() && $bookingData && ($bookingData['car_id'] ?? null) == $car->id && !empty($bookingData['rental_id'])) {
+            return redirect()->route('booking.step4')
+                ->with('paypal_not_completed', true)
+                ->with('info', 'Le paiement n\'a pas été effectué. Vous pouvez réessayer ou choisir une autre méthode de paiement.');
         }
 
-        $bookingData = session('booking_data');
+        // Vérifier disponibilité de base (redirect to home to avoid redirect loop when referer is same URL)
+        if (!$car->is_available || !$car->agency || $car->agency->status !== 'approved') {
+            // Fallback: if user just came back from PayPal without paying, session may be lost but they have a pending rental for this car
+            if (Auth::check()) {
+                $pendingRental = Rental::where('car_id', $car->id)
+                    ->where('user_id', Auth::id())
+                    ->where('status', 'pending')
+                    ->where('created_at', '>=', now()->subMinutes(15))
+                    ->with('payments')
+                    ->first();
+                if ($pendingRental) {
+                    $startDate = $pendingRental->start_date;
+                    $endDate = $pendingRental->end_date;
+                    $days = $startDate->diffInDays($endDate);
+                    $payment = $pendingRental->payments()->where('status', \App\Models\Payment::STATUS_PENDING)->first();
+                    $restoredBookingData = [
+                        'car_id' => $car->id,
+                        'start_date' => $startDate->format('Y-m-d'),
+                        'end_date' => $endDate->format('Y-m-d'),
+                        'days' => $days,
+                        'price_per_day' => $days > 0 ? (float) $pendingRental->total_price / $days : (float) $pendingRental->total_price,
+                        'total_price' => (float) $pendingRental->total_price,
+                        'platform_fee' => 0,
+                        'total_with_fees' => (float) $pendingRental->total_price,
+                        'rental_id' => $pendingRental->id,
+                        'payment_intent_id' => $payment ? $payment->payment_intent_id : null,
+                    ];
+                    session(['booking_data' => $restoredBookingData]);
+                    return redirect()->route('booking.step4')
+                        ->with('paypal_not_completed', true)
+                        ->with('info', 'Le paiement n\'a pas été effectué. Vous pouvez réessayer ou choisir une autre méthode de paiement.');
+                }
+            }
+            return redirect()->route('public.home')->with('error', 'Cette voiture n\'est pas disponible pour la location.');
+        }
+
         $hasQueryDates = $request->filled('start_date') && $request->filled('end_date');
 
         if ($hasQueryDates) {
@@ -253,8 +293,11 @@ class BookingController extends Controller
         // Préparer les données pour les deux passerelles
         // Stripe sera initialisé côté client si choisi
         // CMI sera initialisé si choisi
+        // PayPal: amount in EUR (converted from MAD) for display
+        $madToEurRate = (float) config('services.paypal.mad_to_eur_rate', 11);
+        $totalPayPalEur = round(((float) ($bookingData['total_with_fees'] ?? 0)) / $madToEurRate, 2);
 
-        $response = view('client.booking.step4', compact('car', 'bookingData'));
+        $response = view('client.booking.step4', compact('car', 'bookingData', 'totalPayPalEur'));
         
         // Inject PayPal button fix script directly into the response
         $paypalButtonFix = '<script>
@@ -483,9 +526,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 'status' => 'pending'
             ]);
 
-            // Créer la commande PayPal
+            // Convert MAD to EUR for PayPal (prices in app are MAD; PayPal is charged in EUR)
+            $amountMad = (float) $bookingData['total_with_fees'];
+            $madToEurRate = (float) config('services.paypal.mad_to_eur_rate', 11);
+            $amountEur = round($amountMad / $madToEurRate, 2);
+
+            // Créer la commande PayPal (amount in EUR)
             $paypalData = [
-                'amount' => $bookingData['total_with_fees'],
+                'amount' => $amountEur,
                 'currency' => 'EUR',
                 'order_id' => 'PAYPAL_' . $rental->id . '_' . time(),
                 'description' => 'Réservation de véhicule - ' . $car->brand . ' ' . $car->model,
@@ -522,11 +570,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 ], 500);
             }
 
-            // Créer l'enregistrement de paiement pending
+            // Créer l'enregistrement de paiement pending (amount charged in EUR)
             $payment = \App\Models\Payment::create([
                 'rental_id' => $rental->id,
                 'user_id' => $rental->user_id,
-                'amount' => $bookingData['total_with_fees'],
+                'amount' => $amountEur,
                 'currency' => 'EUR',
                 'payment_method' => \App\Models\Payment::PAYMENT_METHOD_PAYPAL,
                 'payment_intent_id' => $paypalResult['order_id'],
@@ -568,6 +616,26 @@ document.addEventListener("DOMContentLoaded", function() {
                 'error' => 'Une erreur est survenue lors de l\'initialisation du paiement PayPal. Veuillez réessayer.'
             ], 500);
         }
+    }
+
+    /**
+     * Initialiser un paiement Stripe (carte bancaire).
+     * Retourne un client_secret pour Stripe Elements. Si Stripe n'est pas configuré, retourne une erreur.
+     */
+    public function initStripePayment(Request $request)
+    {
+        if (!Auth::check() || !Auth::user()->isClient()) {
+            return response()->json(['success' => false, 'error' => 'Non autorisé.'], 403);
+        }
+        $bookingData = session('booking_data');
+        if (!$bookingData) {
+            return response()->json(['success' => false, 'error' => 'Session expirée. Veuillez recommencer votre réservation.'], 400);
+        }
+        // Stripe n'est pas encore intégré : seul PayPal est disponible
+        return response()->json([
+            'success' => false,
+            'error' => 'Le paiement par carte n\'est pas disponible pour le moment. Veuillez utiliser PayPal.',
+        ], 400);
     }
 
     /**
