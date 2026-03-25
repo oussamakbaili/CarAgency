@@ -13,6 +13,31 @@
 
     <!-- Temporary Tailwind CSS via CDN until Vite is set up -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        // Theme override for orange-* utilities:
+        // Tailwind orange-600 (#ea580c) -> #0A66C2
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        orange: {
+                            50: '#0A66C2',
+                            100: '#0A66C2',
+                            200: '#0A66C2',
+                            300: '#0A66C2',
+                            400: '#0A66C2',
+                            500: '#0A66C2',
+                            600: '#0A66C2',
+                            700: '#0A66C2',
+                            800: '#0A66C2',
+                            900: '#0A66C2',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

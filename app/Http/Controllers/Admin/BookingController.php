@@ -296,7 +296,7 @@ class BookingController extends Controller
     {
         switch ($status) {
             case 'pending':
-                return '#f59e0b';
+                return '#0A66C2';
             case 'active':
                 return '#10b981';
             case 'completed':
