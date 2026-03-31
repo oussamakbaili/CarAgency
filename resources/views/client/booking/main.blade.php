@@ -20,7 +20,7 @@
                     <h1 class="text-2xl font-bold text-gray-900">{{ __('booking.main.header', ['brand' => $car->brand, 'model' => $car->model]) }}</h1>
                 </div>
                 <div class="flex items-center">
-                    <div class="w-8 h-8 bg-[#C2410C] rounded-full flex items-center justify-center">
+                    <div class="w-8 h-8 bg-[#0A66C2] rounded-full flex items-center justify-center">
                         <span class="text-white font-semibold text-sm">TC</span>
                     </div>
                 </div>

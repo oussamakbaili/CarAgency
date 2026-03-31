@@ -14,7 +14,7 @@
             padding: 20px;
         }
         .header {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, #0A66C2, #0A66C2);
             color: white;
             padding: 20px;
             text-align: center;
@@ -27,7 +27,7 @@
         }
         .warning-box {
             background: #fef3c7;
-            border: 2px solid #f59e0b;
+            border: 2px solid #0A66C2;
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;

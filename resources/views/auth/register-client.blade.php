@@ -13,9 +13,9 @@
                     @csrf
 
                     <!-- Personal Information Section -->
-                    <div class="bg-gradient-to-br from-[#C2410C]/5 to-[#9A3412]/5 p-6 rounded-2xl border border-[#C2410C]/10 mb-8">
+                    <div class="bg-gradient-to-br from-[#0A66C2]/5 to-[#0A66C2]/5 p-6 rounded-2xl border border-[#0A66C2]/10 mb-8">
                         <div class="flex items-center mb-6">
-                            <div class="flex items-center justify-center w-10 h-10 bg-[#C2410C] rounded-lg mr-3">
+                            <div class="flex items-center justify-center w-10 h-10 bg-[#0A66C2] rounded-lg mr-3">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                 </svg>
@@ -96,9 +96,9 @@
                     </div>
 
                     <!-- Contact Information Section -->
-                    <div class="bg-gradient-to-br from-[#C2410C]/5 to-[#9A3412]/5 p-6 rounded-2xl border border-[#C2410C]/10 mb-8">
+                    <div class="bg-gradient-to-br from-[#0A66C2]/5 to-[#0A66C2]/5 p-6 rounded-2xl border border-[#0A66C2]/10 mb-8">
                         <div class="flex items-center mb-6">
-                            <div class="flex items-center justify-center w-10 h-10 bg-[#C2410C] rounded-lg mr-3">
+                            <div class="flex items-center justify-center w-10 h-10 bg-[#0A66C2] rounded-lg mr-3">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                 </svg>
@@ -153,9 +153,9 @@
                     </div>
 
                     <!-- Driving License Section -->
-                    <div class="bg-gradient-to-br from-[#C2410C]/5 to-[#9A3412]/5 p-6 rounded-2xl border border-[#C2410C]/10 mb-8">
+                    <div class="bg-gradient-to-br from-[#0A66C2]/5 to-[#0A66C2]/5 p-6 rounded-2xl border border-[#0A66C2]/10 mb-8">
                         <div class="flex items-center mb-6">
-                            <div class="flex items-center justify-center w-10 h-10 bg-[#C2410C] rounded-lg mr-3">
+                            <div class="flex items-center justify-center w-10 h-10 bg-[#0A66C2] rounded-lg mr-3">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
@@ -202,9 +202,9 @@
                     </div>
 
                     <!-- Security Section -->
-                    <div class="bg-gradient-to-br from-[#C2410C]/5 to-[#9A3412]/5 p-6 rounded-2xl border border-[#C2410C]/10 mb-8">
+                    <div class="bg-gradient-to-br from-[#0A66C2]/5 to-[#0A66C2]/5 p-6 rounded-2xl border border-[#0A66C2]/10 mb-8">
                         <div class="flex items-center mb-6">
-                            <div class="flex items-center justify-center w-10 h-10 bg-[#C2410C] rounded-lg mr-3">
+                            <div class="flex items-center justify-center w-10 h-10 bg-[#0A66C2] rounded-lg mr-3">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                 </svg>
@@ -246,14 +246,14 @@
                         <div class="text-center sm:text-left">
                             <p class="text-sm text-gray-600">
                                 {{ __('Already have an account?') }}
-                                <a href="{{ route('login') }}" class="font-semibold text-[#C2410C] hover:text-[#9A3412] transition duration-200">
+                                <a href="{{ route('login') }}" class="font-semibold text-[#0A66C2] hover:text-[#0A66C2] transition duration-200">
                                     {{ __('Sign in here') }}
                                 </a>
                             </p>
                         </div>
 
                         <button type="submit" 
-                            class="group relative w-full sm:w-auto flex items-center justify-center px-8 py-4 bg-gradient-to-r from-[#C2410C] to-[#9A3412] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-200 focus:outline-none focus:ring-2 focus:ring-[#C2410C] focus:ring-offset-2">
+                            class="group relative w-full sm:w-auto flex items-center justify-center px-8 py-4 bg-gradient-to-r from-[#0A66C2] to-[#0A66C2] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2] focus:ring-offset-2">
                             <svg class="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>

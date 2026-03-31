@@ -66,7 +66,7 @@
                                class="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200">
                     </div>
                     <div class="flex items-end">
-                        <button type="submit" class="w-full bg-[#C2410C] hover:bg-[#9A3412] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold text-sm sm:text-base transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-1.5 sm:gap-2">
+                        <button type="submit" class="w-full bg-[#0A66C2] hover:bg-[#0A66C2] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold text-sm sm:text-base transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-1.5 sm:gap-2">
                             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
@@ -197,7 +197,7 @@
                             <div class="flex items-end justify-between mb-4 pt-4 border-t border-gray-100">
                                 <div>
                                     <p class="text-sm text-gray-500 mb-1">Prix par jour</p>
-                                    <p class="text-3xl font-bold text-[#C2410C]">
+                                    <p class="text-3xl font-bold text-[#0A66C2]">
                                         {{ number_format($car->client_price_per_day, 0) }} <span class="text-lg">MAD</span>
                                     </p>
                                 </div>
@@ -230,7 +230,7 @@
                 <h3 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Aucune voiture trouvée</h3>
                 <p class="text-base sm:text-lg text-gray-600 leading-relaxed mb-6 sm:mb-8">Essayez de modifier vos critères de recherche.</p>
                 <a href="{{ route('public.agency.cars', $agency) }}" 
-                   class="inline-flex items-center gap-1.5 sm:gap-2 bg-[#C2410C] hover:bg-[#9A3412] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base shadow-lg hover:shadow-xl">
+                   class="inline-flex items-center gap-1.5 sm:gap-2 bg-[#0A66C2] hover:bg-[#0A66C2] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base shadow-lg hover:shadow-xl">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                     </svg>

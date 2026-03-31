@@ -161,7 +161,7 @@
             <div class="mt-8 sm:mt-12 text-center">
                 <p class="text-xs sm:text-base text-gray-600">
             Already have an account?
-                    <a href="{{ route('login') }}" class="font-semibold text-[#C2410C] hover:text-[#9A3412] transition duration-200">
+                    <a href="{{ route('login') }}" class="font-semibold text-[#0A66C2] hover:text-[#0A66C2] transition duration-200">
                 Sign in here
             </a>
         </p>
@@ -170,7 +170,7 @@
     </div>
 
     <!-- Footer - Hidden on mobile -->
-    <footer class="hidden md:block bg-[#C2410C] text-white py-8 mt-12">
+    <footer class="hidden md:block bg-[#0A66C2] text-white py-8 mt-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
                 <p class="text-blue-100">

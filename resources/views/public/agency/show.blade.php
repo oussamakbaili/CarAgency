@@ -259,7 +259,7 @@
                                     <div class="text-sm text-gray-500">par jour</div>
                         </div>
                                 <a href="{{ route('booking.main', $car) }}" 
-                                   class="bg-[#C2410C] hover:bg-[#9A3412] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                                   class="bg-[#0A66C2] hover:bg-[#0A66C2] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
                                    onclick="event.stopPropagation()">
                                     Réserver
                                 </a>

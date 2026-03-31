@@ -13,6 +13,28 @@
 
     <!-- Temporary Tailwind CSS via CDN until Vite is set up -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        orange: {
+                            50: '#0A66C2',
+                            100: '#0A66C2',
+                            200: '#0A66C2',
+                            300: '#0A66C2',
+                            400: '#0A66C2',
+                            500: '#0A66C2',
+                            600: '#0A66C2',
+                            700: '#0A66C2',
+                            800: '#0A66C2',
+                            900: '#0A66C2',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -95,7 +117,7 @@
             transform: translateY(-50%);
             width: 3px;
             height: 0;
-            background: #ea580c;
+            background: #0A66C2;
             border-radius: 0 2px 2px 0;
             transition: height 0.2s ease;
         }
@@ -228,7 +250,7 @@
                             <div class="flex items-center space-x-3">
                                 <!-- Avatar - Compact -->
                                 <div class="relative flex-shrink-0">
-                                    <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-[#C2410C] via-[#9A3412] to-[#7C2D12] flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-200 group-hover:scale-105">
+                                    <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] via-[#0A66C2] to-[#0A66C2] flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-200 group-hover:scale-105">
                                         <span class="text-white font-bold text-lg">{{ substr(Auth::user()->name, 0, 1) }}</span>
                                     </div>
                                     <!-- Online Status - Smaller -->
@@ -241,7 +263,7 @@
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center justify-between">
                                         <div class="min-w-0 flex-1">
-                                            <h3 class="text-sm font-semibold text-gray-900 truncate group-hover:text-[#C2410C] transition-colors">
+                                            <h3 class="text-sm font-semibold text-gray-900 truncate group-hover:text-[#0A66C2] transition-colors">
                                                 {{ Auth::user()->name }}
                                             </h3>
                                             <div class="flex items-center space-x-1 mt-0.5">
@@ -255,7 +277,7 @@
                                         </div>
                                         <!-- Arrow Icon - Smaller -->
                                         <div class="flex items-center ml-2">
-                                            <svg class="w-4 h-4 text-gray-400 group-hover:text-[#C2410C] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4 text-gray-400 group-hover:text-[#0A66C2] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                             </svg>
                                         </div>
@@ -269,7 +291,7 @@
                     <div class="mt-3 flex justify-center">
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
-                            <button type="submit" class="group flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-gradient-to-r hover:from-[#C2410C] hover:to-[#9A3412] rounded-lg transition-all duration-200 hover:shadow-md border border-gray-200 hover:border-transparent">
+                            <button type="submit" class="group flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-gradient-to-r hover:from-[#0A66C2] hover:to-[#0A66C2] rounded-lg transition-all duration-200 hover:shadow-md border border-gray-200 hover:border-transparent">
                                 <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                                 </svg>
@@ -731,7 +753,7 @@
                 if (data.available) {
                     // Vehicle is available
                     bookingButton.disabled = false;
-                    bookingButton.className = 'w-full bg-gradient-to-r from-[#C2410C] to-[#9A3412] text-white font-semibold py-4 px-6 rounded-xl hover:from-[#9A3412] hover:to-[#7C2D12] transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer';
+                    bookingButton.className = 'w-full bg-gradient-to-r from-[#0A66C2] to-[#0A66C2] text-white font-semibold py-4 px-6 rounded-xl hover:from-[#0A66C2] hover:to-[#0A66C2] transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer';
                     buttonText.textContent = `Réserver maintenant • ${parseInt(data.total_price).toLocaleString('fr-FR')} MAD`;
                     
                     availabilityMessage.classList.remove('hidden');

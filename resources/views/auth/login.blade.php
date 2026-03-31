@@ -99,7 +99,7 @@
                         </div>
                     </div>
                     <a href="{{ route('public.home') }}" class="text-gray-700 hover:text-orange-600 font-medium transition duration-200">{{ __('common.home') }}</a>
-                    <a href="{{ route('register') }}" class="bg-[#C2410C] hover:bg-[#9A3412] text-white px-6 py-2.5 rounded-full font-medium transition duration-200">
+                    <a href="{{ route('register') }}" class="bg-[#0A66C2] hover:bg-[#0A66C2] text-white px-6 py-2.5 rounded-full font-medium transition duration-200">
                         {{ __('common.register') }}
                     </a>
                 </div>
@@ -193,7 +193,7 @@
                     <!-- Submit Button -->
                     <div>
                         <button type="submit" 
-                                class="w-full bg-[#C2410C] hover:bg-[#9A3412] text-white py-2.5 sm:py-3 px-4 rounded-xl text-sm sm:text-base font-semibold transition duration-200 flex items-center justify-center">
+                                class="w-full bg-[#0A66C2] hover:bg-[#0A66C2] text-white py-2.5 sm:py-3 px-4 rounded-xl text-sm sm:text-base font-semibold transition duration-200 flex items-center justify-center">
                             <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
                             </svg>
@@ -205,7 +205,7 @@
                     <div class="text-center">
                         <p class="text-xs sm:text-sm text-gray-600">
                             {{ __('common.auth.dont_have_account') }}
-                            <a href="{{ route('register') }}" class="font-semibold text-[#C2410C] hover:text-[#9A3412] transition duration-200">
+                            <a href="{{ route('register') }}" class="font-semibold text-[#0A66C2] hover:text-[#0A66C2] transition duration-200">
                                 {{ __('common.auth.sign_up_here') }}
                             </a>
                         </p>
@@ -216,7 +216,7 @@
     </div>
 
     <!-- Footer - Hidden on mobile -->
-    <footer class="hidden md:block bg-[#C2410C] text-white py-8 mt-12">
+    <footer class="hidden md:block bg-[#0A66C2] text-white py-8 mt-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
                 <p class="text-blue-100">

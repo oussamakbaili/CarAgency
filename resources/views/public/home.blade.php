@@ -3062,7 +3062,7 @@
                 if (data.available) {
                     // Vehicle is available
                     bookingButton.disabled = false;
-                    bookingButton.className = 'w-full bg-gradient-to-r from-[#C2410C] to-[#9A3412] text-white font-semibold py-4 px-6 rounded-xl hover:from-[#9A3412] hover:to-[#7C2D12] transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer';
+                    bookingButton.className = 'w-full bg-gradient-to-r from-[#0A66C2] to-[#0A66C2] text-white font-semibold py-4 px-6 rounded-xl hover:from-[#0A66C2] hover:to-[#0A66C2] transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer';
                     buttonText.textContent = `Réserver maintenant • ${parseInt(data.total_price).toLocaleString('fr-FR')} MAD`;
                     
                     availabilityMessage.classList.remove('hidden');

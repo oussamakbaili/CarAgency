@@ -23,16 +23,16 @@
                         },
                         colors: {
                             'primary': {
-                                50: '#eff6ff',
-                                100: '#dbeafe',
-                                500: '#3b82f6',
-                                600: '#2563eb',
-                                700: '#1d4ed8',
-                                900: '#1e3a8a',
+                                50: '#0A66C2',
+                                100: '#0A66C2',
+                                500: '#0A66C2',
+                                600: '#0A66C2',
+                                700: '#0A66C2',
+                                900: '#0A66C2',
                             },
                             'accent': {
-                                500: '#f59e0b',
-                                600: '#d97706',
+                                500: '#0A66C2',
+                                600: '#0A66C2',
                             }
                         }
                     }
@@ -48,11 +48,11 @@
 
         <style>
             .hero-gradient {
-                background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #1d4ed8 100%);
+                background: linear-gradient(135deg, #0A66C2 0%, #0A66C2 50%, #0A66C2 100%);
             }
             
             .btn-primary {
-                background: linear-gradient(135deg, #C2410C, #9A3412);
+                background: linear-gradient(135deg, #0A66C2, #0A66C2);
                 transition: all 0.3s ease;
                 position: relative;
                 overflow: hidden;
@@ -60,18 +60,18 @@
             
             .btn-primary:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 10px 25px rgba(194, 65, 12, 0.4);
-                background: linear-gradient(135deg, #9A3412, #7c2d12);
+                box-shadow: 0 10px 25px rgba(10, 102, 194, 0.4);
+                background: linear-gradient(135deg, #0A66C2, #0A66C2);
             }
             
             .btn-secondary {
-                background: linear-gradient(135deg, #f59e0b, #d97706);
+                background: linear-gradient(135deg, #0A66C2, #0A66C2);
                 transition: all 0.3s ease;
             }
             
             .btn-secondary:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+                box-shadow: 0 10px 25px rgba(10, 102, 194, 0.4);
             }
             
             .form-input {

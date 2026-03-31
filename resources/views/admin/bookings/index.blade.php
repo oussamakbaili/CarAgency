@@ -169,7 +169,7 @@
                         <div class="text-xs sm:text-sm">
                             @if($booking->user->client)
                                 <a href="{{ route('admin.customers.show', $booking->user->client) }}" 
-                                   class="text-[#C2410C] hover:text-[#9A3412] font-semibold hover:underline transition-colors duration-200"
+                                   class="text-[#0A66C2] hover:text-[#0A66C2] font-semibold hover:underline transition-colors duration-200"
                                    onclick="event.stopPropagation();">
                                     {{ $booking->user->name }}
                                 </a>

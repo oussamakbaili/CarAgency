@@ -147,10 +147,10 @@
                 </div>
 
                 <!-- Vehicle Information -->
-                <a href="{{ route('agence.cars.show', $rental->car) }}" class="block group bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100 hover:border-[#C2410C]/40 hover:shadow-md transition">
+                <a href="{{ route('agence.cars.show', $rental->car) }}" class="block group bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100 hover:border-[#0A66C2]/40 hover:shadow-md transition">
                     <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                         <h3 class="text-lg font-medium text-gray-900">Véhicule</h3>
-                        <span class="text-xs text-[#C2410C] opacity-0 group-hover:opacity-100 transition">Voir la fiche véhicule →</span>
+                        <span class="text-xs text-[#0A66C2] opacity-0 group-hover:opacity-100 transition">Voir la fiche véhicule →</span>
                     </div>
                     <div class="p-6">
                         <div class="flex items-start space-x-4">
@@ -261,10 +261,10 @@
             <!-- Sidebar -->
             <div class="space-y-6">
                 <!-- Client Information (expanded) -->
-                <a href="{{ $rental->client ? route('agence.customers.show', $rental->client) : '#' }}" class="block group bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100 hover:border-[#C2410C]/40 hover:shadow-md transition">
+                <a href="{{ $rental->client ? route('agence.customers.show', $rental->client) : '#' }}" class="block group bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100 hover:border-[#0A66C2]/40 hover:shadow-md transition">
                     <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                         <h3 class="text-lg font-medium text-gray-900">Client</h3>
-                        <span class="text-xs text-[#C2410C] opacity-0 group-hover:opacity-100 transition">Voir le profil client →</span>
+                        <span class="text-xs text-[#0A66C2] opacity-0 group-hover:opacity-100 transition">Voir le profil client →</span>
                     </div>
                     <div class="p-6">
                         <div class="flex items-center space-x-3">

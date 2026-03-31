@@ -15,7 +15,7 @@
     }
     
     .clickable-row:hover td {
-        border-color: #f59e0b;
+        border-color: #0A66C2;
     }
 </style>
 @endpush

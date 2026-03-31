@@ -17,7 +17,7 @@
                         </svg>
                         Retour à la liste
                     </a>
-                    <a href="{{ route('agence.bookings.history') }}?client={{ $customer->user->email ?? '' }}" class="inline-flex items-center px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-white bg-[#C2410C] hover:bg-[#9A3412]">
+                    <a href="{{ route('agence.bookings.history') }}?client={{ $customer->user->email ?? '' }}" class="inline-flex items-center px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-white bg-[#0A66C2] hover:bg-[#0A66C2]">
                         <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -35,7 +35,7 @@
                     <div class="p-6">
                         <!-- Customer Avatar -->
                         <div class="flex items-center justify-center mb-6">
-                            <div class="w-24 h-24 bg-gradient-to-br from-[#C2410C] via-[#9A3412] to-[#7C2D12] rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md">
+                            <div class="w-24 h-24 bg-gradient-to-br from-[#0A66C2] via-[#0A66C2] to-[#0A66C2] rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md">
                                 {{ substr($customer->user->name ?? 'C', 0, 2) }}
                             </div>
                         </div>
@@ -96,8 +96,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <div class="flex items-center">
-                            <div class="p-2 bg-[#C2410C]/10 rounded-lg">
-                                <svg class="w-6 h-6 text-[#C2410C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="p-2 bg-[#0A66C2]/10 rounded-lg">
+                                <svg class="w-6 h-6 text-[#0A66C2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
                             </div>
@@ -141,7 +141,7 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
                     <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                         <h3 class="text-lg font-medium text-gray-900">Locations Récentes</h3>
-                        <span class="text-xs text-[#C2410C]">Dernières 5 locations</span>
+                        <span class="text-xs text-[#0A66C2]">Dernières 5 locations</span>
                     </div>
                     <div class="p-6">
                         @if($stats['recent_rentals']->count() > 0)
@@ -150,8 +150,8 @@
                                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0">
-                                            <div class="w-10 h-10 bg-[#C2410C]/10 rounded-lg flex items-center justify-center">
-                                                <svg class="w-5 h-5 text-[#C2410C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <div class="w-10 h-10 bg-[#0A66C2]/10 rounded-lg flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-[#0A66C2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                                 </svg>
                                             </div>

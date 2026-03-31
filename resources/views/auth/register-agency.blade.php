@@ -21,9 +21,9 @@
                         <!-- Colonne Gauche -->
                         <div class="space-y-8">
                             <!-- Informations de l'Agence -->
-                            <div class="bg-gradient-to-br from-[#C2410C]/5 to-[#9A3412]/5 p-6 rounded-2xl border border-[#C2410C]/10">
+                            <div class="bg-gradient-to-br from-[#0A66C2]/5 to-[#0A66C2]/5 p-6 rounded-2xl border border-[#0A66C2]/10">
                                 <div class="flex items-center mb-6">
-                                    <div class="flex items-center justify-center w-10 h-10 bg-[#C2410C] rounded-lg mr-3">
+                                    <div class="flex items-center justify-center w-10 h-10 bg-[#0A66C2] rounded-lg mr-3">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                         </svg>
@@ -187,9 +187,9 @@
                             </div>
 
                             <!-- Informations du Responsable -->
-                            <div class="bg-gradient-to-br from-[#C2410C]/5 to-[#9A3412]/5 p-6 rounded-2xl border border-[#C2410C]/10">
+                            <div class="bg-gradient-to-br from-[#0A66C2]/5 to-[#0A66C2]/5 p-6 rounded-2xl border border-[#0A66C2]/10">
                                 <div class="flex items-center mb-6">
-                                    <div class="flex items-center justify-center w-10 h-10 bg-[#C2410C] rounded-lg mr-3">
+                                    <div class="flex items-center justify-center w-10 h-10 bg-[#0A66C2] rounded-lg mr-3">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                         </svg>
@@ -256,9 +256,9 @@
                         <!-- Colonne Droite -->
                         <div class="space-y-8">
                             <!-- Documents Requis -->
-                            <div class="bg-gradient-to-br from-[#C2410C]/5 to-[#9A3412]/5 p-6 rounded-2xl border border-[#C2410C]/10">
+                            <div class="bg-gradient-to-br from-[#0A66C2]/5 to-[#0A66C2]/5 p-6 rounded-2xl border border-[#0A66C2]/10">
                                 <div class="flex items-center mb-6">
-                                    <div class="flex items-center justify-center w-10 h-10 bg-[#C2410C] rounded-lg mr-3">
+                                    <div class="flex items-center justify-center w-10 h-10 bg-[#0A66C2] rounded-lg mr-3">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                         </svg>
@@ -269,7 +269,7 @@
                                 <div class="space-y-4">
                                     <div>
                                         <x-input-label for="commercial_register_doc" value="Registre Commercial *" class="text-sm font-semibold text-gray-700 mb-2" />
-                                        <label for="commercial_register_doc" class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-gray-50 transition duration-200 hover:border-[#C2410C]">
+                                        <label for="commercial_register_doc" class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-gray-50 transition duration-200 hover:border-[#0A66C2]">
                                             <div class="flex flex-col items-center justify-center pt-3 pb-2">
                                                 <svg class="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -284,7 +284,7 @@
 
                                     <div>
                                         <x-input-label for="identity_doc" value="CIN Responsable *" class="text-sm font-semibold text-gray-700 mb-2" />
-                                        <label for="identity_doc" class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-gray-50 transition duration-200 hover:border-[#C2410C]">
+                                        <label for="identity_doc" class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-gray-50 transition duration-200 hover:border-[#0A66C2]">
                                             <div class="flex flex-col items-center justify-center pt-3 pb-2">
                                                 <svg class="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -299,7 +299,7 @@
 
                                     <div>
                                         <x-input-label for="tax_doc" value="Document Fiscal (Optionnel)" class="text-sm font-semibold text-gray-700 mb-2" />
-                                        <label for="tax_doc" class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-gray-50 transition duration-200 hover:border-[#C2410C]">
+                                        <label for="tax_doc" class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-gray-50 transition duration-200 hover:border-[#0A66C2]">
                                             <div class="flex flex-col items-center justify-center pt-3 pb-2">
                                                 <svg class="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -314,7 +314,7 @@
 
                                     <div>
                                         <x-input-label for="additional_docs" value="Documents Supplémentaires" class="text-sm font-semibold text-gray-700 mb-2" />
-                                        <label for="additional_docs" class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-gray-50 transition duration-200 hover:border-[#C2410C]">
+                                        <label for="additional_docs" class="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-white hover:bg-gray-50 transition duration-200 hover:border-[#0A66C2]">
                                             <div class="flex flex-col items-center justify-center pt-3 pb-2">
                                                 <svg class="w-8 h-8 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -330,9 +330,9 @@
                             </div>
 
                             <!-- Sécurité du Compte -->
-                            <div class="bg-gradient-to-br from-[#C2410C]/5 to-[#9A3412]/5 p-6 rounded-2xl border border-[#C2410C]/10">
+                            <div class="bg-gradient-to-br from-[#0A66C2]/5 to-[#0A66C2]/5 p-6 rounded-2xl border border-[#0A66C2]/10">
                                 <div class="flex items-center mb-6">
-                                    <div class="flex items-center justify-center w-10 h-10 bg-[#C2410C] rounded-lg mr-3">
+                                    <div class="flex items-center justify-center w-10 h-10 bg-[#0A66C2] rounded-lg mr-3">
                                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                         </svg>
@@ -369,7 +369,7 @@
 
                     <!-- Footer avec Bouton -->
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-8 border-t-2 border-gray-100">
-                        <a class="text-sm text-gray-600 hover:text-[#C2410C] font-semibold transition duration-200 flex items-center" href="{{ route('login') }}">
+                        <a class="text-sm text-gray-600 hover:text-[#0A66C2] font-semibold transition duration-200 flex items-center" href="{{ route('login') }}">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                             </svg>
@@ -377,7 +377,7 @@
                         </a>
 
                         <button type="submit" 
-                            class="group w-full sm:w-auto flex items-center justify-center px-8 py-3 bg-gradient-to-r from-[#C2410C] to-[#9A3412] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-200 focus:outline-none focus:ring-2 focus:ring-[#C2410C] focus:ring-offset-2">
+                            class="group w-full sm:w-auto flex items-center justify-center px-8 py-3 bg-gradient-to-r from-[#0A66C2] to-[#0A66C2] text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2] focus:ring-offset-2">
                             <svg class="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                             </svg>
