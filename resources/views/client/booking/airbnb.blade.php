@@ -322,11 +322,11 @@
                             <div class="flex items-center">
                                 <span class="mr-3">{{ __('booking.airbnb.payment_modal.card_label') }}</span>
                                 <div class="flex items-center space-x-2">
-                                    <img src="{{ asset('images/visa-logo.png') }}"
+                                    <img src="{{ asset('public/images/visa-logo.png') }}"
                                          alt="Visa"
                                          class="h-5 w-auto object-contain"
                                          loading="lazy">
-                                    <img src="{{ asset('images/mastercard-logo.png') }}"
+                                    <img src="{{ asset('public/images/mastercard-logo.png') }}"
                                          alt="Mastercard"
                                          class="h-5 w-auto object-contain"
                                          loading="lazy">
