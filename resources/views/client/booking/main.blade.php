@@ -141,11 +141,11 @@
                                 <div class="flex items-center gap-2 mb-4 flex-wrap">
                                     <img src="{{ asset('public/images/visa-logo.png') }}"
                                          alt="Visa"
-                                         class="h-10 w-auto object-contain"
+                                         class="h-14 w-auto object-contain"
                                          loading="lazy">
                                     <img src="{{ asset('public/images/mastercard-logo.png') }}"
                                          alt="Mastercard"
-                                         class="h-10 w-auto object-contain"
+                                         class="h-14 w-auto object-contain"
                                          loading="lazy">
                                 </div>
                             </div>
@@ -500,11 +500,11 @@
                                 <div class="flex items-center space-x-2">
                                     <img src="{{ asset('public/images/visa-logo.png') }}"
                                          alt="Visa"
-                                         class="h-6 w-auto object-contain"
+                                         class="h-10 w-auto object-contain"
                                          loading="lazy">
                                     <img src="{{ asset('public/images/mastercard-logo.png') }}"
                                          alt="Mastercard"
-                                         class="h-6 w-auto object-contain"
+                                         class="h-10 w-auto object-contain"
                                          loading="lazy">
                                     <svg class="w-8 h-5" viewBox="0 0 24 16">
                                         <rect width="24" height="16" rx="2" fill="#006FCF"/>
