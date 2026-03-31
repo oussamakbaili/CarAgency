@@ -427,7 +427,7 @@ class PublicController extends Controller
                 })
                 ->take(10)
                 ->map(function ($city) {
-                    return ['name' => $city, 'count' => 0];
+                      return ['name' => $city, 'count' => 0];
                 })
                 ->values()
                 ->all();
