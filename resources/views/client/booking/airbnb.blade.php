@@ -321,16 +321,11 @@
                             <input type="radio" name="cardType" value="credit" class="mr-3" checked>
                             <div class="flex items-center">
                                 <span class="mr-3">{{ __('booking.airbnb.payment_modal.card_label') }}</span>
-                                <div class="flex space-x-2">
-                                    <svg class="w-8 h-5" viewBox="0 0 24 16">
-                                        <rect width="24" height="16" rx="2" fill="#1A1F71"/>
-                                        <text x="12" y="11" text-anchor="middle" fill="white" font-size="8" font-weight="bold">VISA</text>
-                                    </svg>
-                                    <svg class="w-8 h-5" viewBox="0 0 24 16">
-                                        <rect width="24" height="16" rx="2" fill="#EB001B"/>
-                                        <circle cx="9" cy="8" r="4" fill="#EB001B"/>
-                                        <circle cx="15" cy="8" r="4" fill="#F79E1B"/>
-                                    </svg>
+                                <div class="flex items-center space-x-2">
+                                    <img src="{{ asset('images/payment-visa-mastercard.png') }}"
+                                         alt="Visa and Mastercard"
+                                         class="h-5 w-auto object-contain"
+                                         loading="lazy">
                                     <svg class="w-8 h-5" viewBox="0 0 24 16">
                                         <rect width="24" height="16" rx="2" fill="#006FCF"/>
                                         <circle cx="8" cy="8" r="3" fill="#006FCF"/>

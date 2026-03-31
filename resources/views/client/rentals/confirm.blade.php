@@ -93,22 +93,10 @@
                                     <input type="radio" name="payment_gateway" value="stripe" class="w-5 h-5 text-orange-600 border-gray-300 focus:ring-orange-500" checked>
                                 </div>
                                 <div class="flex items-center gap-2 mb-4">
-                                    <!-- VISA -->
-                                    <div class="flex items-center">
-                                        <div class="w-14 h-8 bg-[#1A1F71] rounded-md shadow-md flex items-center justify-center border border-[#0F2A5C] relative overflow-hidden">
-                                            <div class="absolute inset-0 bg-gradient-to-br from-[#1A1F71] to-[#1434A4] opacity-80"></div>
-                                            <span class="text-white text-[11px] font-bold tracking-wider relative z-10">VISA</span>
-                                        </div>
-                                    </div>
-                                    <!-- Mastercard -->
-                                    <div class="flex items-center">
-                                        <div class="w-14 h-8 rounded-full shadow-md flex items-center justify-center relative overflow-hidden">
-                                            <div class="absolute left-0 top-0 w-1/2 h-full bg-[#EB001B]"></div>
-                                            <div class="absolute right-0 top-0 w-1/2 h-full bg-[#F79E1B]"></div>
-                                            <div class="absolute left-1/2 top-0 w-px h-full bg-white opacity-30 transform -translate-x-1/2"></div>
-                                            <span class="text-white text-[10px] font-bold relative z-10 drop-shadow-md">MC</span>
-                                        </div>
-                                    </div>
+                                    <img src="{{ asset('images/payment-visa-mastercard.png') }}"
+                                         alt="Visa and Mastercard"
+                                         class="h-8 w-auto object-contain"
+                                         loading="lazy">
                                     <!-- AMEX -->
                                     <div class="flex items-center">
                                         <div class="w-14 h-8 bg-[#006FCF] rounded-md shadow-md flex items-center justify-center border border-[#0052A5] relative overflow-hidden">
@@ -249,22 +237,10 @@
                                     <input type="radio" name="payment_gateway" value="cmi" class="w-5 h-5 text-orange-600 border-gray-300 focus:ring-orange-500">
                                 </div>
                                 <div class="flex items-center gap-2 mb-4 flex-wrap">
-                                    <!-- VISA -->
-                                    <div class="flex items-center">
-                                        <div class="w-14 h-8 bg-[#1A1F71] rounded-md shadow-md flex items-center justify-center border border-[#0F2A5C] relative overflow-hidden">
-                                            <div class="absolute inset-0 bg-gradient-to-br from-[#1A1F71] to-[#1434A4] opacity-80"></div>
-                                            <span class="text-white text-[11px] font-bold tracking-wider relative z-10">VISA</span>
-                                        </div>
-                                    </div>
-                                    <!-- Mastercard -->
-                                    <div class="flex items-center">
-                                        <div class="w-14 h-8 rounded-full shadow-md flex items-center justify-center relative overflow-hidden">
-                                            <div class="absolute left-0 top-0 w-1/2 h-full bg-[#EB001B]"></div>
-                                            <div class="absolute right-0 top-0 w-1/2 h-full bg-[#F79E1B]"></div>
-                                            <div class="absolute left-1/2 top-0 w-px h-full bg-white opacity-30 transform -translate-x-1/2"></div>
-                                            <span class="text-white text-[10px] font-bold relative z-10 drop-shadow-md">MC</span>
-                                        </div>
-                                    </div>
+                                    <img src="{{ asset('images/payment-visa-mastercard.png') }}"
+                                         alt="Visa and Mastercard"
+                                         class="h-8 w-auto object-contain"
+                                         loading="lazy">
                                     <!-- CIH Bank -->
                                     <div class="flex items-center">
                                         <div class="w-14 h-8 bg-[#C8102E] rounded-md shadow-md flex items-center justify-center border border-[#A00D26] relative overflow-hidden">

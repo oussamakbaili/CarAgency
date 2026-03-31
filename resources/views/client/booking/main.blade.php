@@ -139,22 +139,10 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2 mb-4 flex-wrap">
-                                    <!-- VISA -->
-                                    <div class="flex items-center">
-                                        <div class="w-14 h-8 bg-[#1A1F71] rounded-md shadow-md flex items-center justify-center border border-[#0F2A5C] relative overflow-hidden">
-                                            <div class="absolute inset-0 bg-gradient-to-br from-[#1A1F71] to-[#1434A4] opacity-80"></div>
-                                            <span class="text-white text-[11px] font-bold tracking-wider relative z-10">VISA</span>
-                                        </div>
-                                    </div>
-                                    <!-- Mastercard -->
-                                    <div class="flex items-center">
-                                        <div class="w-14 h-8 rounded-full shadow-md flex items-center justify-center relative overflow-hidden">
-                                            <div class="absolute left-0 top-0 w-1/2 h-full bg-[#EB001B]"></div>
-                                            <div class="absolute right-0 top-0 w-1/2 h-full bg-[#F79E1B]"></div>
-                                            <div class="absolute left-1/2 top-0 w-px h-full bg-white opacity-30 transform -translate-x-1/2"></div>
-                                            <span class="text-white text-[10px] font-bold relative z-10 drop-shadow-md">MC</span>
-                                        </div>
-                                    </div>
+                                    <img src="{{ asset('images/payment-visa-mastercard.png') }}"
+                                         alt="Visa and Mastercard"
+                                         class="h-8 w-auto object-contain"
+                                         loading="lazy">
                                 </div>
                             </div>
 
@@ -505,16 +493,11 @@
                             <input type="radio" name="cardType" value="credit" class="mr-3" checked>
                             <div class="flex items-center">
                                 <span class="mr-3">{{ __('booking.main.payment_modal.card_label') }}</span>
-                                <div class="flex space-x-2">
-                                    <svg class="w-8 h-5" viewBox="0 0 24 16">
-                                        <rect width="24" height="16" rx="2" fill="#1A1F71"/>
-                                        <text x="12" y="11" text-anchor="middle" fill="white" font-size="8" font-weight="bold">VISA</text>
-                                    </svg>
-                                    <svg class="w-8 h-5" viewBox="0 0 24 16">
-                                        <rect width="24" height="16" rx="2" fill="#EB001B"/>
-                                        <circle cx="9" cy="8" r="4" fill="#EB001B"/>
-                                        <circle cx="15" cy="8" r="4" fill="#F79E1B"/>
-                                    </svg>
+                                <div class="flex items-center space-x-2">
+                                    <img src="{{ asset('images/payment-visa-mastercard.png') }}"
+                                         alt="Visa and Mastercard"
+                                         class="h-5 w-auto object-contain"
+                                         loading="lazy">
                                     <svg class="w-8 h-5" viewBox="0 0 24 16">
                                         <rect width="24" height="16" rx="2" fill="#006FCF"/>
                                         <circle cx="8" cy="8" r="3" fill="#006FCF"/>
