@@ -95,11 +95,11 @@
                                 <div class="flex items-center gap-2 mb-4">
                                     <img src="{{ asset('public/images/visa-logo.png') }}"
                                          alt="Visa"
-                                         class="h-8 w-auto object-contain"
+                                         class="h-10 w-auto object-contain"
                                          loading="lazy">
                                     <img src="{{ asset('public/images/mastercard-logo.png') }}"
                                          alt="Mastercard"
-                                         class="h-8 w-auto object-contain"
+                                         class="h-10 w-auto object-contain"
                                          loading="lazy">
                                     <!-- AMEX -->
                                     <div class="flex items-center">
@@ -243,11 +243,11 @@
                                 <div class="flex items-center gap-2 mb-4 flex-wrap">
                                     <img src="{{ asset('public/images/visa-logo.png') }}"
                                          alt="Visa"
-                                         class="h-8 w-auto object-contain"
+                                         class="h-10 w-auto object-contain"
                                          loading="lazy">
                                     <img src="{{ asset('public/images/mastercard-logo.png') }}"
                                          alt="Mastercard"
-                                         class="h-8 w-auto object-contain"
+                                         class="h-10 w-auto object-contain"
                                          loading="lazy">
                                     <!-- CIH Bank -->
                                     <div class="flex items-center">
