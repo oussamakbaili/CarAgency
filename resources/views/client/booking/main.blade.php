@@ -139,8 +139,12 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2 mb-4 flex-wrap">
-                                    <img src="{{ asset('images/payment-visa-mastercard.png') }}"
-                                         alt="Visa and Mastercard"
+                                    <img src="{{ asset('images/visa-logo.png') }}"
+                                         alt="Visa"
+                                         class="h-8 w-auto object-contain"
+                                         loading="lazy">
+                                    <img src="{{ asset('images/mastercard-logo.png') }}"
+                                         alt="Mastercard"
                                          class="h-8 w-auto object-contain"
                                          loading="lazy">
                                 </div>
@@ -494,8 +498,12 @@
                             <div class="flex items-center">
                                 <span class="mr-3">{{ __('booking.main.payment_modal.card_label') }}</span>
                                 <div class="flex items-center space-x-2">
-                                    <img src="{{ asset('images/payment-visa-mastercard.png') }}"
-                                         alt="Visa and Mastercard"
+                                    <img src="{{ asset('images/visa-logo.png') }}"
+                                         alt="Visa"
+                                         class="h-5 w-auto object-contain"
+                                         loading="lazy">
+                                    <img src="{{ asset('images/mastercard-logo.png') }}"
+                                         alt="Mastercard"
                                          class="h-5 w-auto object-contain"
                                          loading="lazy">
                                     <svg class="w-8 h-5" viewBox="0 0 24 16">

@@ -93,8 +93,12 @@
                                     <input type="radio" name="payment_gateway" value="stripe" class="w-5 h-5 text-orange-600 border-gray-300 focus:ring-orange-500" checked>
                                 </div>
                                 <div class="flex items-center gap-2 mb-4">
-                                    <img src="{{ asset('images/payment-visa-mastercard.png') }}"
-                                         alt="Visa and Mastercard"
+                                    <img src="{{ asset('images/visa-logo.png') }}"
+                                         alt="Visa"
+                                         class="h-8 w-auto object-contain"
+                                         loading="lazy">
+                                    <img src="{{ asset('images/mastercard-logo.png') }}"
+                                         alt="Mastercard"
                                          class="h-8 w-auto object-contain"
                                          loading="lazy">
                                     <!-- AMEX -->
@@ -237,8 +241,12 @@
                                     <input type="radio" name="payment_gateway" value="cmi" class="w-5 h-5 text-orange-600 border-gray-300 focus:ring-orange-500">
                                 </div>
                                 <div class="flex items-center gap-2 mb-4 flex-wrap">
-                                    <img src="{{ asset('images/payment-visa-mastercard.png') }}"
-                                         alt="Visa and Mastercard"
+                                    <img src="{{ asset('images/visa-logo.png') }}"
+                                         alt="Visa"
+                                         class="h-8 w-auto object-contain"
+                                         loading="lazy">
+                                    <img src="{{ asset('images/mastercard-logo.png') }}"
+                                         alt="Mastercard"
                                          class="h-8 w-auto object-contain"
                                          loading="lazy">
                                     <!-- CIH Bank -->
