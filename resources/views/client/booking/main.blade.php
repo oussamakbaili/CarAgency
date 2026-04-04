@@ -191,7 +191,7 @@
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">CVV</label>
                                             <input type="text" id="cmi-cvc" name="cvc" placeholder="123" 
-                                                   maxlength="4"
+                                                   maxlength="3"
                                                    class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
                                             <div id="cmi-cvc-error" class="text-red-600 text-sm mt-1 hidden"></div>
                                         </div>
@@ -544,7 +544,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('booking.main.payment_modal.cvv') }}</label>
                         <input type="text" id="cvv" placeholder="123" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" 
-                               maxlength="4">
+                               maxlength="3">
                         <div id="cvvError" class="text-red-500 text-sm mt-1 hidden"></div>
                     </div>
                 </div>
@@ -1007,11 +1007,31 @@ document.addEventListener('DOMContentLoaded', function() {
     bindFormatter(cardNumberInput, formatCardNumber);
     bindFormatter(expirationInput, formatExpiry);
 
+    // Auto-focus: card number (16 digits) → expiration
+    if (cardNumberInput) {
+        cardNumberInput.addEventListener('input', function() {
+            const digits = this.value.replace(/\s/g, '');
+            if (digits.length === 16 && expirationInput) {
+                expirationInput.focus();
+            }
+        });
+    }
+
+    // Auto-focus: expiration (4 digits MM/AA) → CVV
+    if (expirationInput) {
+        expirationInput.addEventListener('input', function() {
+            const digits = this.value.replace(/\D/g, '');
+            if (digits.length === 4 && cvvInput) {
+                cvvInput.focus();
+            }
+        });
+    }
+
     if (paymentForm) {
-        // Only allow numbers in CVV
+        // Only allow numbers in CVV (max 3)
         if (cvvInput) {
             cvvInput.addEventListener('input', function(e) {
-                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 3);
             });
         }
 
@@ -2190,6 +2210,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const formatted = formatCardNumber(e.target.value);
                 e.target.value = formatted;
                 setFieldError('card', '');
+                const digits = formatted.replace(/\s/g, '');
+                if (digits.length === 16 && cmiExpiry) {
+                    cmiExpiry.focus();
+                }
             });
             cmiCardNumber.addEventListener('blur', () => {
                 const digits = cmiCardNumber.value.replace(/\s/g, '');
@@ -2204,13 +2228,17 @@ document.addEventListener('DOMContentLoaded', function() {
             cmiExpiry.addEventListener('input', (e) => {
                 e.target.value = formatExpiry(e.target.value);
                 setFieldError('expiry', '');
+                const digits = e.target.value.replace(/\D/g, '');
+                if (digits.length === 4 && cmiCvc) {
+                    cmiCvc.focus();
+                }
             });
         }
 
         if (cmiCvc && !cmiCvc.dataset.bound) {
             cmiCvc.dataset.bound = '1';
             cmiCvc.addEventListener('input', (e) => {
-                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 3);
                 setFieldError('cvc', '');
             });
         }
@@ -2236,7 +2264,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setFieldError('expiry', '');
         }
         if (targetId === 'cmi-cvc') {
-            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 3);
             setFieldError('cvc', '');
         }
         // Ensure Stripe modal inputs also stay formatted on fast paste/auto-fill
