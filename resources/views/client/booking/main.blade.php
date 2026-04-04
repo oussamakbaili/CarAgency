@@ -678,6 +678,27 @@
 </div>
 
 <script>
+// Global formatters — must be outside DOMContentLoaded so oninput attributes can call them
+function formatCardNumber(value) {
+    const digits = value.replace(/\D/g, '').slice(0, 16);
+    let formatted = digits.replace(/(\d{4})/g, '$1 ').trim();
+    // Keep trailing space after a full 4-digit group (except at 16 digits)
+    if (digits.length > 0 && digits.length < 16 && digits.length % 4 === 0) {
+        formatted += ' ';
+    }
+    return formatted;
+}
+
+function formatExpiry(value, isDeletion) {
+    const digits = value.replace(/\D/g, '').slice(0, 4);
+    if (digits.length === 0) return '';
+    if (digits.length <= 2) {
+        if (digits.length === 2 && !isDeletion) return digits + '/';
+        return digits;
+    }
+    return digits.slice(0, 2) + '/' + digits.slice(2);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Activer l'étape 2 si l'utilisateur est déjà connecté
     @if(auth()->check())
@@ -2123,26 +2144,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let cmiCvc = document.getElementById('cmi-cvc');
     let cmiCardholder = document.getElementById('cmi-cardholder');
 
-    function formatCardNumber(value) {
-        const digits = value.replace(/\D/g, '').slice(0, 16);
-        let formatted = digits.replace(/(.{4})/g, '$1 ').trim();
-        // Keep a trailing space after a full 4-digit block (except when the card is complete)
-        if (digits.length > 0 && digits.length < 16 && digits.length % 4 === 0) {
-            formatted += ' ';
-        }
-        return formatted;
-    }
-
-    function formatExpiry(value, isDeletion) {
-        const digits = value.replace(/\D/g, '').slice(0, 4);
-        if (digits.length === 0) return '';
-        if (digits.length <= 2) {
-            // Only auto-append slash when user is typing forward, not deleting
-            if (digits.length === 2 && !isDeletion) return digits + '/';
-            return digits;
-        }
-        return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-    }
+    // formatCardNumber and formatExpiry are defined globally above the DOMContentLoaded wrapper
 
     function isValidExpiry(expiry) {
         if (!/^\d{2}\/\d{2}$/.test(expiry)) return false;
