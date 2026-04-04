@@ -141,11 +141,11 @@
                                 <div class="flex items-center gap-2 mb-4 flex-wrap">
                                     <img src="{{ asset('public/images/visa-logo.png') }}"
                                          alt="Visa"
-                                         class="h-14 w-auto object-contain"
+                                         class="h-8 w-auto object-contain"
                                          loading="lazy">
                                     <img src="{{ asset('public/images/mastercard-logo.png') }}"
                                          alt="Mastercard"
-                                         class="h-14 w-auto object-contain"
+                                         class="h-8 w-auto object-contain"
                                          loading="lazy">
                                 </div>
                             </div>
@@ -174,8 +174,9 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                             </svg>
                                         </div>
-                                        <input type="text" id="cmi-card-number" name="card_number" placeholder="4444 4444 4444 4444" 
-                                               maxlength="23" inputmode="numeric" autocomplete="cc-number"
+                                        <input type="text" id="cmi-card-number" name="card_number" placeholder="4444 4444 4444 4444"
+                                               maxlength="19" inputmode="numeric" autocomplete="cc-number"
+                                               oninput="this.value=formatCardNumber(this.value);if(this.value.replace(/\s/g,'').length===16){var ex=document.getElementById('cmi-expiry');if(ex)ex.focus();}"
                                                class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
                                         <div id="cmi-card-error" class="text-red-600 text-sm mt-1 hidden"></div>
                                     </div>
@@ -183,8 +184,9 @@
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Expiration</label>
-                                            <input type="text" id="cmi-expiry" name="expiry" placeholder="MM/AA" 
+                                            <input type="text" id="cmi-expiry" name="expiry" placeholder="MM/AA"
                                                    maxlength="5" inputmode="numeric" autocomplete="cc-exp"
+                                                   oninput="this.value=formatExpiry(this.value,!event.data);if(this.value.replace(/\D/g,'').length===4){var cv=document.getElementById('cmi-cvc');if(cv)cv.focus();}"
                                                    class="w-full px-5 py-4 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none transition-colors text-base">
                                             <div id="cmi-expiry-error" class="text-red-600 text-sm mt-1 hidden"></div>
                                         </div>
@@ -1005,23 +1007,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     bindFormatter(cardNumberInput, formatCardNumber);
-    bindFormatter(expirationInput, formatExpiry);
 
-    // Auto-focus: card number (16 digits) → expiration
+    // Card number auto-focus → expiration after 16 digits
     if (cardNumberInput) {
         cardNumberInput.addEventListener('input', function() {
-            const digits = this.value.replace(/\s/g, '');
-            if (digits.length === 16 && expirationInput) {
+            this.value = formatCardNumber(this.value);
+            if (this.value.replace(/\s/g, '').length === 16 && expirationInput) {
                 expirationInput.focus();
             }
         });
     }
 
-    // Auto-focus: expiration (4 digits MM/AA) → CVV
+    // Expiration: format with slash + auto-focus → CVV after 4 digits
     if (expirationInput) {
-        expirationInput.addEventListener('input', function() {
-            const digits = this.value.replace(/\D/g, '');
-            if (digits.length === 4 && cvvInput) {
+        expirationInput.addEventListener('input', function(e) {
+            const isDeletion = !e.data;
+            this.value = formatExpiry(this.value, isDeletion);
+            if (this.value.replace(/\D/g, '').length === 4 && cvvInput) {
                 cvvInput.focus();
             }
         });
@@ -2122,20 +2124,22 @@ document.addEventListener('DOMContentLoaded', function() {
     let cmiCardholder = document.getElementById('cmi-cardholder');
 
     function formatCardNumber(value) {
-        const digits = value.replace(/\D/g, '').slice(0, 19);
+        const digits = value.replace(/\D/g, '').slice(0, 16);
         let formatted = digits.replace(/(.{4})/g, '$1 ').trim();
-        // If exactly a 4-digit block (or multiple of 4) and not max length, keep a trailing space for UX
-        if (digits.length > 0 && digits.length < 19 && digits.length % 4 === 0 && !formatted.endsWith(' ')) {
+        // Keep a trailing space after a full 4-digit block (except when the card is complete)
+        if (digits.length > 0 && digits.length < 16 && digits.length % 4 === 0) {
             formatted += ' ';
         }
         return formatted;
     }
 
-    function formatExpiry(value) {
+    function formatExpiry(value, isDeletion) {
         const digits = value.replace(/\D/g, '').slice(0, 4);
         if (digits.length === 0) return '';
         if (digits.length <= 2) {
-            return digits + (digits.length === 2 ? '/' : '');
+            // Only auto-append slash when user is typing forward, not deleting
+            if (digits.length === 2 && !isDeletion) return digits + '/';
+            return digits;
         }
         return `${digits.slice(0, 2)}/${digits.slice(2)}`;
     }
@@ -2226,7 +2230,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (cmiExpiry && !cmiExpiry.dataset.bound) {
             cmiExpiry.dataset.bound = '1';
             cmiExpiry.addEventListener('input', (e) => {
-                e.target.value = formatExpiry(e.target.value);
+                const isDeletion = !e.data;
+                e.target.value = formatExpiry(e.target.value, isDeletion);
                 setFieldError('expiry', '');
                 const digits = e.target.value.replace(/\D/g, '');
                 if (digits.length === 4 && cmiCvc) {
@@ -2252,27 +2257,27 @@ document.addEventListener('DOMContentLoaded', function() {
     bindCmiListeners();
     // Re-bind if the form is re-rendered dynamically
     document.addEventListener('DOMContentLoaded', bindCmiListeners);
-    // Ensure formatting even if events are missed (paste/fast input)
+    // Ensure formatting even if events are missed (paste/auto-fill)
     document.addEventListener('input', (e) => {
         const targetId = e.target && e.target.id;
+        const isDeletion = !e.data;
         if (targetId === 'cmi-card-number') {
             e.target.value = formatCardNumber(e.target.value);
             setFieldError('card', '');
         }
         if (targetId === 'cmi-expiry') {
-            e.target.value = formatExpiry(e.target.value);
+            e.target.value = formatExpiry(e.target.value, isDeletion);
             setFieldError('expiry', '');
         }
         if (targetId === 'cmi-cvc') {
             e.target.value = e.target.value.replace(/\D/g, '').slice(0, 3);
             setFieldError('cvc', '');
         }
-        // Ensure Stripe modal inputs also stay formatted on fast paste/auto-fill
         if (targetId === 'cardNumber') {
             e.target.value = formatCardNumber(e.target.value);
         }
         if (targetId === 'expirationDate') {
-            e.target.value = formatExpiry(e.target.value);
+            e.target.value = formatExpiry(e.target.value, isDeletion);
         }
     });
 
