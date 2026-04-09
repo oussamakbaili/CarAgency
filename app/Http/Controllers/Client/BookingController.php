@@ -41,8 +41,10 @@ class BookingController extends Controller
                 ->with('info', 'Le paiement n\'a pas été effectué. Vous pouvez réessayer ou choisir une autre méthode de paiement.');
         }
 
-        // Vérifier disponibilité de base (redirect to home to avoid redirect loop when referer is same URL)
-        if (!$car->is_available || !$car->agency || $car->agency->status !== 'approved') {
+        // Vérifier uniquement le statut statique (pas les réservations) pour ne pas bloquer les dates libres
+        $carBlocked = $car->status !== Car::STATUS_AVAILABLE || !$car->agency || $car->agency->status !== 'approved';
+
+        if ($carBlocked) {
             // Fallback: if user just came back from PayPal without paying, session may be lost but they have a pending rental for this car
             if (Auth::check()) {
                 $pendingRental = Rental::where('car_id', $car->id)

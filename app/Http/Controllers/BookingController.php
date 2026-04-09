@@ -31,8 +31,9 @@ class BookingController extends Controller
         // Charger la relation agency
         $car->load('agency');
 
-        // Vérifier disponibilité de base
-        if (!$car->is_available || !$car->agency || $car->agency->status !== 'approved') {
+        // Vérifier uniquement le statut statique du véhicule/agence (pas les réservations)
+        // Les conflits de dates sont vérifiés plus loin via RentalService::checkAvailability
+        if ($car->status !== Car::STATUS_AVAILABLE || !$car->agency || $car->agency->status !== 'approved') {
             return redirect()->back()->with('error', 'Cette voiture n\'est pas disponible pour la location.');
         }
 
@@ -86,8 +87,8 @@ class BookingController extends Controller
         // Charger la relation agency
         $car->load('agency');
         
-        // Vérifier que la voiture est disponible
-        if (!$car->is_available || !$car->agency || $car->agency->status !== 'approved') {
+        // Vérifier uniquement le statut statique du véhicule/agence
+        if ($car->status !== Car::STATUS_AVAILABLE || !$car->agency || $car->agency->status !== 'approved') {
             return redirect()->back()->with('error', 'Cette voiture n\'est pas disponible pour la location.');
         }
 
