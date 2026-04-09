@@ -22,6 +22,13 @@ use App\Http\Controllers\ReviewController;
 |
 */
 
+use App\Http\Controllers\Api\SocialAuthController;
+
+// ─── Mobile Google OAuth (no auth required) ───────────────────────────────────
+Route::get('/auth/google/redirect',  [SocialAuthController::class, 'redirectToGoogle'])->name('auth.google.redirect');
+Route::get('/auth/google/callback',  [SocialAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Language switching route (must be before other routes)
 Route::get('/lang/{locale}', [App\Http\Controllers\LanguageController::class, 'switch'])->name('lang.switch');
 

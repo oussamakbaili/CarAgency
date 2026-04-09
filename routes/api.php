@@ -14,8 +14,43 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CarController;
+use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\UserController;
+
+// ─── Routes publiques (sans authentification) ───────────────────────────────
+Route::post('/auth/login',    [AuthController::class, 'login']);
+Route::post('/auth/register', [AuthController::class, 'register']);
+
+// Social & Phone auth
+Route::post('/auth/phone/send',   [AuthController::class, 'sendPhoneOtp']);
+Route::post('/auth/phone/verify', [AuthController::class, 'verifyPhoneOtp']);
+Route::post('/auth/google',       [AuthController::class, 'googleAuth']);
+Route::post('/auth/apple',        [AuthController::class, 'appleAuth']);
+
+Route::get('/cars',          [CarController::class, 'index']);
+Route::get('/cars/featured', [CarController::class, 'featured']);
+Route::get('/cars/{id}',     [CarController::class, 'show']);
+
+// ─── Routes protégées (token Sanctum requis) ────────────────────────────────
+Route::middleware('auth:sanctum')->group(function () {
+    // Auth
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+    // Profil
+    Route::get('/profile',  [UserController::class, 'show']);
+    Route::put('/profile',  [UserController::class, 'update']);
+
+    // Réservations
+    Route::get('/bookings',         [BookingController::class, 'index']);
+    Route::post('/bookings',        [BookingController::class, 'store']);
+    Route::get('/bookings/{id}',    [BookingController::class, 'show']);
+    Route::delete('/bookings/{id}', [BookingController::class, 'cancel']);
+
+    // Favoris
+    Route::post('/cars/{id}/favorite', [CarController::class, 'toggleFavorite']);
+    Route::get('/favorites',           [CarController::class, 'favorites']);
 });
 
 // API pour les sites externes - vérification de disponibilité
