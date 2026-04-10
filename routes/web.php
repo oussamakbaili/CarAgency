@@ -22,11 +22,28 @@ use App\Http\Controllers\ReviewController;
 |
 */
 
-use App\Http\Controllers\Api\SocialAuthController;
+use App\Http\Controllers\Api\SocialAuthController as MobileSocialAuthController;
+use App\Http\Controllers\Auth\SocialAuthController;
+use App\Http\Controllers\Auth\PhoneLoginController;
 
-// ─── Mobile Google OAuth (no auth required) ───────────────────────────────────
-Route::get('/auth/google/redirect',  [SocialAuthController::class, 'redirectToGoogle'])->name('auth.google.redirect');
-Route::get('/auth/google/callback',  [SocialAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+// ─── Mobile Google OAuth (Sanctum token + deep link) ─────────────────────────
+Route::get('/auth/google/redirect',  [MobileSocialAuthController::class, 'redirectToGoogle'])->name('auth.google.redirect');
+Route::get('/auth/google/callback',  [MobileSocialAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Web Social OAuth (session-based) ────────────────────────────────────────
+Route::middleware('guest')->group(function () {
+    Route::get('/login/google',         [SocialAuthController::class, 'redirectToGoogle'])->name('login.google');
+    Route::get('/login/google/callback',[SocialAuthController::class, 'handleGoogleCallback'])->name('login.google.callback');
+
+    Route::get('/login/apple',          [SocialAuthController::class, 'redirectToApple'])->name('login.apple');
+    Route::post('/login/apple/callback',[SocialAuthController::class, 'handleAppleCallback'])->name('login.apple.callback');
+
+    Route::get('/login/phone',          [PhoneLoginController::class, 'showPhoneForm'])->name('login.phone');
+    Route::post('/login/phone/send-otp',[PhoneLoginController::class, 'sendOtp'])->name('login.phone.send-otp');
+    Route::get('/login/phone/otp',      [PhoneLoginController::class, 'showOtpForm'])->name('login.phone.otp');
+    Route::post('/login/phone/verify',  [PhoneLoginController::class, 'verifyOtp'])->name('login.phone.verify');
+});
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Language switching route (must be before other routes)

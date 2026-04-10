@@ -100,11 +100,19 @@ class AuthController extends Controller
 
         Cache::put("otp_{$phone}", $code, now()->addMinutes(10));
 
-        // In production: send via Twilio or any SMS gateway
-        // For development the code is logged – check storage/logs/laravel.log
         \Log::info("[ToubCar OTP] Phone: {$phone}  Code: {$code}");
 
-        return response()->json(['message' => 'Code envoyé']);
+        // In production: send via Twilio or any SMS gateway
+        // TODO: Replace with real SMS sending
+
+        $response = ['message' => 'Code envoyé'];
+
+        // Return code in response only in debug/dev mode for testing
+        if (config('app.debug')) {
+            $response['dev_code'] = $code;
+        }
+
+        return response()->json($response);
     }
 
     public function verifyPhoneOtp(Request $request)
